@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction", "MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj", "{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Portable", "MediaBrowser.ApiInteraction.Portable\MediaBrowser.ApiInteraction.Portable.csproj", "{52E0C440-85C0-4A99-ACFE-07C87B2600BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
