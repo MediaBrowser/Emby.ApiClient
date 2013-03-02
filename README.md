@@ -16,7 +16,7 @@ Usage is very simple:
 
             var currentUser = users.First();
 
-            // Get the ten most recently added items for
+            // Get the ten most recently added items for the current user
             var items = await client.GetItemsAsync(new ItemQuery
             {
                 UserId = currentUser.Id,
@@ -26,6 +26,7 @@ Usage is very simple:
 
                 // Get media only, don't return folder items
                 Filters = new[] { ItemFilter.IsNotFolder },
+
                 Limit = 10,
 
                 // Search recursively through the user's library
