@@ -53,6 +53,14 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
+        /// </summary>
+        protected BaseApiClient()
+            : this(new NullLogger())
+        {
+        }
+        
+        /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>

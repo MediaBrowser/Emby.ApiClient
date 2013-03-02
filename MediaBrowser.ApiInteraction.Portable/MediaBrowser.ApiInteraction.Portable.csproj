@@ -41,6 +41,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\NewtonsoftJsonSerializer.cs">
       <Link>NewtonsoftJsonSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\NullLogger.cs">
+      <Link>NullLogger.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\SerializationFormats.cs">
       <Link>SerializationFormats.cs</Link>
     </Compile>

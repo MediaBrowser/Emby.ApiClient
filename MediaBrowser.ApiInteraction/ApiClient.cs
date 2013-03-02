@@ -50,10 +50,18 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="logger">The logger.</param>
         public ApiClient(ILogger logger)
-            : this(logger, new AsyncHttpClient())
+            : this(logger, new AsyncHttpClient(logger))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        public ApiClient()
+            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()))
+        {
+        }
+        
         /// <summary>
         /// Sets the authorization header.
         /// </summary>
@@ -76,7 +84,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("url");
             }
 
-            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -364,7 +372,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Plugins/" + plugin.Id + "/Assembly");
 
-            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -431,7 +439,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Plugins/" + pluginId + "/ConfigurationFile");
 
-            return await HttpClient.GetAsync(url, Logger, CancellationToken.None).ConfigureAwait(false);
+            return await HttpClient.GetAsync(url, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -619,7 +627,7 @@ namespace MediaBrowser.ApiInteraction
                 return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
             }
 
-            return HttpClient.DeleteAsync(url, Logger, CancellationToken.None);
+            return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -648,7 +656,7 @@ namespace MediaBrowser.ApiInteraction
                 return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
             }
 
-            return HttpClient.DeleteAsync(url, Logger, CancellationToken.None);
+            return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -728,7 +736,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
 
-            return HttpClient.DeleteAsync(url, Logger, CancellationToken.None);
+            return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -752,7 +760,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating");
 
-            return HttpClient.DeleteAsync(url, Logger, CancellationToken.None);
+            return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -927,7 +935,7 @@ namespace MediaBrowser.ApiInteraction
 
             const string contentType = "application/x-www-form-urlencoded";
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, Logger, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, CancellationToken.None).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -965,7 +973,7 @@ namespace MediaBrowser.ApiInteraction
 
             var postContent = SerializeToJson(obj);
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, Logger, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, CancellationToken.None).ConfigureAwait(false))
             {
                 return DeserializeFromStream<TOutputType>(stream);
             }
@@ -991,7 +999,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url, serializationFormat);
 
-            return HttpClient.GetAsync(url, Logger, CancellationToken.None);
+            return HttpClient.GetAsync(url, CancellationToken.None);
         }
 
 

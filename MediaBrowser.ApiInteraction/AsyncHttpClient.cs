@@ -22,18 +22,29 @@ namespace MediaBrowser.ApiInteraction
         private HttpClient HttpClient { get; set; }
 
         /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
-        public AsyncHttpClient(HttpMessageHandler handler)
+        /// <param name="logger">The logger.</param>
+        /// <param name="handler">The handler.</param>
+        public AsyncHttpClient(ILogger logger, HttpMessageHandler handler)
         {
+            Logger = logger;
             HttpClient = new HttpClient(handler);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
-        public AsyncHttpClient()
+        /// <param name="logger">The logger.</param>
+        public AsyncHttpClient(ILogger logger)
         {
+            Logger = logger;
             HttpClient = new HttpClient();
         }
 
@@ -41,15 +52,14 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the stream async.
         /// </summary>
         /// <param name="url">The URL.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> GetAsync(string url, ILogger logger, CancellationToken cancellationToken)
+        public async Task<Stream> GetAsync(string url, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            logger.Debug("Sending Http Get to {0}", url);
+            Logger.Info("Sending Http Get to {0}", url);
 
             try
             {
@@ -61,17 +71,17 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (HttpRequestException ex)
             {
-                logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex, logger);
+                throw GetCancellationException(url, cancellationToken, ex);
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Error requesting {0}", ex, url);
+                Logger.ErrorException("Error requesting {0}", ex, url);
                 
                 throw;
             }
@@ -83,13 +93,12 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="postContent">Content of the post.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> PostAsync(string url, string contentType, string postContent, ILogger logger, CancellationToken cancellationToken)
+        public async Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
         {
-            logger.Debug("Sending Http Post to {0}", url);
+            Logger.Info("Sending Http Post to {0}", url);
             
             var content = new StringContent(postContent, Encoding.UTF8, contentType);
 
@@ -103,17 +112,17 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (HttpRequestException ex)
             {
-                logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex, logger);
+                throw GetCancellationException(url, cancellationToken, ex);
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Error posting {0}", ex, url);
+                Logger.ErrorException("Error posting {0}", ex, url);
 
                 throw;
             }
@@ -123,14 +132,14 @@ namespace MediaBrowser.ApiInteraction
         /// Deletes the async.
         /// </summary>
         /// <param name="url">The URL.</param>
-        /// <param name="logger">The logger.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task DeleteAsync(string url, ILogger logger, CancellationToken cancellationToken)
+        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
+        public async Task DeleteAsync(string url, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            logger.Debug("Sending Http Delete to {0}", url);
+            Logger.Debug("Sending Http Delete to {0}", url);
 
             try
             {
@@ -141,17 +150,17 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (HttpRequestException ex)
             {
-                logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex, logger);
+                throw GetCancellationException(url, cancellationToken, ex);
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Error requesting {0}", ex, url);
+                Logger.ErrorException("Error requesting {0}", ex, url);
 
                 throw;
             }
@@ -163,16 +172,15 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="exception">The exception.</param>
-        /// <param name="logger">The logger.</param>
         /// <returns>Exception.</returns>
-        private Exception GetCancellationException(string url, CancellationToken cancellationToken, OperationCanceledException exception, ILogger logger)
+        private Exception GetCancellationException(string url, CancellationToken cancellationToken, OperationCanceledException exception)
         {
             // If the HttpClient's timeout is reached, it will cancel the Task internally
             if (!cancellationToken.IsCancellationRequested)
             {
                 var msg = string.Format("Connection to {0} timed out", url);
 
-                logger.Error(msg);
+                Logger.Error(msg);
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
                 return new HttpException(msg, exception) { IsTimedOut = true };
