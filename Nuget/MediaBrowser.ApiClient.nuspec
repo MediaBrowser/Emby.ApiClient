@@ -2,20 +2,21 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient</id>
-        <version>3.0.0.18-beta</version>
+        <version>3.0.0.19-beta</version>
         <title>MediaBrowser.ApiClient</title>
         <authors>Media Browser Team</authors>
         <owners>scottisafool,Luke</owners>
+        <iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>ApiClient allows .NET clients to easily access the Media Browser 3 web API</description>
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-				<dependency id="MediaBrowser.Common" version="3.0.17" />
+				<dependency id="MediaBrowser.Common" version="3.0.19" />
                 <dependency id="Newtonsoft.Json" version="4.5.11" />
             </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
-				<dependency id="MediaBrowser.Common" version="3.0.17" />
+				<dependency id="MediaBrowser.Common" version="3.0.19" />
                 <dependency id="Newtonsoft.Json" version="4.5.11" />
                 <dependency id="Microsoft.Bcl.Async" version="1.0.14-rc" />
                 <dependency id="Microsoft.Net.Http" version="2.1.3-beta" />
