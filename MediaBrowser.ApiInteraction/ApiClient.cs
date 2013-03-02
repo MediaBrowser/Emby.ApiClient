@@ -192,44 +192,35 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Gets all People
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="itemId">Optional itemId, to localize the search to a specific item or folder</param>
-        /// <param name="personTypes">Use this to limit results to specific person types</param>
-        /// <param name="startIndex">Used to skip over a given number of items. Use if paging.</param>
-        /// <param name="limit">The maximum number of items to return</param>
-        /// <param name="sortOrder">The sort order</param>
-        /// <param name="recursive">if set to true items will be searched recursively.</param>
-        /// <returns>Task{IbnItemsResult}.</returns>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<ItemsResult> GetAllPeopleAsync(
-            Guid userId,
-            string itemId = null,
-            IEnumerable<string> personTypes = null,
-            int? startIndex = null,
-            int? limit = null,
-             SortOrder? sortOrder = null,
-            bool recursive = false)
+        public async Task<ItemsResult> GetAllPeopleAsync(ItemsByNameQuery query)
         {
-            if (userId == Guid.Empty)
+            if (query.UserId == Guid.Empty)
             {
                 throw new ArgumentNullException("userId");
             }
 
             var dict = new QueryStringDictionary();
 
-            dict.AddIfNotNull("startIndex", startIndex);
-            dict.AddIfNotNull("limit", limit);
+            dict.AddIfNotNull("startIndex", query.StartIndex);
+            dict.AddIfNotNull("limit", query.PageSize);
 
-            dict.Add("recursive", recursive);
+            dict.Add("recursive", query.Recursive);
 
-            if (sortOrder.HasValue)
+            if (query.SortOrder.HasValue)
             {
-                dict["sortOrder"] = sortOrder.Value.ToString();
+                dict["sortOrder"] = query.SortOrder.Value.ToString();
+            }
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
             }
 
-            dict.AddIfNotNull("personTypes", personTypes);
+            dict.AddIfNotNull("personTypes", query.PersonTypes);
 
-            var url = string.IsNullOrEmpty(itemId) ? "Users/" + userId + "/Items/Root/Persons" : "Users/" + userId + "/Items/" + itemId + "/Persons";
+            var url = string.IsNullOrEmpty(query.ItemId) ? "Users/" + query.UserId + "/Items/Root/Persons" : "Users/" + query.UserId + "/Items/" + query.ItemId + "/Persons";
             url = GetApiUrl(url, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
