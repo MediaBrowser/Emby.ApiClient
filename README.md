@@ -9,6 +9,7 @@ This is available as a Nuget package:
 
 Usage is very simple:
 
+``` c#
             var client = new ApiClient
             {
                 ServerHostName = "localhost",
@@ -36,5 +37,6 @@ Usage is very simple:
                 // Search recursively through the user's library
                 Recursive = true
             });
+```
 
 To add logging support, simply implement the ILogger interface and pass that into the constructor. The client also allows configuration of http compression and caching policies.
