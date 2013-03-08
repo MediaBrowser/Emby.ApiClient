@@ -250,7 +250,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Library/Studios/" + name);
+            var url = GetApiUrl("Studios/" + name);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -271,7 +271,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Library/Genres/" + name);
+            var url = GetApiUrl("Genres/" + name);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -319,7 +319,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Library/Persons/" + name);
+            var url = GetApiUrl("Persons/" + name);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -335,7 +335,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="System.ArgumentNullException">userId</exception>
         public async Task<BaseItemDto> GetYearAsync(int year)
         {
-            var url = GetApiUrl("Library/Years/" + year);
+            var url = GetApiUrl("Years/" + year);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
