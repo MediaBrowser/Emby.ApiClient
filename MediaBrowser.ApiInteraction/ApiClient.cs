@@ -213,7 +213,7 @@ namespace MediaBrowser.ApiInteraction
             var dict = new QueryStringDictionary();
 
             dict.AddIfNotNull("startIndex", query.StartIndex);
-            dict.AddIfNotNull("limit", query.PageSize);
+            dict.AddIfNotNull("limit", query.Limit);
 
             dict.Add("recursive", query.Recursive);
 
