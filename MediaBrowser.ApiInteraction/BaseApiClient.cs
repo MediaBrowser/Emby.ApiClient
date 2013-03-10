@@ -201,10 +201,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("limit", query.Limit);
 
-            if (query.SortBy != null)
-            {
-                dict["sortBy"] = string.Join(",", query.SortBy.Select(s => s.ToString()));
-            }
+            dict.AddIfNotNull("sortBy", query.SortBy);
 
             if (query.SortOrder.HasValue)
             {
@@ -237,7 +234,6 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("years", query.Years);
 
             dict.AddIfNotNullOrEmpty("indexBy", query.IndexBy);
-            dict.AddIfNotNullOrEmpty("dynamicSortBy", query.DynamicSortBy);
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
@@ -304,7 +300,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 options.Tag = item.BackdropImageTags[index];
             }
-            else if (options.ImageType == ImageType.ChapterImage)
+            else if (options.ImageType == ImageType.Chapter)
             {
                 options.Tag = item.Chapters[index].ImageTag;
             }
