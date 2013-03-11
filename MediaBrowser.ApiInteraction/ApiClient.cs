@@ -229,7 +229,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("personTypes", query.PersonTypes);
 
-            var url = string.IsNullOrEmpty(query.ItemId) ? "Users/" + query.UserId + "/Items/Root/Persons" : "Users/" + query.UserId + "/Items/" + query.ItemId + "/Persons";
+            var url = string.IsNullOrEmpty(query.ParentId) ? "Users/" + query.UserId + "/Items/Root/Persons" : "Users/" + query.UserId + "/Items/" + query.ParentId + "/Persons";
             url = GetApiUrl(url, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
