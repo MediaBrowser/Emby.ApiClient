@@ -62,7 +62,7 @@ namespace MediaBrowser.ApiInteraction
             : this(new NullLogger(), new AsyncHttpClient(new NullLogger()))
         {
         }
-        
+
         /// <summary>
         /// Sets the authorization header.
         /// </summary>
@@ -910,7 +910,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="args">The args.</param>
         /// <returns>Task{``0}.</returns>
-        private Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
+        public Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
             where T : class
         {
             return PostAsync<T>(url, args, SerializationFormat);
@@ -924,7 +924,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="args">The args.</param>
         /// <param name="serializationFormat">The serialization format.</param>
         /// <returns>Task{``0}.</returns>
-        private async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, SerializationFormats serializationFormat)
+        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, SerializationFormats serializationFormat)
             where T : class
         {
             url = AddDataFormat(url, serializationFormat);
@@ -1001,7 +1001,6 @@ namespace MediaBrowser.ApiInteraction
 
             return HttpClient.GetAsync(url, CancellationToken.None);
         }
-
 
         /// <summary>
         /// Adds the data format.
