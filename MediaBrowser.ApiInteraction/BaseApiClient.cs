@@ -85,6 +85,12 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
+        /// <value>The device id.</value>
+        public string DeviceId { get; set; }
+        
         private Guid? _currentUserId;
 
         /// <summary>
@@ -132,6 +138,8 @@ namespace MediaBrowser.ApiInteraction
 
             var header = string.Format("UserId=\"{0}\", Client=\"{1}\"", CurrentUserId.Value, ClientType);
 
+            header += string.Format(", DeviceId=\"{0}\"", DeviceId);
+            
             if (!string.IsNullOrEmpty(DeviceName))
             {
                 header += string.Format(", Device=\"{0}\"", DeviceName);
@@ -225,6 +233,7 @@ namespace MediaBrowser.ApiInteraction
             dict.Add("recursive", query.Recursive);
 
             dict.AddIfNotNull("genres", query.Genres);
+            dict.AddIfNotNull("Ids", query.Ids);
             dict.AddIfNotNull("studios", query.Studios);
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
