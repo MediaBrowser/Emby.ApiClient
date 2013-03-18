@@ -969,7 +969,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url, serializationFormat);
 
-            const string contentType = "application/x-www-form-urlencoded";
+            const string contentType = "application/json";
 
             var postContent = SerializeToJson(obj);
 

@@ -77,7 +77,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the type of the client.
         /// </summary>
         /// <value>The type of the client.</value>
-        public ClientType ClientType { get; set; }
+        public string ClientType { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
