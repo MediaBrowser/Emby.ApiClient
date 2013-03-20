@@ -36,4 +36,6 @@ Usage is very simple:
             });
 ```
 
-To add logging support, simply implement the ILogger interface and pass that into the constructor. The client also allows configuration of http compression and caching policies.
+To add logging support, simply implement the ILogger interface and set the Logger property. The client also allows configuration of http compression and caching policies.
+
+After authentication you'll need to set the CurrentUserId property, and you'll need to update that value anytime the user changes (or logs out).
