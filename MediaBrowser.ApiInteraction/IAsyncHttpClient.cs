@@ -13,9 +13,15 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Sets the authorization header that should be supplied on every request
         /// </summary>
-        /// <param name="header"></param>
-        void SetAuthorizationHeader(string header);
+        /// <param name="scheme">The scheme.</param>
+        /// <param name="paraneter">The paraneter.</param>
+        void SetAuthorizationHeader(string scheme, string paraneter);
 
+        /// <summary>
+        /// Removes the authorization header.
+        /// </summary>
+        void RemoveAuthorizationHeader();
+        
         /// <summary>
         /// Gets the stream async.
         /// </summary>

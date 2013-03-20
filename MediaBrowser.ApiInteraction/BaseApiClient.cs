@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Connectivity;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -40,27 +39,50 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverApiPort">The server API port.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        protected BaseApiClient(ILogger logger)
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException("logger");
             }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            if (string.IsNullOrEmpty(serverHostName))
+            {
+                throw new ArgumentNullException("serverHostName");
+            }
+            if (string.IsNullOrEmpty(clientName))
+            {
+                throw new ArgumentNullException("clientName");
+            }
+            if (string.IsNullOrEmpty(deviceName))
+            {
+                throw new ArgumentNullException("deviceName");
+            }
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
 
-            JsonSerializer = new NewtonsoftJsonSerializer();
+            JsonSerializer = jsonSerializer;
             Logger = logger;
             SerializationFormat = SerializationFormats.Json;
+
+            ServerHostName = serverHostName;
+            ServerApiPort = serverApiPort;
+            ClientName = clientName;
+            DeviceName = deviceName;
+            DeviceId = deviceId;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
-        /// </summary>
-        protected BaseApiClient()
-            : this(new NullLogger())
-        {
-        }
-        
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -77,20 +99,29 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the type of the client.
         /// </summary>
         /// <value>The type of the client.</value>
-        public string ClientType { get; set; }
+        public string ClientName { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName { get; set; }
+        public string DeviceName { get; private set; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId { get; set; }
-        
+        public string DeviceId { get; private set; }
+
+        /// <summary>
+        /// Gets the default data format to request from the server
+        /// </summary>
+        /// <value>The serialization format.</value>
+        public SerializationFormats SerializationFormat { get; set; }
+
+        /// <summary>
+        /// The _current user id
+        /// </summary>
         private Guid? _currentUserId;
 
         /// <summary>
@@ -103,7 +134,7 @@ namespace MediaBrowser.ApiInteraction
             set
             {
                 _currentUserId = value;
-                ResetAuthorizationHeader();
+                OnCurrentUserChanged();
             }
         }
 
@@ -120,40 +151,33 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the default data format to request from the server
+        /// Gets the name of the authorization scheme.
         /// </summary>
-        /// <value>The serialization format.</value>
-        public SerializationFormats SerializationFormat { get; set; }
-
-        /// <summary>
-        /// Resets the authorization header.
-        /// </summary>
-        private void ResetAuthorizationHeader()
+        /// <value>The name of the authorization scheme.</value>
+        protected string AuthorizationSchemeName
         {
-            if (!CurrentUserId.HasValue)
-            {
-                SetAuthorizationHeader(null);
-                return;
-            }
-
-            var header = string.Format("UserId=\"{0}\", Client=\"{1}\"", CurrentUserId.Value, ClientType);
-
-            header += string.Format(", DeviceId=\"{0}\"", DeviceId);
-            
-            if (!string.IsNullOrEmpty(DeviceName))
-            {
-                header += string.Format(", Device=\"{0}\"", DeviceName);
-            }
-
-            SetAuthorizationHeader(header);
+            get { return "MediaBrowser"; }
         }
 
         /// <summary>
-        /// Sets the authorization header.
+        /// Gets the authorization header parameter.
         /// </summary>
-        /// <param name="header">The header.</param>
-        protected abstract void SetAuthorizationHeader(string header);
+        /// <value>The authorization header parameter.</value>
+        protected string AuthorizationHeaderParameter
+        {
+            get
+            {
+                var header = string.Format("Client=\"{0}\", DeviceId=\"{1}\", Device=\"{2}\"", ClientName, DeviceId, DeviceName);
 
+                if (CurrentUserId.HasValue)
+                {
+                    header += string.Format(", UserId=\"{0}\"", CurrentUserId.Value);
+                }
+
+                return header;
+            }
+        }
+        
         /// <summary>
         /// Gets the API URL.
         /// </summary>
@@ -163,6 +187,14 @@ namespace MediaBrowser.ApiInteraction
         protected string GetApiUrl(string handler)
         {
             return GetApiUrl(handler, new QueryStringDictionary());
+        }
+
+        /// <summary>
+        /// Called when [current user changed].
+        /// </summary>
+        protected virtual void OnCurrentUserChanged()
+        {
+            
         }
 
         /// <summary>

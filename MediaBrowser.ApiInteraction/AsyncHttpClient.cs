@@ -60,7 +60,7 @@ namespace MediaBrowser.ApiInteraction
             cancellationToken.ThrowIfCancellationRequested();
 
             Logger.Info("Sending Http Get to {0}", url);
-
+            
             try
             {
                 var msg = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
@@ -225,18 +225,21 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Sets the authorization header that should be supplied on every request
         /// </summary>
-        /// <param name="header">The header.</param>
+        /// <param name="scheme">The scheme.</param>
+        /// <param name="paraneter">The paraneter.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void SetAuthorizationHeader(string header)
+        public void SetAuthorizationHeader(string scheme, string paraneter)
         {
-            if (string.IsNullOrEmpty(header))
-            {
-                HttpClient.DefaultRequestHeaders.Remove("Authorization");
-            }
-            else
-            {
-                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("MediaBrowser", header);
-            }
+            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, paraneter);
+        }
+
+        /// <summary>
+        /// Removes the authorization header.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void RemoveAuthorizationHeader()
+        {
+            HttpClient.DefaultRequestHeaders.Remove("Authorization");
         }
     }
 }

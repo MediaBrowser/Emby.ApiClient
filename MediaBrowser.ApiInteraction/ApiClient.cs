@@ -24,19 +24,31 @@ namespace MediaBrowser.ApiInteraction
     public class ApiClient : BaseApiClient
     {
         /// <summary>
-        /// Gets the HTTP client.
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
-        /// <value>The HTTP client.</value>
-        protected IAsyncHttpClient HttpClient { get; private set; }
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverApiPort">The server API port.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device id.</param>
+        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
+            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, clientName, deviceName, deviceId)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverApiPort">The server API port.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, IAsyncHttpClient httpClient)
-            : base(logger)
+        public ApiClient(ILogger logger, IAsyncHttpClient httpClient, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
+            : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId)
         {
             if (httpClient == null)
             {
@@ -44,32 +56,24 @@ namespace MediaBrowser.ApiInteraction
             }
 
             HttpClient = httpClient;
+
+            HttpClient.SetAuthorizationHeader(AuthorizationSchemeName, AuthorizationHeaderParameter);
         }
+        
+        /// <summary>
+        /// Gets the HTTP client.
+        /// </summary>
+        /// <value>The HTTP client.</value>
+        protected IAsyncHttpClient HttpClient { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// Called when [current user changed].
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        public ApiClient(ILogger logger)
-            : this(logger, new AsyncHttpClient(logger))
+        protected override void OnCurrentUserChanged()
         {
-        }
+            base.OnCurrentUserChanged();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        public ApiClient()
-            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()))
-        {
-        }
-
-        /// <summary>
-        /// Sets the authorization header.
-        /// </summary>
-        /// <param name="header">The header.</param>
-        protected override void SetAuthorizationHeader(string header)
-        {
-            HttpClient.SetAuthorizationHeader(header);
+            HttpClient.SetAuthorizationHeader(AuthorizationSchemeName, AuthorizationHeaderParameter);
         }
 
         /// <summary>
@@ -815,20 +819,6 @@ namespace MediaBrowser.ApiInteraction
             args["password"] = password;
 
             return PostAsync<EmptyRequestResult>(url, args);
-        }
-
-        /// <summary>
-        /// Uploads the user image async.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="image">The image.</param>
-        /// <returns>Task{RequestResult}.</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public Task UploadUserImageAsync(Guid userId, ImageType imageType, Stream image)
-        {
-            // Implement when needed
-            throw new NotImplementedException();
         }
 
         /// <summary>
