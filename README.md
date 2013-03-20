@@ -10,11 +10,8 @@ This is available as a Nuget package:
 Usage is very simple:
 
 ``` c#
-            var client = new ApiClient
-            {
-                ServerHostName = "localhost",
-                ServerApiPort = 8096
-            };
+
+            var client = new ApiClient("localhost", 8096, "My client name", "My device", "My device id");
 
             // Get all users
             var users = await client.GetAllUsersAsync();
