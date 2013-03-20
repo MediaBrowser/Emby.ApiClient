@@ -57,7 +57,7 @@ namespace MediaBrowser.ApiInteraction
 
             HttpClient = httpClient;
 
-            HttpClient.SetAuthorizationHeader(AuthorizationSchemeName, AuthorizationHeaderParameter);
+            HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }
         
         /// <summary>
@@ -73,7 +73,7 @@ namespace MediaBrowser.ApiInteraction
         {
             base.OnCurrentUserChanged();
 
-            HttpClient.SetAuthorizationHeader(AuthorizationSchemeName, AuthorizationHeaderParameter);
+            HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }
 
         /// <summary>

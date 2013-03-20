@@ -154,7 +154,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the name of the authorization scheme.
         /// </summary>
         /// <value>The name of the authorization scheme.</value>
-        protected string AuthorizationSchemeName
+        protected string AuthorizationScheme
         {
             get { return "MediaBrowser"; }
         }
@@ -163,7 +163,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the authorization header parameter.
         /// </summary>
         /// <value>The authorization header parameter.</value>
-        protected string AuthorizationHeaderParameter
+        protected string AuthorizationParameter
         {
             get
             {
