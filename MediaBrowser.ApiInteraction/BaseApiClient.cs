@@ -101,17 +101,39 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The type of the client.</value>
         public string ClientName { get; private set; }
 
+        private string _deviceName;
+
         /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName { get; set; }
+        public string DeviceName
+        {
+            get { return _deviceName; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    throw new NullReferenceException("DeviceName");
+                _deviceName = value;
+            }
+        }
+
+        private string _deviceId;
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId { get; set; }
+        public string DeviceId
+        {
+            get { return _deviceId; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    throw new NullReferenceException("DeviceId");
+                _deviceId = value;
+            }
+        }
 
         /// <summary>
         /// Gets the default data format to request from the server
