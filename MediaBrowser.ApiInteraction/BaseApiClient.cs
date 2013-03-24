@@ -105,13 +105,13 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName { get; private set; }
+        public string DeviceName { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId { get; private set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Gets the default data format to request from the server
