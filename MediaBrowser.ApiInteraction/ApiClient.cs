@@ -37,6 +37,16 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// </summary>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverApiPort">The server API port.</param>
+        public ApiClient(string serverHostName, int serverApiPort)
+            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, string.Empty, string.Empty, string.Empty)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>

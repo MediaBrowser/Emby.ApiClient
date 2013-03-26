@@ -59,18 +59,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("serverHostName");
             }
-            if (string.IsNullOrEmpty(clientName))
-            {
-                throw new ArgumentNullException("clientName");
-            }
-            if (string.IsNullOrEmpty(deviceName))
-            {
-                throw new ArgumentNullException("deviceName");
-            }
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException("deviceId");
-            }
 
             JsonSerializer = jsonSerializer;
             Logger = logger;
@@ -83,6 +71,18 @@ namespace MediaBrowser.ApiInteraction
             DeviceId = deviceId;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseApiClient"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverApiPort">The server API port.</param>
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort)
+            : this(logger, jsonSerializer, serverHostName, serverApiPort, string.Empty, string.Empty, string.Empty)
+        {
+        }
+        
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -101,39 +101,17 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The type of the client.</value>
         public string ClientName { get; private set; }
 
-        private string _deviceName;
-
         /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName
-        {
-            get { return _deviceName; }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                    throw new NullReferenceException("DeviceName");
-                _deviceName = value;
-            }
-        }
-
-        private string _deviceId;
+        public string DeviceName { get; private set; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId
-        {
-            get { return _deviceId; }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                    throw new NullReferenceException("DeviceId");
-                _deviceId = value;
-            }
-        }
+        public string DeviceId { get; private set; }
 
         /// <summary>
         /// Gets the default data format to request from the server
