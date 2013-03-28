@@ -784,9 +784,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        /// <returns>Task{UserItemDataDto}.</returns>
+        /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<UserItemDataDto> UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
+        public Task UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -804,7 +804,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating", dict);
 
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
