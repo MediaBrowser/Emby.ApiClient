@@ -15,6 +15,7 @@
             <group targetFramework=".NETFramework4.5">
                 <dependency id="MediaBrowser.Common" version="3.0.63" />
                 <dependency id="Newtonsoft.Json" version="4.5.11" />
+                <dependency id="Alchemy" version="2.2.1" />
             </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
                 <dependency id="MediaBrowser.Common" version="3.0.63" />
