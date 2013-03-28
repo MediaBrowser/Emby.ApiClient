@@ -82,7 +82,7 @@ namespace MediaBrowser.ApiInteraction
             : this(logger, jsonSerializer, serverHostName, serverApiPort, string.Empty, string.Empty, string.Empty)
         {
         }
-        
+
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -99,19 +99,19 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the type of the client.
         /// </summary>
         /// <value>The type of the client.</value>
-        public string ClientName { get; private set; }
+        public string ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName { get; private set; }
+        public string DeviceName { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId { get; private set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Gets the default data format to request from the server
@@ -177,7 +177,7 @@ namespace MediaBrowser.ApiInteraction
                 return header;
             }
         }
-        
+
         /// <summary>
         /// Gets the API URL.
         /// </summary>
@@ -194,7 +194,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         protected virtual void OnCurrentUserChanged()
         {
-            
+
         }
 
         /// <summary>
@@ -795,6 +795,9 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("AudioStreamIndex", options.AudioStreamIndex);
             queryParams.AddIfNotNull("VideoStreamIndex", options.VideoStreamIndex);
             queryParams.AddIfNotNull("SubtitleStreamIndex", options.SubtitleStreamIndex);
+
+            queryParams.AddIfNotNullOrEmpty("Profile", options.Profile);
+            queryParams.AddIfNotNullOrEmpty("Level", options.Level);
 
             return GetMediaStreamUrl(handler, options, queryParams);
         }
