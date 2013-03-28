@@ -50,6 +50,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\ApiWebSocket.cs">
       <Link>WebSocket\ApiWebSocket.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\BaseApiWebSocket.cs">
+      <Link>WebSocket\BaseApiWebSocket.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\EventArgs.cs">
       <Link>WebSocket\EventArgs.cs</Link>
     </Compile>

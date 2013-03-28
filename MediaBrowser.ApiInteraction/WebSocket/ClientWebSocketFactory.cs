@@ -22,7 +22,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
             catch (NotSupportedException)
             {
-                return new AlchemyClientWebSocket(logManager);
+                return new WebSocket4NetClientWebSocket();
             }
         }
     }

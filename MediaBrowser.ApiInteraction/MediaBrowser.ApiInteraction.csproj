@@ -32,9 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Alchemy">
-      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
-    </Reference>
     <Reference Include="MediaBrowser.Common, Version=3.0.4835.31058, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.Common.3.0.63\lib\net45\MediaBrowser.Common.dll</HintPath>
@@ -55,18 +52,21 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebSocket4Net">
+      <HintPath>..\packages\WebSocket4Net.0.8\lib\net40\WebSocket4Net.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="WebSocket\AlchemyClientWebSocket.cs" />
     <Compile Include="AsyncHttpClient.cs" />
     <Compile Include="AuthenticationExtensions.cs" />
     <Compile Include="BaseApiClient.cs" />
     <Compile Include="ApiClient.cs" />
     <Compile Include="IAsyncHttpClient.cs" />
     <Compile Include="WebSocket\ApiWebSocket.cs" />
+    <Compile Include="WebSocket\BaseApiWebSocket.cs" />
     <Compile Include="WebSocket\ClientWebSocketFactory.cs" />
     <Compile Include="WebSocket\EventArgs.cs" />
     <Compile Include="WebSocket\IClientWebSocket.cs" />
@@ -76,6 +76,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializationFormats.cs" />
     <Compile Include="ServerLocator.cs" />
+    <Compile Include="WebSocket\WebSocket4NetClientWebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
