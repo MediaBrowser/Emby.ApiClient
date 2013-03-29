@@ -27,9 +27,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <param name="serverHostName">Name of the server host.</param>
         /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, CancellationToken cancellationToken)
+        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, CancellationToken cancellationToken)
         {
             var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
 
@@ -40,6 +42,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 Logger.Info("Connected to {0}", url);
 
                 _webSocket.OnReceiveDelegate = OnMessageReceived;
+
+                await SendAsync(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -48,27 +52,38 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
-        /// Queues the event if not null.
+        /// Sends the async.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="handler">The handler.</param>
-        /// <param name="sender">The sender.</param>
-        /// <param name="args">The args.</param>
-        protected override void QueueEventIfNotNull<T>(EventHandler<T> handler, object sender, T args)
+        /// <param name="messageName">Name of the message.</param>
+        /// <param name="data">The data.</param>
+        /// <returns>Task.</returns>
+        public Task SendAsync<T>(string messageName, T data)
         {
-            if (handler != null)
+            return SendAsync(messageName, data, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Sends the async.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="messageName">Name of the message.</param>
+        /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task SendAsync<T>(string messageName, T data, CancellationToken cancellationToken)
+        {
+            var bytes = GetMessageBytes(messageName, data);
+
+            try
             {
-                Task.Factory.StartNew(() =>
-                {
-                    try
-                    {
-                        handler(sender, args);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error in event handler", ex);
-                    }
-                });
+                await _webSocket.SendAsync(bytes, Model.Net.WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error sending web socket message", ex);
+
+                throw;
             }
         }
     }

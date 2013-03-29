@@ -14,7 +14,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// <summary>
     /// Class ApiWebSocket
     /// </summary>
-    public abstract  class BaseApiWebSocket
+    public abstract class BaseApiWebSocket
     {
         /// <summary>
         /// The _logger
@@ -71,6 +71,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<EventArgs> RestartRequired;
 
         /// <summary>
+        /// The identification message name
+        /// </summary>
+        protected const string IdentificationMessageName = "Identity";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -91,7 +96,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             return string.Format("ws://{0}:{1}/mediabrowser", serverHostName, serverWebSocketPort);
         }
-        
+
         /// <summary>
         /// Called when [message received].
         /// </summary>
@@ -106,74 +111,74 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             if (string.Equals(message.MessageType, "LibraryChanged"))
             {
-                QueueEventIfNotNull(LibraryChanged, this, new LibraryChangedEventArgs
+                FireEvent(LibraryChanged, this, new LibraryChangedEventArgs
                 {
                     UpdateInfo = _jsonSerializer.DeserializeFromString<LibraryUpdateInfo>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "RestartRequired"))
             {
-                QueueEventIfNotNull(RestartRequired, this, EventArgs.Empty);
+                FireEvent(RestartRequired, this, EventArgs.Empty);
             }
             else if (string.Equals(message.MessageType, "UserDeleted"))
             {
-                QueueEventIfNotNull(UserDeleted, this, new UserDeletedEventArgs
+                FireEvent(UserDeleted, this, new UserDeletedEventArgs
                 {
                     Id = message.Data
                 });
             }
             else if (string.Equals(message.MessageType, "ScheduledTaskStarted"))
             {
-                QueueEventIfNotNull(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
+                FireEvent(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
                 {
                     Name = message.Data
                 });
             }
             else if (string.Equals(message.MessageType, "ScheduledTaskEnded"))
             {
-                QueueEventIfNotNull(ScheduledTaskEnded, this, new ScheduledTaskEndedEventArgs
+                FireEvent(ScheduledTaskEnded, this, new ScheduledTaskEndedEventArgs
                 {
                     Result = _jsonSerializer.DeserializeFromString<TaskResult>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstalling"))
             {
-                QueueEventIfNotNull(PackageInstalling, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstalling, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationFailed"))
             {
-                QueueEventIfNotNull(PackageInstallationFailed, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationFailed, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationCompleted"))
             {
-                QueueEventIfNotNull(PackageInstallationCompleted, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationCompleted, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationCancelled"))
             {
-                QueueEventIfNotNull(PackageInstallationCancelled, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationCancelled, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "UserUpdated"))
             {
-                QueueEventIfNotNull(UserUpdated, this, new UserUpdatedEventArgs
+                FireEvent(UserUpdated, this, new UserUpdatedEventArgs
                 {
                     User = _jsonSerializer.DeserializeFromString<UserDto>(message.Data)
                 });
             }
             else if (string.Equals(message.MessageType, "PluginUninstalled"))
             {
-                QueueEventIfNotNull(PluginUninstalled, this, new PluginUninstallEventArgs
+                FireEvent(PluginUninstalled, this, new PluginUninstallEventArgs
                 {
                     PluginInfo = _jsonSerializer.DeserializeFromString<PluginInfo>(message.Data)
                 });
@@ -187,7 +192,45 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        protected abstract void QueueEventIfNotNull<T>(EventHandler<T> handler, object sender, T args)
-            where T : EventArgs;
+        private void FireEvent<T>(EventHandler<T> handler, object sender, T args)
+            where T : EventArgs
+        {
+            if (handler != null)
+            {
+                try
+                {
+                    handler(sender, args);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in event handler", ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the message bytes.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="messageName">Name of the message.</param>
+        /// <param name="data">The data.</param>
+        /// <returns>System.Byte[][].</returns>
+        protected byte[] GetMessageBytes<T>(string messageName, T data)
+        {
+            var msg = new WebSocketMessage<T> { MessageType = messageName, Data = data };
+
+            return _jsonSerializer.SerializeToBytes(msg);
+        }
+
+        /// <summary>
+        /// Gets the identification message.
+        /// </summary>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <returns>System.String.</returns>
+        protected string GetIdentificationMessage(string clientName, string deviceId)
+        {
+            return clientName + "|" + deviceId;
+        }
     }
 }
