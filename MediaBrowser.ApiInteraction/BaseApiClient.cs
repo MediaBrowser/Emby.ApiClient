@@ -261,10 +261,19 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
             }
+            if (query.VideoFormats != null)
+            {
+                dict.Add("VideoFormats", query.VideoFormats.Select(f => f.ToString()));
+            }
+            if (query.VideoTypes != null)
+            {
+                dict.Add("VideoTypes", query.VideoTypes.Select(f => f.ToString()));
+            }
 
             dict.Add("recursive", query.Recursive);
 
-            dict.AddIfNotNull("genres", query.Genres);
+            dict.AddIfNotNull("MediaTypes", query.MediaTypes);
+            dict.AddIfNotNull("Genres", query.Genres);
             dict.AddIfNotNull("Ids", query.Ids);
             dict.AddIfNotNull("studios", query.Studios);
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
