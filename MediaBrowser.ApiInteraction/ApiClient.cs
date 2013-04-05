@@ -878,13 +878,13 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        public async Task<BaseItemDto> GetDisplayPreferences(string id)
+        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id)
         {
             var url = GetApiUrl("DisplayPreferences/" + id);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<BaseItemDto>(stream);
+                return DeserializeFromStream<DisplayPreferences>(stream);
             }
         }
 
