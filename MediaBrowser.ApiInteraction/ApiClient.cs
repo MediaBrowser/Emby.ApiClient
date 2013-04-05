@@ -895,19 +895,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task UpdateDisplayPreferencesAsync(string id, DisplayPreferences displayPreferences)
+        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-
             if (displayPreferences == null)
             {
                 throw new ArgumentNullException("displayPreferences");
             }
 
-            var url = GetApiUrl("DisplayPreferences/" + id);
+            var url = GetApiUrl("DisplayPreferences/" + displayPreferences.Id);
 
             return PostAsync<DisplayPreferences, EmptyRequestResult>(url, displayPreferences);
         }
