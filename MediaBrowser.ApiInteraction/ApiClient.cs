@@ -874,23 +874,32 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the display preferences.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>Task{BaseItemDto}.</returns>
+        public async Task<BaseItemDto> GetDisplayPreferences(string id)
+        {
+            var url = GetApiUrl("DisplayPreferences/" + id);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto>(stream);
+            }
+        }
+
+        /// <summary>
         /// Updates display preferences for a user
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="itemId">The item id.</param>
+        /// <param name="id">The id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task UpdateDisplayPreferencesAsync(Guid userId, string itemId, DisplayPreferences displayPreferences)
+        public Task UpdateDisplayPreferencesAsync(string id, DisplayPreferences displayPreferences)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentNullException("userId");
-            }
-
-            if (string.IsNullOrEmpty(itemId))
-            {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException("id");
             }
 
             if (displayPreferences == null)
@@ -898,7 +907,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("displayPreferences");
             }
 
-            var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/DisplayPreferences");
+            var url = GetApiUrl("DisplayPreferences/" + id);
 
             return PostAsync<DisplayPreferences, EmptyRequestResult>(url, displayPreferences);
         }
