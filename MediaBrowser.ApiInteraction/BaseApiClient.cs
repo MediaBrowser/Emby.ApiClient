@@ -23,12 +23,6 @@ namespace MediaBrowser.ApiInteraction
         protected ILogger Logger { get; private set; }
 
         /// <summary>
-        /// Gets the protobuf serializer.
-        /// </summary>
-        /// <value>The protobuf serializer.</value>
-        public IProtobufSerializer ProtobufSerializer { get; set; }
-
-        /// <summary>
         /// Gets the json serializer.
         /// </summary>
         /// <value>The json serializer.</value>
@@ -62,7 +56,6 @@ namespace MediaBrowser.ApiInteraction
 
             JsonSerializer = jsonSerializer;
             Logger = logger;
-            SerializationFormat = SerializationFormats.Json;
 
             ServerHostName = serverHostName;
             ServerApiPort = serverApiPort;
@@ -112,12 +105,6 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; set; }
-
-        /// <summary>
-        /// Gets the default data format to request from the server
-        /// </summary>
-        /// <value>The serialization format.</value>
-        public SerializationFormats SerializationFormat { get; set; }
 
         /// <summary>
         /// The _current user id
@@ -247,9 +234,9 @@ namespace MediaBrowser.ApiInteraction
                 dict["sortOrder"] = query.SortOrder.ToString();
             }
 
-            if (query.SeriesStatus.HasValue)
+            if (query.SeriesStatuses != null)
             {
-                dict["SeriesStatus"] = query.SeriesStatus.ToString();
+                dict.Add("SeriesStatuses", query.SeriesStatuses.Select(f => f.ToString()));
             }
             
             if (query.Fields != null)
@@ -866,7 +853,7 @@ namespace MediaBrowser.ApiInteraction
         protected T DeserializeFromStream<T>(Stream stream)
             where T : class
         {
-            return (T)DeserializeFromStream(stream, typeof(T), SerializationFormat);
+            return (T)DeserializeFromStream(stream, typeof(T));
         }
 
         /// <summary>
@@ -877,18 +864,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="format">The format.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected object DeserializeFromStream(Stream stream, Type type, SerializationFormats format)
+        protected object DeserializeFromStream(Stream stream, Type type)
         {
-            if (format == SerializationFormats.Protobuf)
-            {
-                return ProtobufSerializer.DeserializeFromStream(stream, type);
-            }
-            if (format == SerializationFormats.Json)
-            {
-                return JsonSerializer.DeserializeFromStream(stream, type);
-            }
-
-            throw new NotImplementedException();
+            return JsonSerializer.DeserializeFromStream(stream, type);
         }
 
         /// <summary>

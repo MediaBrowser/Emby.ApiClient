@@ -914,25 +914,11 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="args">The args.</param>
         /// <returns>Task{``0}.</returns>
-        public Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
+        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
             where T : class
         {
-            return PostAsync<T>(url, args, SerializationFormat);
-        }
-
-        /// <summary>
-        /// Posts a set of data to a url, and deserializes the return stream into T
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="url">The URL.</param>
-        /// <param name="args">The args.</param>
-        /// <param name="serializationFormat">The serialization format.</param>
-        /// <returns>Task{``0}.</returns>
-        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, SerializationFormats serializationFormat)
-            where T : class
-        {
-            url = AddDataFormat(url, serializationFormat);
-
+            url = AddDataFormat(url);
+            
             // Create the post body
             var strings = args.Keys.Select(key => string.Format("{0}={1}", key, args[key]));
             var postContent = string.Join("&", strings.ToArray());
@@ -953,26 +939,11 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="obj">The obj.</param>
         /// <returns>Task{``1}.</returns>
-        private Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj)
+        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj)
             where TOutputType : class
         {
-            return PostAsync<TInputType, TOutputType>(url, obj, SerializationFormat);
-        }
-
-        /// <summary>
-        /// Posts an object of type TInputType to a given url, and deserializes the response into an object of type TOutputType
-        /// </summary>
-        /// <typeparam name="TInputType">The type of the T input type.</typeparam>
-        /// <typeparam name="TOutputType">The type of the T output type.</typeparam>
-        /// <param name="url">The URL.</param>
-        /// <param name="obj">The obj.</param>
-        /// <param name="serializationFormat">The serialization format.</param>
-        /// <returns>Task{``1}.</returns>
-        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj, SerializationFormats serializationFormat)
-            where TOutputType : class
-        {
-            url = AddDataFormat(url, serializationFormat);
-
+            url = AddDataFormat(url);
+            
             const string contentType = "application/json";
 
             var postContent = SerializeToJson(obj);
@@ -990,18 +961,7 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>Task{Stream}.</returns>
         public Task<Stream> GetSerializedStreamAsync(string url)
         {
-            return GetSerializedStreamAsync(url, SerializationFormat);
-        }
-
-        /// <summary>
-        /// This is a helper around getting a stream from the server that contains serialized data
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="serializationFormat">The serialization format.</param>
-        /// <returns>Task{Stream}.</returns>
-        public Task<Stream> GetSerializedStreamAsync(string url, SerializationFormats serializationFormat)
-        {
-            url = AddDataFormat(url, serializationFormat);
+            url = AddDataFormat(url);
 
             return HttpClient.GetAsync(url, CancellationToken.None);
         }
@@ -1012,9 +972,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="serializationFormat">The serialization format.</param>
         /// <returns>System.String.</returns>
-        private string AddDataFormat(string url, SerializationFormats serializationFormat)
+        private string AddDataFormat(string url)
         {
-            var format = serializationFormat == SerializationFormats.Protobuf ? "x-protobuf" : serializationFormat.ToString();
+            const string format = "json";
 
             if (url.IndexOf('?') == -1)
             {
