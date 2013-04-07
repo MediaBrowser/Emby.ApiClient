@@ -223,10 +223,9 @@ namespace MediaBrowser.ApiInteraction
         /// Creates a url to return a list of items
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="listType">The type of list to retrieve.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        protected string GetItemListUrl(ItemQuery query, string listType = null)
+        protected string GetItemListUrl(ItemQuery query)
         {
             if (query == null)
             {
@@ -235,20 +234,24 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary { };
 
-            dict.AddIfNotNullOrEmpty("listtype", listType);
             dict.AddIfNotNullOrEmpty("ParentId", query.ParentId);
 
-            dict.AddIfNotNull("startindex", query.StartIndex);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
 
-            dict.AddIfNotNull("limit", query.Limit);
+            dict.AddIfNotNull("Limit", query.Limit);
 
-            dict.AddIfNotNull("sortBy", query.SortBy);
+            dict.AddIfNotNull("SortBy", query.SortBy);
 
             if (query.SortOrder.HasValue)
             {
                 dict["sortOrder"] = query.SortOrder.ToString();
             }
 
+            if (query.SeriesStatus.HasValue)
+            {
+                dict["SeriesStatus"] = query.SeriesStatus.ToString();
+            }
+            
             if (query.Fields != null)
             {
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
@@ -269,22 +272,26 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("VideoTypes", query.VideoTypes.Select(f => f.ToString()));
             }
+            if (query.AirDays != null)
+            {
+                dict.Add("AirDays", query.AirDays.Select(f => f.ToString()));
+            }
 
             dict.Add("recursive", query.Recursive);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres);
             dict.AddIfNotNull("Ids", query.Ids);
-            dict.AddIfNotNull("studios", query.Studios);
+            dict.AddIfNotNull("Studios", query.Studios);
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
 
-            dict.AddIfNotNullOrEmpty("person", query.Person);
-            dict.AddIfNotNullOrEmpty("personType", query.PersonType);
+            dict.AddIfNotNullOrEmpty("Person", query.Person);
+            dict.AddIfNotNullOrEmpty("PersonType", query.PersonType);
 
-            dict.AddIfNotNull("years", query.Years);
+            dict.AddIfNotNull("Years", query.Years);
 
-            dict.AddIfNotNullOrEmpty("indexBy", query.IndexBy);
+            dict.AddIfNotNullOrEmpty("IndexBy", query.IndexBy);
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
