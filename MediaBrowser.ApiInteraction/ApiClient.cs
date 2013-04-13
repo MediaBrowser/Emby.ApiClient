@@ -69,7 +69,7 @@ namespace MediaBrowser.ApiInteraction
 
             HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }
-        
+
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -109,14 +109,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<BaseItemDto> GetItemAsync(string id, Guid userId)
+        public async Task<BaseItemDto> GetItemAsync(string id, string userId)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -136,14 +136,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{System.String[]}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<string[]> GetIntrosAsync(string itemId, Guid userId)
+        public async Task<string[]> GetIntrosAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -162,9 +162,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto> GetRootFolderAsync(Guid userId)
+        public async Task<BaseItemDto> GetRootFolderAsync(string userId)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -463,9 +463,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="id">The id.</param>
         /// <returns>Task{UserDto}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<UserDto> GetUserAsync(Guid id)
+        public async Task<UserDto> GetUserAsync(string id)
         {
-            if (id == Guid.Empty)
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
@@ -540,9 +540,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<BaseItemDto[]> GetLocalTrailersAsync(Guid userId, string itemId)
+        public async Task<BaseItemDto[]> GetLocalTrailersAsync(string userId, string itemId)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -566,9 +566,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto[]> GetSpecialFeaturesAsync(Guid userId, string itemId)
+        public async Task<BaseItemDto[]> GetSpecialFeaturesAsync(string userId, string itemId)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -624,13 +624,13 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdatePlayedStatusAsync(string itemId, Guid userId, bool wasPlayed)
+        public Task UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -653,13 +653,13 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdateFavoriteStatusAsync(string itemId, Guid userId, bool isFavorite)
+        public Task UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -681,14 +681,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackStartAsync(string itemId, Guid userId)
+        public Task ReportPlaybackStartAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -706,14 +706,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackProgressAsync(string itemId, Guid userId, long? positionTicks)
+        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -734,14 +734,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="positionTicks">The position ticks.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackStoppedAsync(string itemId, Guid userId, long? positionTicks)
+        public Task ReportPlaybackStoppedAsync(string itemId, string userId, long? positionTicks)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -761,14 +761,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ClearUserItemRatingAsync(string itemId, Guid userId)
+        public Task ClearUserItemRatingAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -786,14 +786,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdateUserItemRatingAsync(string itemId, Guid userId, bool likes)
+        public Task UpdateUserItemRatingAsync(string itemId, string userId, bool likes)
         {
             if (string.IsNullOrEmpty(itemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -814,9 +814,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task AuthenticateUserAsync(Guid userId, byte[] sha1Hash)
+        public Task AuthenticateUserAsync(string userId, byte[] sha1Hash)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
@@ -918,7 +918,7 @@ namespace MediaBrowser.ApiInteraction
             where T : class
         {
             url = AddDataFormat(url);
-            
+
             // Create the post body
             var strings = args.Keys.Select(key => string.Format("{0}={1}", key, args[key]));
             var postContent = string.Join("&", strings.ToArray());
@@ -943,7 +943,7 @@ namespace MediaBrowser.ApiInteraction
             where TOutputType : class
         {
             url = AddDataFormat(url);
-            
+
             const string contentType = "application/json";
 
             var postContent = SerializeToJson(obj);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,7 +18,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="password">The password.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public static Task AuthenticateUserAsync(this ApiClient apiClient, Guid userId, string password)
+        public static Task AuthenticateUserAsync(this ApiClient apiClient, string userId, string password)
         {
             using (var provider = SHA1.Create())
             {

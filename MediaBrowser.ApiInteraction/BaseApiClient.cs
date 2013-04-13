@@ -109,13 +109,13 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// The _current user id
         /// </summary>
-        private Guid? _currentUserId;
+        private string _currentUserId;
 
         /// <summary>
         /// Gets or sets the current user id.
         /// </summary>
         /// <value>The current user id.</value>
-        public virtual Guid? CurrentUserId
+        public virtual string CurrentUserId
         {
             get { return _currentUserId; }
             set
@@ -156,9 +156,9 @@ namespace MediaBrowser.ApiInteraction
             {
                 var header = string.Format("Client=\"{0}\", DeviceId=\"{1}\", Device=\"{2}\"", ClientName, DeviceId, DeviceName);
 
-                if (CurrentUserId.HasValue)
+                if (string.IsNullOrEmpty(CurrentUserId))
                 {
-                    header += string.Format(", UserId=\"{0}\"", CurrentUserId.Value);
+                    header += string.Format(", UserId=\"{0}\"", CurrentUserId);
                 }
 
                 return header;
