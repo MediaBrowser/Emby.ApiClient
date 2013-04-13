@@ -220,7 +220,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="System.ArgumentNullException">userId</exception>
         public async Task<ItemsResult> GetAllPeopleAsync(ItemsByNameQuery query)
         {
-            if (query.UserId == Guid.Empty)
+            if (string.IsNullOrEmpty(query.UserId))
             {
                 throw new ArgumentNullException("userId");
             }

@@ -407,9 +407,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public string GetUserImageUrl(Guid userId, ImageOptions options)
+        public string GetUserImageUrl(string userId, ImageOptions options)
         {
-            if (userId == Guid.Empty)
+            if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
             }
