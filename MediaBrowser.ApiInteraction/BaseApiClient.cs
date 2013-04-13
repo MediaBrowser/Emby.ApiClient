@@ -274,7 +274,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
 
             dict.AddIfNotNullOrEmpty("Person", query.Person);
-            dict.AddIfNotNullOrEmpty("PersonType", query.PersonType);
+            dict.AddIfNotNull("PersonTypes", query.PersonTypes);
 
             dict.AddIfNotNull("Years", query.Years);
 
