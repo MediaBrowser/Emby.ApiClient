@@ -465,9 +465,35 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            options.Tag = item.ImageTags[ImageType.Primary];
+            options.Tag = GetImageTag(item, options);
 
             return GetPersonImageUrl(item.Name, options);
+        }
+
+        /// <summary>
+        /// Gets the image tag.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>Guid.</returns>
+        private Guid GetImageTag(BaseItemDto item, ImageOptions options)
+        {
+            if (options.ImageType == ImageType.Backdrop)
+            {
+                return item.BackdropImageTags[options.ImageIndex ?? 0];
+            }
+
+            if (options.ImageType == ImageType.Screenshot)
+            {
+                //return item.scree[options.ImageIndex ?? 0];
+            }
+
+            if (options.ImageType == ImageType.Chapter)
+            {
+                return item.Chapters[options.ImageIndex ?? 0].ImageTag.Value;
+            }
+
+            return item.ImageTags[options.ImageType];
         }
 
         /// <summary>
@@ -508,7 +534,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            options.Tag = item.ImageTags[ImageType.Primary];
+            options.Tag = GetImageTag(item, options);
 
             return GetYearImageUrl(int.Parse(item.Name), options);
         }
@@ -545,7 +571,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            options.Tag = item.ImageTags[ImageType.Primary];
+            options.Tag = GetImageTag(item, options);
 
             return GetGenreImageUrl(item.Name, options);
         }
@@ -588,7 +614,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            options.Tag = item.ImageTags[ImageType.Primary];
+            options.Tag = GetImageTag(item, options);
 
             return GetStudioImageUrl(item.Name, options);
         }
@@ -612,6 +638,53 @@ namespace MediaBrowser.ApiInteraction
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
 
+        /// <summary>
+        /// Gets the artist image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// item
+        /// or
+        /// options
+        /// </exception>
+        public string GetArtistImageUrl(BaseItemDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = GetImageTag(item, options);
+
+            return GetArtistImageUrl(item.Name, options);
+        }
+
+        /// <summary>
+        /// Gets the artist image URL.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetArtistImageUrl(string name, ImageOptions options)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var url = "Artists/" + name + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+        
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
         /// </summary>
