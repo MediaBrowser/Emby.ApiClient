@@ -65,7 +65,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApiClient"/> class.
+        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
@@ -238,7 +238,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("SeriesStatuses", query.SeriesStatuses.Select(f => f.ToString()));
             }
-            
+
             if (query.Fields != null)
             {
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
@@ -264,6 +264,9 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("AirDays", query.AirDays.Select(f => f.ToString()));
             }
 
+            dict.AddIfNotNullOrEmpty("MinOfficialRating", query.MinOfficialRating);
+            dict.AddIfNotNullOrEmpty("MaxOfficialRating", query.MaxOfficialRating);
+
             dict.Add("recursive", query.Recursive);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
@@ -275,7 +278,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNullOrEmpty("MinOfficialRating", query.MinOfficialRating);
             dict.AddIfNotNullOrEmpty("MaxOfficialRating", query.MaxOfficialRating);
-            
+
             dict.AddIfNotNullOrEmpty("Person", query.Person);
             dict.AddIfNotNull("PersonTypes", query.PersonTypes);
 
@@ -285,6 +288,50 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
+        }
+
+        /// <summary>
+        /// Gets the item by name list URL.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="query">The query.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        protected string GetItemByNameListUrl(string type, ItemsByNameQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("ParentId", query.ParentId);
+
+            dict.Add("UserId", query.UserId);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            dict.AddIfNotNull("SortBy", query.SortBy);
+
+            if (query.SortOrder.HasValue)
+            {
+                dict["sortOrder"] = query.SortOrder.ToString();
+            }
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            dict.Add("recursive", query.Recursive);
+
+            dict.AddIfNotNull("MediaTypes", query.MediaTypes);
+            dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
+            dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
+
+            return GetApiUrl(type, dict);
         }
 
         /// <summary>
@@ -644,11 +691,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// item
+        /// <exception cref="System.ArgumentNullException">item
         /// or
-        /// options
-        /// </exception>
+        /// options</exception>
         public string GetArtistImageUrl(BaseItemDto item, ImageOptions options)
         {
             if (item == null)
@@ -684,7 +729,7 @@ namespace MediaBrowser.ApiInteraction
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
-        
+
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
         /// </summary>
@@ -937,7 +982,6 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <param name="type">The type.</param>
-        /// <param name="format">The format.</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="System.NotImplementedException"></exception>
         protected object DeserializeFromStream(Stream stream, Type type)

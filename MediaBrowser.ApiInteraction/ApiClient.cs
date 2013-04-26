@@ -213,37 +213,40 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets all People
+        /// Gets the people async.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<ItemsResult> GetAllPeopleAsync(ItemsByNameQuery query)
+        public async Task<ItemsResult> GetPeopleAsync(PersonsQuery query)
         {
-            if (string.IsNullOrEmpty(query.UserId))
+            var url = GetItemByNameListUrl("Persons", query);
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("personTypes", query.PersonTypes);
+
+            url = GetApiUrl(url, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                throw new ArgumentNullException("userId");
+                return DeserializeFromStream<ItemsResult>(stream);
             }
+        }
+
+        /// <summary>
+        /// Gets the artists.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">userId</exception>
+        public async Task<ItemsResult> GetArtistsAsync(ArtistsQuery query)
+        {
+            var url = GetItemByNameListUrl("Artists", query);
 
             var dict = new QueryStringDictionary();
 
-            dict.AddIfNotNull("startIndex", query.StartIndex);
-            dict.AddIfNotNull("limit", query.Limit);
+            dict.AddIfNotNull("IsOnTour", query.IsOnTour);
 
-            dict.Add("recursive", query.Recursive);
-
-            if (query.SortOrder.HasValue)
-            {
-                dict["sortOrder"] = query.SortOrder.Value.ToString();
-            }
-            if (query.Fields != null)
-            {
-                dict.Add("fields", query.Fields.Select(f => f.ToString()));
-            }
-
-            dict.AddIfNotNull("personTypes", query.PersonTypes);
-
-            var url = string.IsNullOrEmpty(query.ParentId) ? "Users/" + query.UserId + "/Items/Root/Persons" : "Users/" + query.UserId + "/Items/" + query.ParentId + "/Persons";
             url = GetApiUrl(url, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
