@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
@@ -89,5 +90,41 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <value>The update info.</value>
         public LibraryUpdateInfo UpdateInfo { get; set; }
+    }
+
+    /// <summary>
+    /// Class BrowseRequestEventArgs
+    /// </summary>
+    public class BrowseRequestEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        /// <value>The request.</value>
+        public BrowseRequest Request { get; set; }
+    }
+
+    /// <summary>
+    /// Class PlayRequestEventArgs
+    /// </summary>
+    public class PlayRequestEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        /// <value>The request.</value>
+        public PlayRequest Request { get; set; }
+    }
+
+    /// <summary>
+    /// Class PlaystateRequestEventArgs
+    /// </summary>
+    public class PlaystateRequestEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        /// <value>The request.</value>
+        public PlaystateRequest Request { get; set; }
     }
 }
