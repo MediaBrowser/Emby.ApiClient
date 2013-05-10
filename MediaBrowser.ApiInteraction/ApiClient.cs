@@ -707,9 +707,10 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks)
+        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -723,6 +724,7 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("positionTicks", positionTicks);
+            dict.Add("isPaused", isPaused);
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
 
