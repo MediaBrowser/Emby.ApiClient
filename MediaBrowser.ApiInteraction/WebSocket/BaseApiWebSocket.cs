@@ -118,7 +118,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 FireEvent(LibraryChanged, this, new LibraryChangedEventArgs
                 {
-                    UpdateInfo = _jsonSerializer.DeserializeFromString<LibraryUpdateInfo>(message.Data)
+                    UpdateInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<LibraryUpdateInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "RestartRequired"))
@@ -143,70 +143,70 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 FireEvent(ScheduledTaskEnded, this, new ScheduledTaskEndedEventArgs
                 {
-                    Result = _jsonSerializer.DeserializeFromString<TaskResult>(message.Data)
+                    Result = _jsonSerializer.DeserializeFromString<WebSocketMessage<TaskResult>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstalling"))
             {
                 FireEvent(PackageInstalling, this, new PackageInstallationEventArgs
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
+                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationFailed"))
             {
                 FireEvent(PackageInstallationFailed, this, new PackageInstallationEventArgs
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
+                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationCompleted"))
             {
                 FireEvent(PackageInstallationCompleted, this, new PackageInstallationEventArgs
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
+                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "PackageInstallationCancelled"))
             {
                 FireEvent(PackageInstallationCancelled, this, new PackageInstallationEventArgs
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<InstallationInfo>(message.Data)
+                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "UserUpdated"))
             {
                 FireEvent(UserUpdated, this, new UserUpdatedEventArgs
                 {
-                    User = _jsonSerializer.DeserializeFromString<UserDto>(message.Data)
+                    User = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDto>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "PluginUninstalled"))
             {
                 FireEvent(PluginUninstalled, this, new PluginUninstallEventArgs
                 {
-                    PluginInfo = _jsonSerializer.DeserializeFromString<PluginInfo>(message.Data)
+                    PluginInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<PluginInfo>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "Browse"))
             {
                 FireEvent(BrowseCommand, this, new BrowseRequestEventArgs
                 {
-                    Request = _jsonSerializer.DeserializeFromString<BrowseRequest>(message.Data)
+                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<BrowseRequest>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "Play"))
             {
                 FireEvent(PlayCommand, this, new PlayRequestEventArgs
                 {
-                    Request = _jsonSerializer.DeserializeFromString<PlayRequest>(message.Data)
+                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlayRequest>>(json).Data
                 });
             }
             else if (string.Equals(message.MessageType, "UpdatePlaystate"))
             {
                 FireEvent(PlaystateCommand, this, new PlaystateRequestEventArgs
                 {
-                    Request = _jsonSerializer.DeserializeFromString<PlaystateRequest>(message.Data)
+                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlaystateRequest>>(json).Data
                 });
             }
         }
