@@ -226,11 +226,18 @@ namespace MediaBrowser.ApiInteraction
         /// Sets the authorization header that should be supplied on every request
         /// </summary>
         /// <param name="scheme">The scheme.</param>
-        /// <param name="paraneter">The paraneter.</param>
+        /// <param name="parameter">The parameter.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void SetAuthorizationHeader(string scheme, string paraneter)
+        public void SetAuthorizationHeader(string scheme, string parameter)
         {
-            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, paraneter);
+            if (string.IsNullOrEmpty(parameter))
+            {
+                HttpClient.DefaultRequestHeaders.Remove("Authorization");
+            }
+            else
+            {
+                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, parameter);
+            }
         }
 
         /// <summary>

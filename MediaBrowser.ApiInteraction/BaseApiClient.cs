@@ -138,6 +138,16 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the name of the slug.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        protected string GetSlugName(string name)
+        {
+            return name.Replace('/', '-').Replace('?', '-');
+        }
+
+        /// <summary>
         /// Gets the name of the authorization scheme.
         /// </summary>
         /// <value>The name of the authorization scheme.</value>
@@ -154,9 +164,14 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
+                if (string.IsNullOrEmpty(ClientName) && string.IsNullOrEmpty(DeviceId) && string.IsNullOrEmpty(DeviceName))
+                {
+                    return string.Empty;
+                }
+
                 var header = string.Format("Client=\"{0}\", DeviceId=\"{1}\", Device=\"{2}\"", ClientName, DeviceId, DeviceName);
 
-                if (string.IsNullOrEmpty(CurrentUserId))
+                if (!string.IsNullOrEmpty(CurrentUserId))
                 {
                     header += string.Format(", UserId=\"{0}\"", CurrentUserId);
                 }
@@ -557,7 +572,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = "Persons/" + name + "/Images/" + options.ImageType;
+            var url = "Persons/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
@@ -637,7 +652,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = "Genres/" + name + "/Images/" + options.ImageType;
+            var url = "Genres/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
@@ -680,7 +695,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = "Studios/" + name + "/Images/" + options.ImageType;
+            var url = "Studios/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
@@ -725,7 +740,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = "Artists/" + name + "/Images/" + options.ImageType;
+            var url = "Artists/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }

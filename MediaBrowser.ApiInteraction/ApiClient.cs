@@ -67,7 +67,12 @@ namespace MediaBrowser.ApiInteraction
 
             HttpClient = httpClient;
 
-            HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
+            var param = AuthorizationParameter;
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                HttpClient.SetAuthorizationHeader(AuthorizationScheme, param);
+            }
         }
 
         /// <summary>
@@ -268,7 +273,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Studios/" + name);
+            var url = GetApiUrl("Studios/" + GetSlugName(name));
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -289,7 +294,28 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Genres/" + name);
+            var url = GetApiUrl("Genres/" + GetSlugName(name));
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the artist async.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Task{BaseItemDto}.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public async Task<BaseItemDto> GetArtistAsync(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var url = GetApiUrl("Artists/" + GetSlugName(name));
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -337,7 +363,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("name");
             }
 
-            var url = GetApiUrl("Persons/" + name);
+            var url = GetApiUrl("Persons/" + GetSlugName(name));
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
