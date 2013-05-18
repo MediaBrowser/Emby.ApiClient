@@ -23,10 +23,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeClientWebSocket" /> class.
         /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        public NativeClientWebSocket(ILogManager logManager)
+        /// <param name="logger">The logger.</param>
+        public NativeClientWebSocket(ILogger logger)
         {
-            _logger = logManager.GetLogger("NativeClientWebSocket");
+            _logger = logger;
             _client = new ClientWebSocket();
         }
 

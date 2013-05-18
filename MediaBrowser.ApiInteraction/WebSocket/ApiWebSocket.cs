@@ -16,6 +16,12 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly IClientWebSocket _webSocket;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// </summary>
+        /// <param name="webSocket">The web socket.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
         public ApiWebSocket(IClientWebSocket webSocket, ILogger logger, IJsonSerializer jsonSerializer)
             : base(logger, jsonSerializer)
         {

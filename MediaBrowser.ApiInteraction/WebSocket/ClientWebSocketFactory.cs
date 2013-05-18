@@ -11,14 +11,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Creates the web socket.
         /// </summary>
-        /// <param name="logManager">The log manager.</param>
+        /// <param name="logger">The logger.</param>
         /// <returns>IClientWebSocket.</returns>
-        public static IClientWebSocket CreateWebSocket(ILogManager logManager)
+        public static IClientWebSocket CreateWebSocket(ILogger logger)
         {
             try
             {
                 // This is preferred but only supported on windows 8/2012
-                return new NativeClientWebSocket(logManager);
+                return new NativeClientWebSocket(logger);
             }
             catch (NotSupportedException)
             {
