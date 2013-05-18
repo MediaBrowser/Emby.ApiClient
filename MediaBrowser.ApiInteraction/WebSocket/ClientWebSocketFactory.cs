@@ -17,13 +17,22 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             try
             {
-                // This is preferred but only supported on windows 8/2012
+                // This is preferred but only supported on windows 8 or server 2012
                 return new NativeClientWebSocket(logger);
             }
             catch (NotSupportedException)
             {
                 return new WebSocket4NetClientWebSocket();
             }
+        }
+
+        /// <summary>
+        /// Creates the web socket.
+        /// </summary>
+        /// <returns>IClientWebSocket.</returns>
+        public static IClientWebSocket CreateWebSocket()
+        {
+            return CreateWebSocket(new NullLogger());
         }
     }
 }

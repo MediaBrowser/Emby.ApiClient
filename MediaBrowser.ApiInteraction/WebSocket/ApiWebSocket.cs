@@ -29,6 +29,15 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// </summary>
+        /// <param name="webSocket">The web socket.</param>
+        public ApiWebSocket(IClientWebSocket webSocket)
+            : this(webSocket, new NullLogger(), new NewtonsoftJsonSerializer())
+        {
+        }
+
+        /// <summary>
         /// Connects the async.
         /// </summary>
         /// <param name="serverHostName">Name of the server host.</param>
@@ -50,6 +59,31 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 _webSocket.OnReceiveDelegate = OnMessageReceived;
 
                 await SendAsync(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error connecting to {0}", ex, url);
+            }
+        }
+
+        /// <summary>
+        /// Connects the async.
+        /// </summary>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, CancellationToken cancellationToken)
+        {
+            var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
+
+            try
+            {
+                await _webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+
+                Logger.Info("Connected to {0}", url);
+
+                _webSocket.OnReceiveDelegate = OnMessageReceived;
             }
             catch (Exception ex)
             {
