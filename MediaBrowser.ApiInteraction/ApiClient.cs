@@ -5,6 +5,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Weather;
@@ -196,6 +197,20 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        /// <summary>
+        /// Gets active client sessions.
+        /// </summary>
+        /// <returns>Task{SessionInfoDto[]}.</returns>
+        public async Task<SessionInfoDto[]> GetClientSessionsAsync()
+        {
+            var url = GetApiUrl("Sessions");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SessionInfoDto[]>(stream);
+            }
+        }
+        
         /// <summary>
         /// Queries for items
         /// </summary>

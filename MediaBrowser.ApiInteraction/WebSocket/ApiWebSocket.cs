@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -125,6 +126,32 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Sends the server a message indicating what is currently being viewed by the client
+        /// </summary>
+        /// <param name="itemType">The current item type (if any)</param>
+        /// <param name="itemId">The current item id (if any)</param>
+        /// <param name="itemName">The current item name (if any)</param>
+        /// <param name="context">An optional, client-specific value indicating the area or section being browsed</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task SendContextMessage(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken)
+        {
+            var vals = new List<string>
+                {
+                    itemType ?? string.Empty, 
+                    itemId ?? string.Empty, 
+                    itemName ?? string.Empty
+                };
+
+            if (!string.IsNullOrEmpty(context))
+            {
+                vals.Add(context);
+            }
+
+            return SendAsync("Context", string.Join("|", vals.ToArray()), cancellationToken);
         }
     }
 }
