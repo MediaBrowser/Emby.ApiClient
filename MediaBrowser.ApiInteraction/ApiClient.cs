@@ -210,7 +210,7 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<SessionInfoDto[]>(stream);
             }
         }
-        
+
         /// <summary>
         /// Queries for items
         /// </summary>
@@ -798,6 +798,45 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
 
             return HttpClient.DeleteAsync(url, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Instructs antoher client to browse to a library item.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="itemId">The id of the item to browse to.</param>
+        /// <param name="itemName">The name of the item to browse to.</param>
+        /// <param name="itemType">The type of the item to browse to.</param>
+        /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
+        /// <returns>Task.</returns>
+        public Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+            if (string.IsNullOrEmpty(itemName))
+            {
+                throw new ArgumentNullException("itemName");
+            }
+            if (string.IsNullOrEmpty(itemType))
+            {
+                throw new ArgumentNullException("itemType");
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.Add("itemId", itemId);
+            dict.Add("itemName", itemName);
+            dict.Add("itemType", itemType);
+            dict.AddIfNotNullOrEmpty("context", context);
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/Viewing/", dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
         /// <summary>

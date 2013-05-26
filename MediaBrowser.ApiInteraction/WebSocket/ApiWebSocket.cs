@@ -137,7 +137,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="context">An optional, client-specific value indicating the area or section being browsed</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task SendContextMessage(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken)
+        public Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken)
         {
             var vals = new List<string>
                 {
