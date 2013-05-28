@@ -265,8 +265,6 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
 
-            dict.AddIfNotNull("IsOnTour", query.IsOnTour);
-
             url = GetApiUrl(url, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
