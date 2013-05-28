@@ -838,6 +838,38 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Sends the play command async.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// sessionId
+        /// or
+        /// request
+        /// </exception>
+        public Task SendPlayCommandAsync(string sessionId, PlayRequest request)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.Add("ItemIds", request.ItemIds);
+            dict.AddIfNotNull("StartPositionTicks", request.StartPositionTicks);
+            dict.Add("PlayCommand", request.PlayCommand.ToString());
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/Playing/", dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+        /// <summary>
         /// Clears a user's rating for an item
         /// </summary>
         /// <param name="itemId">The item id.</param>
