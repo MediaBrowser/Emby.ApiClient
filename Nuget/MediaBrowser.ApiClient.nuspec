@@ -17,6 +17,9 @@
                 <dependency id="Newtonsoft.Json" version="5.0.5" />
                 <dependency id="WebSocket4Net" version="0.8" />
             </group>
+            <group targetFramework=".NETFramework3.5">
+                <dependency id="MediaBrowser.Common" version="3.0.110" />
+            </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
                 <dependency id="MediaBrowser.Common" version="3.0.110" />
                 <dependency id="Newtonsoft.Json" version="5.0.5" />
@@ -26,6 +29,7 @@
         </dependencies>
     </metadata>
     <files>
+        <file src="dlls\MediaBrowser.ApiInteraction.net35.dll" target="lib\net35\MediaBrowser.ApiInteraction.net35.dll" />
         <file src="dlls\MediaBrowser.ApiInteraction.dll" target="lib\net45\MediaBrowser.ApiInteraction.dll" />
         <file src="dlls\MediaBrowser.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8\MediaBrowser.ApiInteraction.Portable.dll" />
     </files>
