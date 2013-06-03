@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -22,7 +23,7 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Provides api methods centered around an HttpClient
     /// </summary>
-    public class ApiClient : BaseApiClient
+    public class ApiClient : BaseApiClient, IApiClient
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
@@ -415,24 +416,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets a list of plugins installed on the server
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="System.ArgumentNullException">plugin</exception>
-        public Task<Stream> GetPluginAssemblyAsync(PluginInfo plugin)
-        {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException("plugin");
-            }
-
-            var url = GetApiUrl("Plugins/" + plugin.Id + "/Assembly");
-
-            return HttpClient.GetAsync(url, CancellationToken.None);
-        }
-
-        /// <summary>
         /// Gets the current server configuration
         /// </summary>
         /// <returns>Task{ServerConfiguration}.</returns>
@@ -479,24 +462,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<TaskInfo>(stream);
             }
-        }
-
-        /// <summary>
-        /// Gets the plugin configuration file in plain text.
-        /// </summary>
-        /// <param name="pluginId">The plugin id.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="System.ArgumentNullException">assemblyFileName</exception>
-        public async Task<Stream> GetPluginConfigurationFileAsync(Guid pluginId)
-        {
-            if (pluginId == Guid.Empty)
-            {
-                throw new ArgumentNullException("pluginId");
-            }
-
-            var url = GetApiUrl("Plugins/" + pluginId + "/ConfigurationFile");
-
-            return await HttpClient.GetAsync(url, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

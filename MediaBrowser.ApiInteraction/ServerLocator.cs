@@ -24,7 +24,7 @@ namespace MediaBrowser.ApiInteraction
 
             // Send it
             await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
-
+           
             // Get a result back
             var result = await client.ReceiveAsync().ConfigureAwait(false);
 
