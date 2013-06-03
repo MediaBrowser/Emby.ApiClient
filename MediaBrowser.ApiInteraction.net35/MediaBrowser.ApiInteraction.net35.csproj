@@ -57,6 +57,12 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\NullLogger.cs">
       <Link>NullLogger.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\BaseApiWebSocket.cs">
+      <Link>WebSocket\BaseApiWebSocket.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\EventArgs.cs">
+      <Link>WebSocket\EventArgs.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
