@@ -1,0 +1,18 @@
+<GhostDoc>
+  <SpellChecker>
+    <IncludeExtensions>
+    </IncludeExtensions>
+    <IgnoreExtensions>
+      <IgnoreExtension>.cs</IgnoreExtension>
+    </IgnoreExtensions>
+    <IgnoreFiles>
+    </IgnoreFiles>
+  </SpellChecker>
+  <HelpFile>
+    <DocumentInternals>True</DocumentInternals>
+    <DocumentProtected>True</DocumentProtected>
+    <DocumentPrivates>True</DocumentPrivates>
+    <HeaderText>+</HeaderText>
+    <FooterHtml></FooterHtml>
+  </HelpFile>
+</GhostDoc>

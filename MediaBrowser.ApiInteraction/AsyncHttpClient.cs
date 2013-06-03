@@ -59,7 +59,7 @@ namespace MediaBrowser.ApiInteraction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Info("Sending Http Get to {0}", url);
+            Logger.Info("Get {0}", url);
             
             try
             {
@@ -98,7 +98,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
         {
-            Logger.Info("Sending Http Post to {0}", url);
+            Logger.Info("Post {0}", url);
             
             var content = new StringContent(postContent, Encoding.UTF8, contentType);
 
@@ -139,7 +139,7 @@ namespace MediaBrowser.ApiInteraction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Debug("Sending Http Delete to {0}", url);
+            Logger.Info("Delete {0}", url);
 
             try
             {

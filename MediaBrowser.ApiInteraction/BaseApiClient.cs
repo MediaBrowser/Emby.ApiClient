@@ -65,18 +65,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverApiPort">The server API port.</param>
-        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort)
-            : this(logger, jsonSerializer, serverHostName, serverApiPort, string.Empty, string.Empty, string.Empty)
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>
@@ -1012,6 +1000,27 @@ namespace MediaBrowser.ApiInteraction
         protected string SerializeToJson(object obj)
         {
             return JsonSerializer.SerializeToString(obj);
+        }
+
+        /// <summary>
+        /// Adds the data format.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>System.String.</returns>
+        protected string AddDataFormat(string url)
+        {
+            const string format = "json";
+
+            if (url.IndexOf('?') == -1)
+            {
+                url += "?format=" + format;
+            }
+            else
+            {
+                url += "&format=" + format;
+            }
+
+            return url;
         }
 
         /// <summary>

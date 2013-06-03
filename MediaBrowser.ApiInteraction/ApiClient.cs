@@ -39,16 +39,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
-        /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverApiPort">The server API port.</param>
-        public ApiClient(string serverHostName, int serverApiPort)
-            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, string.Empty, string.Empty, string.Empty)
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -185,10 +175,10 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets all Users
+        /// Gets the users async.
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
-        public async Task<UserDto[]> GetAllUsersAsync()
+        public async Task<UserDto[]> GetUsersAsync()
         {
             var url = GetApiUrl("Users");
 
@@ -1044,28 +1034,6 @@ namespace MediaBrowser.ApiInteraction
             url = AddDataFormat(url);
 
             return HttpClient.GetAsync(url, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Adds the data format.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="serializationFormat">The serialization format.</param>
-        /// <returns>System.String.</returns>
-        private string AddDataFormat(string url)
-        {
-            const string format = "json";
-
-            if (url.IndexOf('?') == -1)
-            {
-                url += "?format=" + format;
-            }
-            else
-            {
-                url += "&format=" + format;
-            }
-
-            return url;
         }
     }
 }

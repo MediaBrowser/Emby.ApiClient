@@ -13,8 +13,8 @@ Usage is very simple:
 
             var client = new ApiClient("localhost", 8096, "My client name", "My device", "My device id");
 
-            // Get all users
-            var users = await client.GetAllUsersAsync();
+            // Get users
+            var users = await client.GetUsersAsync();
 
             var currentUser = users.First();
 
