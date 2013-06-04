@@ -224,6 +224,90 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the similar movies async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Movies");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the similar series async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Shows");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the similar games async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Games");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the similar albums async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Albums");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets the people async.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -762,6 +846,15 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemType">The type of the item to browse to.</param>
         /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
         /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// sessionId
+        /// or
+        /// itemId
+        /// or
+        /// itemName
+        /// or
+        /// itemType
+        /// </exception>
         public Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context)
         {
             if (string.IsNullOrEmpty(sessionId))
@@ -798,11 +891,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="sessionId">The session id.</param>
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// sessionId
+        /// <exception cref="System.ArgumentNullException">sessionId
         /// or
-        /// request
-        /// </exception>
+        /// request</exception>
         public Task SendPlayCommandAsync(string sessionId, PlayRequest request)
         {
             if (string.IsNullOrEmpty(sessionId))
@@ -961,7 +1052,6 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Updates display preferences for a user
         /// </summary>
-        /// <param name="id">The id.</param>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>

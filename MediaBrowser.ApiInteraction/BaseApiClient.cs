@@ -294,6 +294,43 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the similar item list URL.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// query
+        /// or
+        /// type
+        /// </exception>
+        protected string GetSimilarItemListUrl(SimilarItemsQuery query, string type)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("Id", query.Id);
+
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            return GetApiUrl(type + "/" + query.Id + "/Similar", dict);
+        }
+
+        /// <summary>
         /// Gets the item by name list URL.
         /// </summary>
         /// <param name="type">The type.</param>
