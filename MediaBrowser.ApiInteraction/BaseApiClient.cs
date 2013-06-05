@@ -399,13 +399,16 @@ namespace MediaBrowser.ApiInteraction
                 baseUrl += "/" + options.ImageIndex.Value;
             }
 
-            queryParams.AddIfNotNull("width", options.Width);
-            queryParams.AddIfNotNull("height", options.Height);
-            queryParams.AddIfNotNull("maxWidth", options.MaxWidth);
-            queryParams.AddIfNotNull("maxHeight", options.MaxHeight);
+            queryParams.AddIfNotNull("Width", options.Width);
+            queryParams.AddIfNotNull("Height", options.Height);
+            queryParams.AddIfNotNull("MaxWidth", options.MaxWidth);
+            queryParams.AddIfNotNull("MaxHeight", options.MaxHeight);
             queryParams.AddIfNotNull("Quality", options.Quality);
 
-            queryParams.AddIfNotNull("tag", options.Tag);
+            queryParams.AddIfNotNull("Tag", options.Tag);
+
+            queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
+            queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
 
             return GetApiUrl(baseUrl, queryParams);
         }
