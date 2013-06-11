@@ -408,7 +408,7 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("Tag", options.Tag);
 
             queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
-            queryParams.AddIfNotNull("EnableImageEnhancers", options.EnableImageEnhancers);
+            queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
 
             return GetApiUrl(baseUrl, queryParams);
         }
