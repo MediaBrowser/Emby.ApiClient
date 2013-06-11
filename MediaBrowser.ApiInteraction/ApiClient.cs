@@ -391,6 +391,27 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the music genre async.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Task{BaseItemDto}.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public async Task<BaseItemDto> GetMusicGenreAsync(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var url = GetApiUrl("MusicGenres/" + GetSlugName(name));
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto>(stream);
+            }
+        }
+        
+        /// <summary>
         /// Gets the artist async.
         /// </summary>
         /// <param name="name">The name.</param>

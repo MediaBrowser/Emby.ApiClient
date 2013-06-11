@@ -667,6 +667,34 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the music genre image URL.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// item
+        /// or
+        /// options
+        /// </exception>
+        public string GetMusicGenreImageUrl(BaseItemDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = GetImageTag(item, options);
+
+            return GetMusicGenreImageUrl(item.Name, options);
+        }
+        
+        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="name">The name.</param>
@@ -685,6 +713,25 @@ namespace MediaBrowser.ApiInteraction
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
 
+        /// <summary>
+        /// Gets the music genre image URL.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetMusicGenreImageUrl(string name, ImageOptions options)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var url = "MusicGenres/" + GetSlugName(name) + "/Images/" + options.ImageType;
+
+            return GetImageUrl(url, options, new QueryStringDictionary());
+        }
+        
         /// <summary>
         /// Gets the studio image URL.
         /// </summary>
