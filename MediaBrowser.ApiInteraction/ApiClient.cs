@@ -224,6 +224,45 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the next up async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetNextUpAsync(NextUpQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+
+            dict.Add("UserId", query.UserId);
+
+            var url = GetApiUrl("Shows/NextUp", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+        
+        /// <summary>
         /// Gets the similar movies async.
         /// </summary>
         /// <param name="query">The query.</param>
