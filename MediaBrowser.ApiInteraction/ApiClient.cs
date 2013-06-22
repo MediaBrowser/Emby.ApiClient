@@ -153,6 +153,25 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        public async Task<ItemCounts> GetItemCountsAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("UserId", userId);
+
+            var url = GetApiUrl("Items/Counts", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemCounts>(stream);
+            }
+        }
+        
         /// <summary>
         /// Gets a BaseItem
         /// </summary>
