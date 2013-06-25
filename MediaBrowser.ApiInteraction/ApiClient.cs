@@ -653,47 +653,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets weather information for the default location as set in configuration
-        /// </summary>
-        /// <returns>Task{WeatherInfo}.</returns>
-        public async Task<WeatherInfo> GetWeatherInfoAsync()
-        {
-            var url = GetApiUrl("Weather");
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<WeatherInfo>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets weather information for a specific location
-        /// Location can be a US zipcode, or "city,state", "city,state,country", "city,country"
-        /// It can also be an ip address, or "latitude,longitude"
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <returns>Task{WeatherInfo}.</returns>
-        /// <exception cref="System.ArgumentNullException">location</exception>
-        public async Task<WeatherInfo> GetWeatherInfoAsync(string location)
-        {
-            if (string.IsNullOrEmpty(location))
-            {
-                throw new ArgumentNullException("location");
-            }
-
-            var dict = new QueryStringDictionary();
-
-            dict.Add("location", location);
-
-            var url = GetApiUrl("Weather", dict);
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<WeatherInfo>(stream);
-            }
-        }
-
-        /// <summary>
         /// Gets local trailers for an item
         /// </summary>
         /// <param name="userId">The user id.</param>

@@ -254,10 +254,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
             }
-            if (query.VideoFormats != null)
-            {
-                dict.Add("VideoFormats", query.VideoFormats.Select(f => f.ToString()));
-            }
+
+            dict.AddIfNotNull("Is3D", query.Is3D);
             if (query.VideoTypes != null)
             {
                 dict.Add("VideoTypes", query.VideoTypes.Select(f => f.ToString()));
