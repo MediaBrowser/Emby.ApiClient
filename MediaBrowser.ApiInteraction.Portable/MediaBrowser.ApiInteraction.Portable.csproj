@@ -71,6 +71,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="MediaBrowser.Model">
+      <HintPath>..\packages\MediaBrowser.Common.3.0.133\lib\portable-net4+sl4+wp7+win8\MediaBrowser.Model.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Threading.Tasks">
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.16\lib\portable-net40+sl4+win8+wp71\Microsoft.Threading.Tasks.dll</HintPath>
     </Reference>
