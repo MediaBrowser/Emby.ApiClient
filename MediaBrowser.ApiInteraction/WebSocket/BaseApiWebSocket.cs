@@ -70,6 +70,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<PlayRequestEventArgs> PlayCommand;
         public event EventHandler<PlaystateRequestEventArgs> PlaystateCommand;
 
+        public event EventHandler<EventArgs> NotificationAdded;
+        public event EventHandler<EventArgs> NotificationUpdated;
+        public event EventHandler<EventArgs> NotificationsMarkedRead;
+
         /// <summary>
         /// Occurs when [restart required].
         /// </summary>
@@ -208,6 +212,18 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 {
                     Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlaystateRequest>>(json).Data
                 });
+            }
+            else if (string.Equals(message.MessageType, "NotificationAdded"))
+            {
+                FireEvent(NotificationAdded, this, EventArgs.Empty);
+            }
+            else if (string.Equals(message.MessageType, "NotificationUpdated"))
+            {
+                FireEvent(NotificationUpdated, this, EventArgs.Empty);
+            }
+            else if (string.Equals(message.MessageType, "NotificationsMarkedRead"))
+            {
+                FireEvent(NotificationsMarkedRead, this, EventArgs.Empty);
             }
         }
 

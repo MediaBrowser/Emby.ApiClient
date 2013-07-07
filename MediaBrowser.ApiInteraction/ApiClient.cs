@@ -4,6 +4,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -171,7 +172,7 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<ItemCounts>(stream);
             }
         }
-        
+
         /// <summary>
         /// Gets a BaseItem
         /// </summary>
@@ -280,7 +281,7 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
-        
+
         /// <summary>
         /// Gets the similar movies async.
         /// </summary>
@@ -468,7 +469,7 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
-        
+
         /// <summary>
         /// Gets the artist async.
         /// </summary>
@@ -1162,6 +1163,64 @@ namespace MediaBrowser.ApiInteraction
             url = AddDataFormat(url);
 
             return HttpClient.GetAsync(url, CancellationToken.None);
+        }
+
+        public async Task<NotificationsSummary> GetNotificationsSummary(string userId)
+        {
+            var url = GetApiUrl("Notifications/" + userId + "/Summary");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<NotificationsSummary>(stream);
+            }
+        }
+
+        public Task<Notification> AddNotification(Notification notification)
+        {
+            var url = GetApiUrl("Notifications/" + notification.UserId);
+
+            return PostAsync<Notification, Notification>(url, notification);
+        }
+
+        public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
+        {
+            var url = GetApiUrl("Notifications/" + userId);
+
+            url += isRead ? "/Read" : "/Unread";
+
+            var dict = new QueryStringDictionary();
+
+            var ids = notificationIdList.Select(i => i.ToString("N")).ToArray();
+
+            dict.Add("Ids", string.Join(",", ids));
+
+            url = GetApiUrl(url, dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+        public Task UpdateNotification(Notification notification)
+        {
+            var url = GetApiUrl("Notifications/" + notification.UserId + "/" + notification.Id);
+
+            return PostAsync<Notification, EmptyRequestResult>(url, notification);
+        }
+
+        public async Task<NotificationResult> GetNotificationsAsync(NotificationQuery query)
+        {
+            var url = GetApiUrl("Notifications/" + query.UserId);
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("ItemIds", query.IsRead);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            url = GetApiUrl(url, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<NotificationResult>(stream);
+            }
         }
     }
 }
