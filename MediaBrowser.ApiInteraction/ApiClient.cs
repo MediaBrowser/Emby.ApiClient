@@ -216,6 +216,16 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        public async Task<UserDto[]> GetPublicUsersAsync()
+        {
+            var url = GetApiUrl("Users/Public");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<UserDto[]>(stream);
+            }
+        }
+
         /// <summary>
         /// Gets active client sessions.
         /// </summary>
@@ -956,6 +966,22 @@ namespace MediaBrowser.ApiInteraction
             dict.Add("PlayCommand", request.PlayCommand.ToString());
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Playing/", dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+        /// <summary>
+        /// Sends the playstate command async.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="request">The request.</param>
+        /// <returns>Task.</returns>
+        public Task SendPlaystateCommandAsync(string sessionId, PlaystateRequest request)
+        {
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("SeekPosition", request.SeekPosition);
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/Playing/" + request.Command.ToString(), dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
