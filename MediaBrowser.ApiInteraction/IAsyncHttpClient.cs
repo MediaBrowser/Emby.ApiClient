@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.ApiClient;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -10,6 +11,8 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public interface IAsyncHttpClient : IDisposable
     {
+        event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
+
         /// <summary>
         /// Sets the authorization header that should be supplied on every request
         /// </summary>
@@ -21,7 +24,7 @@ namespace MediaBrowser.ApiInteraction
         /// Removes the authorization header.
         /// </summary>
         void RemoveAuthorizationHeader();
-        
+
         /// <summary>
         /// Gets the stream async.
         /// </summary>
@@ -37,7 +40,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task DeleteAsync(string url, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Posts the async.
         /// </summary>

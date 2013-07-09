@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -15,6 +17,32 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public class AsyncHttpClient : IAsyncHttpClient
     {
+        public event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
+
+        /// <summary>
+        /// Called when [response received].
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="statusCode">The status code.</param>
+        private void OnResponseReceived(string url, HttpStatusCode statusCode)
+        {
+            if (HttpResponseReceived != null)
+            {
+                try
+                {
+                    HttpResponseReceived(this, new HttpResponseEventArgs
+                    {
+                        Url = url,
+                        StatusCode = statusCode
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in HttpResponseReceived event handler", ex);
+                }
+            }
+        }
+        
         /// <summary>
         /// Gets or sets the HTTP client.
         /// </summary>
@@ -65,6 +93,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 var msg = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
+                OnResponseReceived(url, msg.StatusCode);
+
                 EnsureSuccessStatusCode(msg);
 
                 return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -106,6 +136,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 var msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
 
+                OnResponseReceived(url, msg.StatusCode);
+                
                 EnsureSuccessStatusCode(msg);
 
                 return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -145,6 +177,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 using (var msg = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
                 {
+                    OnResponseReceived(url, msg.StatusCode);
+                    
                     EnsureSuccessStatusCode(msg);
                 }
             }
@@ -248,5 +282,6 @@ namespace MediaBrowser.ApiInteraction
         {
             HttpClient.DefaultRequestHeaders.Remove("Authorization");
         }
+
     }
 }

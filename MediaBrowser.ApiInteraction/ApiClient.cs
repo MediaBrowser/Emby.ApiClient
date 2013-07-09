@@ -10,7 +10,6 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Weather;
 using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
@@ -26,6 +25,15 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public class ApiClient : BaseApiClient, IApiClient
     {
+        public event EventHandler<HttpResponseEventArgs> HttpResponseReceived
+        {
+            add { HttpClient.HttpResponseReceived += value; }
+            remove
+            {
+                HttpClient.HttpResponseReceived -= value;
+            }
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
@@ -492,12 +500,10 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Restarts the kernel or the entire server if necessary
-        /// If the server application is restarting this request will fail to return, even if
-        /// the operation is successful.
+        /// Restarts the server async.
         /// </summary>
         /// <returns>Task.</returns>
-        public Task PerformPendingRestartAsync()
+        public Task RestartServerAsync()
         {
             var url = GetApiUrl("System/Restart");
 

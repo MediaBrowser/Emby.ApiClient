@@ -906,6 +906,40 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// This is a helper to get the art image url from a given BaseItemDto. If the actual item does not have a logo, it will return the logo from the first parent that does, or null.
+        /// </summary>
+        /// <param name="item">A given item.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public string GetArtImageUrl(BaseItemDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.ImageType = ImageType.Art;
+
+            var artItemId = item.HasArtImage ? item.Id : item.ParentArtItemId;
+            var imageTag = item.HasArtImage ? item.ImageTags[ImageType.Art] : item.ParentArtImageTag;
+
+            if (!string.IsNullOrEmpty(artItemId))
+            {
+                options.Tag = imageTag;
+
+                return GetImageUrl(artItemId, options);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
         /// <param name="options">The options.</param>
