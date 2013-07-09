@@ -33,7 +33,7 @@ namespace MediaBrowser.ApiInteraction
                 HttpClient.HttpResponseReceived -= value;
             }
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
@@ -42,8 +42,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
-        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
-            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, clientName, deviceName, deviceId)
+        /// <param name="applicationVersion">The application version.</param>
+        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
         }
 
@@ -57,9 +58,10 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, IAsyncHttpClient httpClient, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
-            : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId)
+        public ApiClient(ILogger logger, IAsyncHttpClient httpClient, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
             if (httpClient == null)
             {

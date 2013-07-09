@@ -38,8 +38,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">logger</exception>
-        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
         {
             if (logger == null)
             {
@@ -62,6 +63,7 @@ namespace MediaBrowser.ApiInteraction
             ClientName = clientName;
             DeviceName = deviceName;
             DeviceId = deviceId;
+            ApplicationVersion = applicationVersion;
         }
 
         /// <summary>
@@ -87,6 +89,12 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        public string ApplicationVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.
@@ -157,7 +165,7 @@ namespace MediaBrowser.ApiInteraction
                     return string.Empty;
                 }
 
-                var header = string.Format("Client=\"{0}\", DeviceId=\"{1}\", Device=\"{2}\"", ClientName, DeviceId, DeviceName);
+                var header = string.Format("Client=\"{0}\", DeviceId=\"{1}\", Device=\"{2}\", Version=\"{3}\"", ClientName, DeviceId, DeviceName, ApplicationVersion);
 
                 if (!string.IsNullOrEmpty(CurrentUserId))
                 {

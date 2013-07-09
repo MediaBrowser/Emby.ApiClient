@@ -28,8 +28,9 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
-        public ApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
-            : base(logger, jsonSerializer, serverHostName, serverApiPort, clientName, deviceName, deviceId)
+        /// <param name="applicationVersion">The application version.</param>
+        public ApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : base(logger, jsonSerializer, serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
             _httpClient = new HttpClient(logger);
         }
@@ -42,8 +43,9 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
-        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId)
-            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId)
+        /// <param name="applicationVersion">The application version.</param>
+        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
         }
 
