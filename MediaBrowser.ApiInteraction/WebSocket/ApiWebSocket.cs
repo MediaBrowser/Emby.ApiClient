@@ -45,9 +45,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="serverWebSocketPort">The server web socket port.</param>
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, CancellationToken cancellationToken)
+        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, string applicationVersion, CancellationToken cancellationToken)
         {
             var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
 
@@ -59,7 +60,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 _webSocket.OnReceiveDelegate = OnMessageReceived;
 
-                await SendAsync(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId)).ConfigureAwait(false);
+                await SendAsync(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId, applicationVersion)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
