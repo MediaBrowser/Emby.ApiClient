@@ -208,9 +208,14 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the users async.
         /// </summary>
         /// <returns>Task{UserDto[]}.</returns>
-        public async Task<UserDto[]> GetUsersAsync()
+        public async Task<UserDto[]> GetUsersAsync(UserQuery query)
         {
-            var url = GetApiUrl("Users");
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNull("IsDisabled", query.IsDisabled);
+            queryString.AddIfNotNull("IsHidden", query.IsHidden);
+
+            var url = GetApiUrl("Users", queryString);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -1250,6 +1255,52 @@ namespace MediaBrowser.ApiInteraction
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<NotificationResult>(stream);
+            }
+        }
+
+
+        public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("InheritFromParent", inheritFromParent);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+
+            var url = GetApiUrl("Items/" + itemId + "/ThemeMedia", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<AllThemeMediaResult>(stream);
+            }
+        }
+
+        public async Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParent)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("InheritFromParent", inheritFromParent);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+
+            var url = GetApiUrl("Items/" + itemId + "/ThemeSongs", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ThemeMediaResult>(stream);
+            }
+        }
+
+        public async Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParent)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("InheritFromParent", inheritFromParent);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+
+            var url = GetApiUrl("Items/" + itemId + "/ThemeVideos", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ThemeMediaResult>(stream);
             }
         }
     }
