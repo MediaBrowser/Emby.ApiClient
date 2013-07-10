@@ -396,10 +396,10 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = GetItemByNameListUrl("Persons", query);
 
-            var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("personTypes", query.PersonTypes);
-
-            url = GetApiUrl(url, dict);
+            if (query.PersonTypes != null && query.PersonTypes.Length > 0)
+            {
+                url += "&PersonTypes=" + string.Join(",", query.PersonTypes);
+            }
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -416,10 +416,6 @@ namespace MediaBrowser.ApiInteraction
         public async Task<ItemsResult> GetArtistsAsync(ArtistsQuery query)
         {
             var url = GetItemByNameListUrl("Artists", query);
-
-            var dict = new QueryStringDictionary();
-
-            url = GetApiUrl(url, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
