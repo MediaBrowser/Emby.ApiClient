@@ -63,6 +63,7 @@ namespace MediaBrowser.ApiInteraction
         public AsyncHttpClient(ILogger logger, HttpMessageHandler handler)
         {
             Logger = logger;
+
             HttpClient = new HttpClient(handler);
         }
 

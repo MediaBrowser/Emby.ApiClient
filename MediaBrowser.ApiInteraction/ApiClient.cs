@@ -7,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -1271,6 +1272,28 @@ namespace MediaBrowser.ApiInteraction
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<AllThemeMediaResult>(stream);
+            }
+        }
+
+        public async Task<SearchHintResult> GetSearchHints(string userId, string searchTerm, int? startIndex, int? limit)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                throw new ArgumentNullException("searchTerm");
+            }
+
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("searchTerm", searchTerm);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+            queryString.AddIfNotNull("startIndex", startIndex);
+            queryString.AddIfNotNull("limit", limit);
+
+            var url = GetApiUrl("Search/Hints", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SearchHintResult>(stream);
             }
         }
 
