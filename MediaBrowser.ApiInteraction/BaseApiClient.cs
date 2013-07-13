@@ -29,6 +29,11 @@ namespace MediaBrowser.ApiInteraction
         public IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
+        ///  If specified this will be used as a default when an explicit value is not specified.
+        /// </summary>
+        public int? ImageQuality { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -409,7 +414,7 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("Height", options.Height);
             queryParams.AddIfNotNull("MaxWidth", options.MaxWidth);
             queryParams.AddIfNotNull("MaxHeight", options.MaxHeight);
-            queryParams.AddIfNotNull("Quality", options.Quality);
+            queryParams.AddIfNotNull("Quality", options.Quality ?? ImageQuality);
 
             queryParams.AddIfNotNull("Tag", options.Tag);
 
