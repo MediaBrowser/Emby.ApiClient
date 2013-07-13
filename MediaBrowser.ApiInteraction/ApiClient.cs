@@ -330,6 +330,27 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the similar trailers async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Trailers");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets the similar series async.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -1258,7 +1279,6 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<NotificationResult>(stream);
             }
         }
-
 
         public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent)
         {
