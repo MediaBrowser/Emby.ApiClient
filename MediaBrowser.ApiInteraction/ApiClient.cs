@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -14,6 +15,7 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,6 +36,12 @@ namespace MediaBrowser.ApiInteraction
                 HttpClient.HttpResponseReceived -= value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the web socket connection.
+        /// </summary>
+        /// <value>The web socket connection.</value>
+        public ApiWebSocket WebSocketConnection { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
@@ -854,6 +862,11 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("userId");
             }
 
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                return WebSocketConnection.SendAsync("PlaybackStart", itemId);
+            }
+
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
@@ -878,6 +891,11 @@ namespace MediaBrowser.ApiInteraction
             if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
+            }
+
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                return WebSocketConnection.SendAsync("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower());
             }
 
             var dict = new QueryStringDictionary();
@@ -907,6 +925,11 @@ namespace MediaBrowser.ApiInteraction
             if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException("userId");
+            }
+
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                return WebSocketConnection.SendAsync("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)));
             }
 
             var dict = new QueryStringDictionary();

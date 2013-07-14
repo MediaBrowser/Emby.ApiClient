@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -153,6 +154,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
 
             return SendAsync("Context", string.Join("|", vals.ToArray()), cancellationToken);
+        }
+
+        public bool IsOpen
+        {
+            get { return _webSocket != null && _webSocket.State == WebSocketState.Open; }
         }
     }
 }
