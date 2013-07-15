@@ -3,6 +3,7 @@ using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
 
 namespace MediaBrowser.ApiInteraction.net35
 {
@@ -71,6 +72,41 @@ namespace MediaBrowser.ApiInteraction.net35
                 }
 
             }, request);
+        }
+
+        public void Post(string url, string contentType, string postContent, Action<Stream> onSuccess, Action<Exception> onError)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = contentType;
+            byte[] data = Encoding.UTF8.GetBytes(postContent);
+            request.ContentLength = data.Length;
+
+            _logger.Info("Post {0}", url);
+
+            request.BeginGetRequestStream(iar =>
+            {
+                HttpWebResponse response;
+                try
+                {
+                    Stream stream = request.EndGetRequestStream(iar);
+                    stream.Write(data, 0, data.Length);
+                    stream.Close();
+
+                    response = (HttpWebResponse) request.GetResponse();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error posting {0}", ex, url);
+                    onError(ex);
+                    return;
+                }
+
+                if (EnsureSuccessStatusCode(response, onError))
+                {
+                    onSuccess(response.GetResponseStream());
+                }
+            }, null);
         }
 
         /// <summary>
