@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 
@@ -59,7 +60,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="System.NotImplementedException"></exception>
         public T DeserializeFromString<T>(string text)
         {
-            throw new NotImplementedException();
+            return JsonConvert.DeserializeObject<T>(text);
         }
 
         /// <summary>
@@ -71,7 +72,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="System.NotImplementedException"></exception>
         public object DeserializeFromString(string json, Type type)
         {
-            throw new NotImplementedException();
+            return JsonConvert.DeserializeObject(json, type);
         }
 
         /// <summary>
@@ -81,25 +82,18 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>System.String.</returns>
         public string SerializeToString(object obj)
         {
-            using (var streamWriter = new StringWriter())
-            {
-                using (var jsonWriter = new JsonTextWriter((streamWriter)))
-                {
-                    JsonSerializer.Create(new JsonSerializerSettings()).Serialize(jsonWriter, obj);
-                }
-                return streamWriter.ToString();
-            }
+            return JsonConvert.SerializeObject(obj);
         }
 
         /// <summary>
         /// Serializes to bytes.
         /// </summary>
         /// <param name="obj">The obj.</param>
-        /// <returns>System.Byte[][].</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
+        /// <returns></returns>
         public byte[] SerializeToBytes(object obj)
         {
-            throw new NotImplementedException();
+            string serialized = SerializeToString(obj);
+            return System.Text.Encoding.UTF8.GetBytes(serialized);
         }
 
         /// <summary>
