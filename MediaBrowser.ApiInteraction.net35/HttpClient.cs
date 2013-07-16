@@ -34,6 +34,18 @@ namespace MediaBrowser.ApiInteraction.net35
         }
 
         /// <summary>
+        /// Gets or sets the timeout in milliseconds for GET requests.
+        /// </summary>
+        /// <value>
+        /// The timeout.
+        /// </value>
+        public int Timeout
+        {
+            get { return _timeout; }
+            set { _timeout = value; }
+        } private int _timeout = 5000;
+
+        /// <summary>
         /// Gets the specified URL.
         /// </summary>
         /// <param name="url">The URL.</param>
@@ -55,11 +67,12 @@ namespace MediaBrowser.ApiInteraction.net35
         {
             _logger.Info("Get {0}", request.RequestUri);
 
+            request.Timeout = _timeout;
             request.Headers.Add(_defaultHeaders);
+            
             request.BeginGetResponse(iar =>
             {
                 HttpWebResponse response;
-
                 try
                 {
                     response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
@@ -69,7 +82,6 @@ namespace MediaBrowser.ApiInteraction.net35
                     _logger.ErrorException("Error getting response from " + request.RequestUri, ex);
 
                     onError(ex);
-
                     return;
                 }
 
