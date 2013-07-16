@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Linq;
 
 namespace MediaBrowser.ApiInteraction.net35
 {
@@ -13,10 +14,15 @@ namespace MediaBrowser.ApiInteraction.net35
     public class HttpClient
     {
         /// <summary>
+        /// The default webrequest header collection
+        /// </summary>
+        private readonly WebHeaderCollection _defaultHeaders;
+        
+        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClient"/> class.
         /// </summary>
@@ -24,6 +30,7 @@ namespace MediaBrowser.ApiInteraction.net35
         public HttpClient(ILogger logger)
         {
             _logger = logger;
+            _defaultHeaders = new WebHeaderCollection();
         }
 
         /// <summary>
@@ -35,7 +42,6 @@ namespace MediaBrowser.ApiInteraction.net35
         public void Get(string url, Action<Stream> onSuccess, Action<Exception> onError)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
-
             Get(request, onSuccess, onError);
         }
 
@@ -48,7 +54,8 @@ namespace MediaBrowser.ApiInteraction.net35
         public void Get(HttpWebRequest request, Action<Stream> onSuccess, Action<Exception> onError)
         {
             _logger.Info("Get {0}", request.RequestUri);
-            
+
+            request.Headers.Add(_defaultHeaders);
             request.BeginGetResponse(iar =>
             {
                 HttpWebResponse response;
@@ -74,6 +81,14 @@ namespace MediaBrowser.ApiInteraction.net35
             }, request);
         }
 
+        /// <summary>
+        /// Posts the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <param name="postContent">Content of the post.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
         public void Post(string url, string contentType, string postContent, Action<Stream> onSuccess, Action<Exception> onError)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -127,6 +142,33 @@ namespace MediaBrowser.ApiInteraction.net35
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Sets the authorization header that should be supplied on every request
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        /// <param name="parameter">The parameter.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetAuthorizationHeader(string scheme, string parameter)
+        {
+            if (string.IsNullOrEmpty(parameter))
+            {
+                _defaultHeaders.Remove(HttpRequestHeader.Authorization);
+            }
+            else
+            {
+                _defaultHeaders.Add(HttpRequestHeader.Authorization, scheme + " " + parameter);
+            }
+        }
+
+        /// <summary>
+        /// Removes the authorization header.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void RemoveAuthorizationHeader()
+        {
+            _defaultHeaders.Remove(HttpRequestHeader.Authorization);
         }
     }
 }

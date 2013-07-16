@@ -45,6 +45,14 @@ namespace MediaBrowser.ApiInteraction.net35
             : base(logger, jsonSerializer, serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
             _httpClient = new HttpClient(logger);
+
+            var param = AuthorizationParameter;
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                _httpClient.SetAuthorizationHeader(AuthorizationScheme, param);
+            }
+
         }
 
         /// <summary>

@@ -78,6 +78,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <value>The receive action.</value>
         public Action<byte[]> OnReceiveDelegate { get; set; }
 
+        /// <summary>
+        /// Sends the async.
+        /// </summary>
+        /// <param name="bytes">The bytes.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
+        /// <param name="onError"></param>
         public void Send(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, Action<Exception> onError)
         {
             ThreadPool.QueueUserWorkItem((socket) =>
