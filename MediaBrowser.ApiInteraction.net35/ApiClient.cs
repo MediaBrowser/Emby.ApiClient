@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -22,6 +23,12 @@ namespace MediaBrowser.ApiInteraction.net35
         /// The _HTTP client
         /// </summary>
         private readonly HttpClient _httpClient;
+
+        /// <summary>
+        /// Gets or sets the web socket connection.
+        /// </summary>
+        /// <value>The web socket connection.</value>
+        public ApiWebSocket WebSocketConnection { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
