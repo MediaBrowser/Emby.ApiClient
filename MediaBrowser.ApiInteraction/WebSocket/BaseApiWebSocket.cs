@@ -114,7 +114,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
-            var message = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json);
+            // deserialize the WebSocketMessage with an object payload
+            var message = _jsonSerializer.DeserializeFromString<WebSocketMessage<object>>(json);
 
             Logger.Info("Received web socket message: {0}", message.MessageType);
 
@@ -133,14 +134,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 FireEvent(UserDeleted, this, new UserDeletedEventArgs
                 {
-                    Id = message.Data
+                    Id = (string)message.Data
                 });
             }
             else if (string.Equals(message.MessageType, "ScheduledTaskStarted"))
             {
                 FireEvent(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
                 {
-                    Name = message.Data
+                    Name = (string)message.Data
                 });
             }
             else if (string.Equals(message.MessageType, "ScheduledTaskEnded"))

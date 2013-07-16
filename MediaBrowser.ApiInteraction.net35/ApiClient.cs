@@ -1,10 +1,16 @@
-﻿using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MediaBrowser.ApiInteraction.net35
 {
@@ -17,6 +23,12 @@ namespace MediaBrowser.ApiInteraction.net35
         /// The _HTTP client
         /// </summary>
         private readonly HttpClient _httpClient;
+
+        /// <summary>
+        /// Gets or sets the web socket connection.
+        /// </summary>
+        /// <value>The web socket connection.</value>
+        public ApiWebSocket WebSocketConnection { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
@@ -33,6 +45,14 @@ namespace MediaBrowser.ApiInteraction.net35
             : base(logger, jsonSerializer, serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
             _httpClient = new HttpClient(logger);
+
+            var param = AuthorizationParameter;
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                _httpClient.SetAuthorizationHeader(AuthorizationScheme, param);
+            }
+
         }
 
         /// <summary>
@@ -47,6 +67,12 @@ namespace MediaBrowser.ApiInteraction.net35
         public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
             : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
+        }
+
+        protected override void OnCurrentUserChanged()
+        {
+            base.OnCurrentUserChanged();
+            _httpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }
 
         /// <summary>
@@ -168,6 +194,96 @@ namespace MediaBrowser.ApiInteraction.net35
         }
 
         /// <summary>
+        /// Authenticates the user.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="onResponse">the on response delegate, receives a true value when authentication was successful</param>
+        public void AuthenticateUser(string userId, string password, Action<bool> onResponse)
+        {
+            using (var provider = SHA1.Create())
+            {
+                var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(password ?? string.Empty));
+                AuthenticateUser(userId, hash, x => onResponse(true), x => onResponse(false));
+            }
+        }
+
+        /// <summary>
+        /// Authenticates a user and returns the result
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="sha1Hash">The sha1 hash.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">userId</exception>
+        public void AuthenticateUser(string userId, byte[] sha1Hash, Action<EmptyRequestResult> onSuccess, Action<Exception> onError)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            var password = BitConverter.ToString(sha1Hash).Replace("-", string.Empty);
+            var url = GetApiUrl("Users/" + userId + "/Authenticate");
+
+            var args = new Dictionary<string, string>();
+            args["password"] = password;
+
+            Post<EmptyRequestResult>(url, args, onSuccess, onError);
+        }
+
+        public void Post<T>(string url, Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError)
+           where T : class
+        {
+            url = AddDataFormat(url);
+
+            // Create the post body
+            var strings = args.Keys.Select(key => string.Format("{0}={1}", key, args[key]));
+            var postContent = string.Join("&", strings.ToArray());
+
+            const string contentType = "application/x-www-form-urlencoded";
+            _httpClient.Post(url, contentType, postContent, (stream) =>
+            {
+                T data;
+                try
+                {
+                    data = JsonSerializer.DeserializeFromStream<T>(stream);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error deserializing data from {0}", ex, url);
+                    onError(ex);
+                    return;
+                }
+                onSuccess(data);
+            }, onError);
+        }
+
+        private void Post<TInputType, TOutputType>(string url, TInputType obj, Action<TOutputType> onSuccess, Action<Exception> onError)
+            where TOutputType : class
+        {
+            url = AddDataFormat(url);
+
+            const string contentType = "application/json";
+
+            var postContent = SerializeToJson(obj);
+
+            _httpClient.Post(url, contentType, postContent, (stream) =>
+            {
+                TOutputType data;
+                try
+                {
+                    data = JsonSerializer.DeserializeFromStream<TOutputType>(stream);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error deserializing data from {0}", ex, url);
+                    onError(ex);
+                    return;
+                }
+                onSuccess(data);
+            }, onError);
+        }
+
+        /// <summary>
         /// Gets the serialized data.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -190,7 +306,7 @@ namespace MediaBrowser.ApiInteraction.net35
             {
                 throw new ArgumentNullException("onError");
             }
-            
+
             url = AddDataFormat(url);
 
             _httpClient.Get(url, stream =>
