@@ -69,6 +69,12 @@ namespace MediaBrowser.ApiInteraction.net35
         {
         }
 
+        protected override void OnCurrentUserChanged()
+        {
+            base.OnCurrentUserChanged();
+            _httpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
+        }
+
         /// <summary>
         /// Gets the system info.
         /// </summary>

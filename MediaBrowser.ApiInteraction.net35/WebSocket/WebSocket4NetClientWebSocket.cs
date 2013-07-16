@@ -59,8 +59,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             });
         }
 
-             
-
         /// <summary>
         /// Handles the MessageReceived event of the websocket control.
         /// </summary>

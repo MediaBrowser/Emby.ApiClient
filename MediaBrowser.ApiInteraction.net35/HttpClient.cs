@@ -158,7 +158,7 @@ namespace MediaBrowser.ApiInteraction.net35
             }
             else
             {
-                _defaultHeaders.Add(HttpRequestHeader.Authorization, scheme + " " + parameter);
+                _defaultHeaders[HttpRequestHeader.Authorization] = scheme + " " + parameter;
             }
         }
 
