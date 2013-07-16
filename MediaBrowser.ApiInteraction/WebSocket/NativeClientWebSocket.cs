@@ -20,6 +20,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly ILogger _logger;
 
+        private SemaphoreSlim _sendResource = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeClientWebSocket" /> class.
         /// </summary>
@@ -114,16 +116,25 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
         {
-            WebSocketMessageType nativeType;
+            await _sendResource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (!Enum.TryParse(type.ToString(), true, out nativeType))
+            try
             {
-                _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
-            }
+                WebSocketMessageType nativeType;
 
-            return _client.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, cancellationToken);
+                if (!Enum.TryParse(type.ToString(), true, out nativeType))
+                {
+                    _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
+                }
+
+                await _client.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _sendResource.Release();
+            }
         }
 
         /// <summary>
