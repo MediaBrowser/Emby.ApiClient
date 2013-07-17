@@ -1288,7 +1288,7 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<NotificationResult> GetNotificationsAsync(NotificationQuery query)
         {
-            var url = GetApiUrl("Notifications/" + query.UserId);
+            var url = "Notifications/" + query.UserId;
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("ItemIds", query.IsRead);
