@@ -1264,7 +1264,7 @@ namespace MediaBrowser.ApiInteraction
 
         public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
         {
-            var url = GetApiUrl("Notifications/" + userId);
+            var url = "Notifications/" + userId;
 
             url += isRead ? "/Read" : "/Unread";
 
@@ -1288,7 +1288,7 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<NotificationResult> GetNotificationsAsync(NotificationQuery query)
         {
-            var url = GetApiUrl("Notifications/" + query.UserId);
+            var url = "Notifications/" + query.UserId;
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("ItemIds", query.IsRead);
