@@ -1264,7 +1264,7 @@ namespace MediaBrowser.ApiInteraction
 
         public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
         {
-            var url = GetApiUrl("Notifications/" + userId);
+            var url = "Notifications/" + userId;
 
             url += isRead ? "/Read" : "/Unread";
 
@@ -1318,7 +1318,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SearchHintResult> GetSearchHints(string userId, string searchTerm, int? startIndex, int? limit)
+        public async Task<SearchHintResult> GetSearchHints(string userId, string searchTerm, int? startIndex = null, int? limit = null)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
