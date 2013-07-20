@@ -1027,7 +1027,7 @@ namespace MediaBrowser.ApiInteraction
         public Task SendPlaystateCommandAsync(string sessionId, PlaystateRequest request)
         {
             var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("SeekPosition", request.SeekPosition);
+            dict.AddIfNotNull("SeekPosition", request.SeekPositionTicks);
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Playing/" + request.Command.ToString(), dict);
 
