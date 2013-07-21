@@ -1369,5 +1369,37 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<ThemeMediaResult>(stream);
             }
         }
+
+        /// <summary>
+        /// Gets the critic reviews.
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns>Task{ItemReviewsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// id
+        /// or
+        /// userId
+        /// </exception>
+        public async Task<ItemReviewsResult> GetCriticReviews(string itemId, int? startIndex = null, int? limit = null)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNull("startIndex", startIndex);
+            queryString.AddIfNotNull("limit", limit);
+
+            var url = GetApiUrl("Items/" + itemId + "/CriticReviews", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemReviewsResult>(stream);
+            }
+        }
     }
 }
