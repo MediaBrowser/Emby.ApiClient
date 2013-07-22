@@ -105,6 +105,7 @@ namespace MediaBrowser.ApiInteraction.net35
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
+            request.Headers.Add(_defaultHeaders);
             request.ContentType = contentType;
             byte[] data = Encoding.UTF8.GetBytes(postContent);
             request.ContentLength = data.Length;
