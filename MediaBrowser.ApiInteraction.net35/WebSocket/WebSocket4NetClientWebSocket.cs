@@ -105,10 +105,22 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         public void Dispose()
         {
-            if (_socket != null)
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
             {
-                _socket.Close();
-                _socket = null;
+                if (_socket != null)
+                {
+                    _socket.Close();
+                    _socket = null;
+                }
             }
         }
     }

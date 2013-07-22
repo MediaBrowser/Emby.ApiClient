@@ -30,12 +30,9 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>System.Object.</returns>
         public object DeserializeFromStream(Stream stream, Type type)
         {
-            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(new StreamReader(stream)))
             {
-                using (var jsonReader = new JsonTextReader(streamReader))
-                {
-                    return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize(jsonReader, type);
-                }
+                return JsonSerializer.Create(new JsonSerializerSettings()).Deserialize(jsonReader, type);
             }
         }
 
