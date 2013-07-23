@@ -50,6 +50,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     _socket = new WebSocket4Net.WebSocket(url);
                     _socket.Opened += (sender, arg) => onSuccess();
                     _socket.MessageReceived += websocket_MessageReceived;
+                    _socket.Error += (sender, arg) => onError(arg.Exception);
                     _socket.Open();
                 }
                 catch(Exception e) 
@@ -57,7 +58,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     onError(e);
                 }
             });
-        }
+        }       
+
 
         /// <summary>
         /// Handles the MessageReceived event of the websocket control.
