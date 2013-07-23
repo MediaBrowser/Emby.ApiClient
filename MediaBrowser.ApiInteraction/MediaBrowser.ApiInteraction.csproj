@@ -54,6 +54,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,6 +72,7 @@
     <Compile Include="AuthenticationExtensions.cs" />
     <Compile Include="BaseApiClient.cs" />
     <Compile Include="ApiClient.cs" />
+    <Compile Include="HttpMessageHandlerFactory.cs" />
     <Compile Include="IAsyncHttpClient.cs" />
     <Compile Include="WebSocket\ApiWebSocket.cs" />
     <Compile Include="WebSocket\BaseApiWebSocket.cs" />

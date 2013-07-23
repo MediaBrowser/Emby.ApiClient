@@ -53,7 +53,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new NullLogger(), new AsyncHttpClient(new NullLogger()), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
+            : this(new NullLogger(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
         }
 
@@ -61,7 +61,6 @@ namespace MediaBrowser.ApiInteraction
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="serverHostName">Name of the server host.</param>
         /// <param name="serverApiPort">The server API port.</param>
         /// <param name="clientName">Name of the client.</param>
@@ -69,15 +68,10 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, IAsyncHttpClient httpClient, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+        public ApiClient(ILogger logger, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
             : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException("httpClient");
-            }
-
-            HttpClient = httpClient;
+            HttpClient = new AsyncHttpClient(logger);
 
             var param = AuthorizationParameter;
 

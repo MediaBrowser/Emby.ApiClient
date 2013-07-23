@@ -59,22 +59,10 @@ namespace MediaBrowser.ApiInteraction
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="handler">The handler.</param>
-        public AsyncHttpClient(ILogger logger, HttpMessageHandler handler)
-        {
-            Logger = logger;
-
-            HttpClient = new HttpClient(handler);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
         public AsyncHttpClient(ILogger logger)
         {
             Logger = logger;
-            HttpClient = new HttpClient();
+            HttpClient = new HttpClient(HttpMessageHandlerFactory.GetHandler());
         }
 
         /// <summary>
