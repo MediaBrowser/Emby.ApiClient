@@ -239,22 +239,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>System.String.</returns>
         private string GetMessageType(string json)
         {
-            try
-            {
-                // Service Stack
-                var message = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json);
-
-                if (!string.IsNullOrEmpty(message.MessageType))
-                {
-                    return message.MessageType;
-                }
-            }
-            catch
-            {
-                // Newtonsoft will throw an error so unfortunately we have to swallow this
-            }
-
-            return _jsonSerializer.DeserializeFromString<WebSocketMessage<object>>(json).MessageType;
+            var message = _jsonSerializer.DeserializeFromString<WebSocketMessage>(json);
+            return message.MessageType;
         }
 
         /// <summary>
@@ -305,5 +291,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             return clientName + "|" + deviceId + "|" + applicationVersion;
         }
+    }
+
+    class WebSocketMessage
+    {
+        public string MessageType { get; set; }
     }
 }
