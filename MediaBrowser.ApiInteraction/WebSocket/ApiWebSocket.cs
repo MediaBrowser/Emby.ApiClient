@@ -120,7 +120,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             try
             {
-                await _webSocket.SendAsync(bytes, Model.Net.WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
+                await _webSocket.SendAsync(bytes, WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

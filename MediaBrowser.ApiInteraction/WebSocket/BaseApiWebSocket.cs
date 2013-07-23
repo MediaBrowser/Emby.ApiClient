@@ -115,117 +115,146 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
             // deserialize the WebSocketMessage with an object payload
-            var message = _jsonSerializer.DeserializeFromString<WebSocketMessage<object>>(json);
+            var messageType = GetMessageType(json);
 
-            Logger.Info("Received web socket message: {0}", message.MessageType);
+            Logger.Info("Received web socket message: {0}", messageType);
 
-            if (string.Equals(message.MessageType, "LibraryChanged"))
+            if (string.Equals(messageType, "LibraryChanged"))
             {
                 FireEvent(LibraryChanged, this, new LibraryChangedEventArgs
                 {
                     UpdateInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<LibraryUpdateInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "RestartRequired"))
+            else if (string.Equals(messageType, "RestartRequired"))
             {
                 FireEvent(RestartRequired, this, EventArgs.Empty);
             }
-            else if (string.Equals(message.MessageType, "UserDeleted"))
+            else if (string.Equals(messageType, "UserDeleted"))
             {
+                var userId = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json).Data;
+
                 FireEvent(UserDeleted, this, new UserDeletedEventArgs
                 {
-                    Id = (string)message.Data
+                    Id = userId
                 });
             }
-            else if (string.Equals(message.MessageType, "ScheduledTaskStarted"))
+            else if (string.Equals(messageType, "ScheduledTaskStarted"))
             {
+                var taskName = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json).Data;
+                
                 FireEvent(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
                 {
-                    Name = (string)message.Data
+                    Name = taskName
                 });
             }
-            else if (string.Equals(message.MessageType, "ScheduledTaskEnded"))
+            else if (string.Equals(messageType, "ScheduledTaskEnded"))
             {
                 FireEvent(ScheduledTaskEnded, this, new ScheduledTaskEndedEventArgs
                 {
                     Result = _jsonSerializer.DeserializeFromString<WebSocketMessage<TaskResult>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "PackageInstalling"))
+            else if (string.Equals(messageType, "PackageInstalling"))
             {
                 FireEvent(PackageInstalling, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "PackageInstallationFailed"))
+            else if (string.Equals(messageType, "PackageInstallationFailed"))
             {
                 FireEvent(PackageInstallationFailed, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "PackageInstallationCompleted"))
+            else if (string.Equals(messageType, "PackageInstallationCompleted"))
             {
                 FireEvent(PackageInstallationCompleted, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "PackageInstallationCancelled"))
+            else if (string.Equals(messageType, "PackageInstallationCancelled"))
             {
                 FireEvent(PackageInstallationCancelled, this, new PackageInstallationEventArgs
                 {
                     InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "UserUpdated"))
+            else if (string.Equals(messageType, "UserUpdated"))
             {
                 FireEvent(UserUpdated, this, new UserUpdatedEventArgs
                 {
                     User = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDto>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "PluginUninstalled"))
+            else if (string.Equals(messageType, "PluginUninstalled"))
             {
                 FireEvent(PluginUninstalled, this, new PluginUninstallEventArgs
                 {
                     PluginInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<PluginInfo>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "Browse"))
+            else if (string.Equals(messageType, "Browse"))
             {
                 FireEvent(BrowseCommand, this, new BrowseRequestEventArgs
                 {
                     Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<BrowseRequest>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "Play"))
+            else if (string.Equals(messageType, "Play"))
             {
                 FireEvent(PlayCommand, this, new PlayRequestEventArgs
                 {
                     Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlayRequest>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "UpdatePlaystate"))
+            else if (string.Equals(messageType, "UpdatePlaystate"))
             {
                 FireEvent(PlaystateCommand, this, new PlaystateRequestEventArgs
                 {
                     Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlaystateRequest>>(json).Data
                 });
             }
-            else if (string.Equals(message.MessageType, "NotificationAdded"))
+            else if (string.Equals(messageType, "NotificationAdded"))
             {
                 FireEvent(NotificationAdded, this, EventArgs.Empty);
             }
-            else if (string.Equals(message.MessageType, "NotificationUpdated"))
+            else if (string.Equals(messageType, "NotificationUpdated"))
             {
                 FireEvent(NotificationUpdated, this, EventArgs.Empty);
             }
-            else if (string.Equals(message.MessageType, "NotificationsMarkedRead"))
+            else if (string.Equals(messageType, "NotificationsMarkedRead"))
             {
                 FireEvent(NotificationsMarkedRead, this, EventArgs.Empty);
             }
+        }
+
+        /// <summary>
+        /// Gets the type of the message.
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <returns>System.String.</returns>
+        private string GetMessageType(string json)
+        {
+            try
+            {
+                // Service Stack
+                var message = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json);
+
+                if (!string.IsNullOrEmpty(message.MessageType))
+                {
+                    return message.MessageType;
+                }
+            }
+            catch
+            {
+                // Newtonsoft will throw an error so unfortunately we have to swallow this
+            }
+
+            return _jsonSerializer.DeserializeFromString<WebSocketMessage<object>>(json).MessageType;
         }
 
         /// <summary>
