@@ -1,0 +1,56 @@
+﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Serialization;
+using System;
+
+namespace MediaBrowser.ApiInteraction.net35
+{
+    public interface IApiClient : IDisposable
+    {
+        string ApplicationVersion { get; set; }
+        string ClientName { get; set; }
+        string CurrentUserId { get; set; }
+        string DeviceId { get; set; }
+        string DeviceName { get; set; }
+        string GetArtImageUrl(BaseItemDto item, ImageOptions options);
+        string GetArtistImageUrl(BaseItemDto item, ImageOptions options);
+        string GetArtistImageUrl(string name, ImageOptions options);
+        string GetAudioStreamUrl(StreamOptions options);
+        string[] GetBackdropImageUrls(BaseItemDto item, ImageOptions options);
+        string GetGenreImageUrl(BaseItemDto item, ImageOptions options);
+        string GetGenreImageUrl(string name, ImageOptions options);
+        string GetHlsAudioStreamUrl(StreamOptions options);
+        string GetHlsVideoStreamUrl(VideoStreamOptions options);
+        string GetImageUrl(BaseItemDto item, ImageOptions options);
+        string GetImageUrl(string itemId, ImageOptions options);
+        string GetLogoImageUrl(BaseItemDto item, ImageOptions options);
+        string GetMusicGenreImageUrl(BaseItemDto item, ImageOptions options);
+        string GetMusicGenreImageUrl(string name, ImageOptions options);
+        string GetPersonImageUrl(BaseItemDto item, ImageOptions options);
+        string GetPersonImageUrl(BaseItemPerson item, ImageOptions options);
+        string GetPersonImageUrl(string name, ImageOptions options);
+        string GetStudioImageUrl(BaseItemDto item, ImageOptions options);
+        string GetStudioImageUrl(string name, ImageOptions options);
+        string GetUserImageUrl(UserDto user, ImageOptions options);
+        string GetUserImageUrl(string userId, ImageOptions options);
+        string GetVideoStreamUrl(VideoStreamOptions options);
+        string GetYearImageUrl(BaseItemDto item, ImageOptions options);
+        string GetYearImageUrl(int year, ImageOptions options);
+        int? ImageQuality { get; set; }
+        IJsonSerializer JsonSerializer { get; set; }
+        int ServerApiPort { get; set; }
+        string ServerHostName { get; set; }
+        void AuthenticateUser(string userId, byte[] sha1Hash, Action<MediaBrowser.Model.Entities.EmptyRequestResult> onSuccess, Action<Exception> onError);
+        void AuthenticateUser(string userId, string password, Action<bool> onResponse);
+        void GetGenres(MediaBrowser.Model.Querying.ItemsByNameQuery query, Action<MediaBrowser.Model.Querying.ItemsResult> onSuccess, Action<Exception> onError);
+        void GetItem(string id, string userId, Action<BaseItemDto> onSuccess, Action<Exception> onError);
+        void GetItems(MediaBrowser.Model.Querying.ItemQuery query, Action<MediaBrowser.Model.Querying.ItemsResult> onSuccess, Action<Exception> onError);
+        void GetRootFolder(string userId, Action<BaseItemDto> onSuccess, Action<Exception> onError);
+        void GetServerConfiguration(Action<MediaBrowser.Model.Configuration.ServerConfiguration> onSuccess, Action<Exception> onError);
+        void GetSystemInfo(Action<MediaBrowser.Model.System.SystemInfo> onSuccess, Action<Exception> onError);
+        void GetUser(string id, Action<UserDto> onSuccess, Action<Exception> onError);
+        void GetUsers(Action<UserDto[]> onSuccess, Action<Exception> onError);
+        void Post<T>(string url, System.Collections.Generic.Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError) where T : class;
+        ApiWebSocket WebSocketConnection { get; set; }
+    }
+}

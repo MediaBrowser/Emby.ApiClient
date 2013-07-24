@@ -17,7 +17,7 @@ namespace MediaBrowser.ApiInteraction.net35
     /// <summary>
     /// Class ApiClient
     /// </summary>
-    public class ApiClient : BaseApiClient
+    public class ApiClient : BaseApiClient, IApiClient
     {
         /// <summary>
         /// The _HTTP client
@@ -182,6 +182,25 @@ namespace MediaBrowser.ApiInteraction.net35
         }
 
         /// <summary>
+        /// Gets the genres.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public void GetGenres(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            string url = base.GetItemByNameListUrl("Genres", query);
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
         /// Gets the server configuration.
         /// </summary>
         /// <param name="onSuccess">The on success.</param>
@@ -257,7 +276,7 @@ namespace MediaBrowser.ApiInteraction.net35
             }, onError);
         }
 
-        private void Post<TInputType, TOutputType>(string url, TInputType obj, Action<TOutputType> onSuccess, Action<Exception> onError)
+        protected void Post<TInputType, TOutputType>(string url, TInputType obj, Action<TOutputType> onSuccess, Action<Exception> onError)
             where TOutputType : class
         {
             url = AddDataFormat(url);
@@ -295,7 +314,7 @@ namespace MediaBrowser.ApiInteraction.net35
         /// or
         /// onError
         /// </exception>
-        private void GetSerializedData<T>(string url, Action<T> onSuccess, Action<Exception> onError)
+        protected void GetSerializedData<T>(string url, Action<T> onSuccess, Action<Exception> onError)
         {
             if (onSuccess == null)
             {

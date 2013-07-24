@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="ApiClient.cs" />
     <Compile Include="HttpClient.cs" />
+    <Compile Include="IApiClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerLocator.cs" />
     <Compile Include="WebSocket\ApiWebSocket.cs" />
