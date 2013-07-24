@@ -201,6 +201,25 @@ namespace MediaBrowser.ApiInteraction.net35
         }
 
         /// <summary>
+        /// Gets the studios.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public void GetStudios(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            string url = base.GetItemByNameListUrl("Studios", query);
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
         /// Gets the server configuration.
         /// </summary>
         /// <param name="onSuccess">The on success.</param>

@@ -1,7 +1,11 @@
 ﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.ApiInteraction.net35
 {
@@ -42,15 +46,16 @@ namespace MediaBrowser.ApiInteraction.net35
         string ServerHostName { get; set; }
         void AuthenticateUser(string userId, byte[] sha1Hash, Action<MediaBrowser.Model.Entities.EmptyRequestResult> onSuccess, Action<Exception> onError);
         void AuthenticateUser(string userId, string password, Action<bool> onResponse);
-        void GetGenres(MediaBrowser.Model.Querying.ItemsByNameQuery query, Action<MediaBrowser.Model.Querying.ItemsResult> onSuccess, Action<Exception> onError);
+        void GetGenres(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError);
+        void GetStudios(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError);
         void GetItem(string id, string userId, Action<BaseItemDto> onSuccess, Action<Exception> onError);
         void GetItems(MediaBrowser.Model.Querying.ItemQuery query, Action<MediaBrowser.Model.Querying.ItemsResult> onSuccess, Action<Exception> onError);
         void GetRootFolder(string userId, Action<BaseItemDto> onSuccess, Action<Exception> onError);
-        void GetServerConfiguration(Action<MediaBrowser.Model.Configuration.ServerConfiguration> onSuccess, Action<Exception> onError);
-        void GetSystemInfo(Action<MediaBrowser.Model.System.SystemInfo> onSuccess, Action<Exception> onError);
+        void GetServerConfiguration(Action<ServerConfiguration> onSuccess, Action<Exception> onError);
+        void GetSystemInfo(Action<SystemInfo> onSuccess, Action<Exception> onError);
         void GetUser(string id, Action<UserDto> onSuccess, Action<Exception> onError);
         void GetUsers(Action<UserDto[]> onSuccess, Action<Exception> onError);
-        void Post<T>(string url, System.Collections.Generic.Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError) where T : class;
+        void Post<T>(string url, Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError) where T : class;
         ApiWebSocket WebSocketConnection { get; set; }
     }
 }
