@@ -6,8 +6,10 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -266,6 +268,107 @@ namespace MediaBrowser.ApiInteraction.net35
             args["password"] = password;
 
             Post<EmptyRequestResult>(url, args, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Reports to the server that the user has begun playing an item
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="onResponse">The on response.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// itemId
+        /// or
+        /// userId
+        /// </exception>
+        public void ReportPlaybackStart(string itemId, string userId, Action<bool> onResponse)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                WebSocketConnection.Send("PlaybackStart", itemId);
+            }
+
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId);
+
+            Post<EmptyRequestResult>(url, new Dictionary<string, string>(), x => onResponse(true), x => onResponse(false));
+        }
+
+        /// <summary>
+        /// Reports playback progress to the server
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
+        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        public void ReportPlaybackProgress(string itemId, string userId, long? positionTicks, bool isPaused, Action<bool> onResponse)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                WebSocketConnection.Send("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower());
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("positionTicks", positionTicks);
+            dict.Add("isPaused", isPaused);
+
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
+
+            Post<EmptyRequestResult>(url, new Dictionary<string, string>(), x => onResponse(true), x => onResponse(false));
+        }
+
+        /// <summary>
+        /// Reports to the server that the user has stopped playing an item
+        /// </summary>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="positionTicks">The position ticks.</param>
+        /// <returns>Task{UserItemDataDto}.</returns>
+        /// <exception cref="System.ArgumentNullException">itemId</exception>
+        public void ReportPlaybackStopped(string itemId, string userId, long? positionTicks, Action<bool> onResponse)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            {
+                WebSocketConnection.Send("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("positionTicks", positionTicks);
+
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
+
+            _httpClient.Delete(url, x => onResponse(false));
         }
 
         public void Post<T>(string url, Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError)

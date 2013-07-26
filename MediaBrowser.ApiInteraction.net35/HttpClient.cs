@@ -53,29 +53,16 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="onError">The on error.</param>
         public void Get(string url, Action<Stream> onSuccess, Action<Exception> onError)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            Get(request, onSuccess, onError);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="onSuccess">The on success.</param>
-        /// <param name="onError">The on error.</param>
-        public void Get(HttpWebRequest request, Action<Stream> onSuccess, Action<Exception> onError)
-        {
-            _logger.Info("Get {0}", request.RequestUri);
-
-            request.Timeout = _timeout;
-            request.Headers.Add(_defaultHeaders);
-            
+            var request = CreateRequest(url);
             request.BeginGetResponse(iar =>
             {
-                HttpWebResponse response;
                 try
                 {
-                    response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
+                    var response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
+                    if (EnsureSuccessStatusCode(response, onError))
+                    {
+                        onSuccess(response.GetResponseStream());
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -84,12 +71,6 @@ namespace MediaBrowser.ApiInteraction.net35
                     onError(ex);
                     return;
                 }
-
-                if (EnsureSuccessStatusCode(response, onError))
-                {
-                    onSuccess(response.GetResponseStream());
-                }
-
             }, request);
         }
 
@@ -103,38 +84,53 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="onError">The on error.</param>
         public void Post(string url, string contentType, string postContent, Action<Stream> onSuccess, Action<Exception> onError)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "POST";
-            request.Headers.Add(_defaultHeaders);
+            var request = CreateRequest(url, "POST");
             request.ContentType = contentType;
             byte[] data = Encoding.UTF8.GetBytes(postContent);
             request.ContentLength = data.Length;
-
-            _logger.Info("Post {0}", url);
-
             request.BeginGetRequestStream(iar =>
             {
-                HttpWebResponse response;
                 try
                 {
                     Stream stream = request.EndGetRequestStream(iar);
                     stream.Write(data, 0, data.Length);
                     stream.Close();
 
-                    response = (HttpWebResponse) request.GetResponse();
+                    var response = (HttpWebResponse) request.GetResponse();
+                    if (EnsureSuccessStatusCode(response, onError))
+                    {
+                        onSuccess(response.GetResponseStream());
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error posting {0}", ex, url);
                     onError(ex);
-                    return;
-                }
-
-                if (EnsureSuccessStatusCode(response, onError))
-                {
-                    onSuccess(response.GetResponseStream());
                 }
             }, null);
+        }
+
+        /// <summary>
+        /// Deletes the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="onError">The on error.</param>
+        public void Delete(string url, Action<Exception> onError)
+        {
+            var request = CreateRequest(url, "DELETE");
+            request.BeginGetResponse(iar =>
+            {
+                try
+                {
+                    var response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
+                    EnsureSuccessStatusCode(response, onError);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error DELETE {0}", ex, url);
+                    onError(ex);
+                }
+            }, request);
         }
 
         /// <summary>
@@ -150,11 +146,28 @@ namespace MediaBrowser.ApiInteraction.net35
             if (statusCode < 200 || statusCode >= 400)
             {
                 onError(new HttpException(response.StatusDescription) { StatusCode = response.StatusCode });
-
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Creates the request.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="method">The method.</param>
+        /// <returns></returns>
+        private HttpWebRequest CreateRequest(string url, string method = "GET")
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = method;
+            request.Headers.Add(_defaultHeaders);
+            request.Timeout = _timeout;
+
+            _logger.Debug("{0}: {1}", method, url);
+
+            return request;
         }
 
         /// <summary>
