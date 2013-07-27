@@ -457,16 +457,25 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a studio
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto> GetStudioAsync(string name)
+        public async Task<BaseItemDto> GetStudioAsync(string name, string userId)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
 
-            var url = GetApiUrl("Studios/" + GetSlugName(name));
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("Studios/" + GetSlugName(name), dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -478,16 +487,25 @@ namespace MediaBrowser.ApiInteraction
         /// Gets a genre
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto> GetGenreAsync(string name)
+        public async Task<BaseItemDto> GetGenreAsync(string name, string userId)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
 
-            var url = GetApiUrl("Genres/" + GetSlugName(name));
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("Genres/" + GetSlugName(name), dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -520,16 +538,25 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the artist async.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">name</exception>
-        public async Task<BaseItemDto> GetArtistAsync(string name)
+        public async Task<BaseItemDto> GetArtistAsync(string name, string userId)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
 
-            var url = GetApiUrl("Artists/" + GetSlugName(name));
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("Artists/" + GetSlugName(name), dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -568,30 +595,22 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="name">The name.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto> GetPersonAsync(string name)
+        public async Task<BaseItemDto> GetPersonAsync(string name, string userId)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
             }
-
-            var url = GetApiUrl("Persons/" + GetSlugName(name));
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            if (string.IsNullOrEmpty(userId))
             {
-                return DeserializeFromStream<BaseItemDto>(stream);
+                throw new ArgumentNullException("userId");
             }
-        }
 
-        /// <summary>
-        /// Gets a year
-        /// </summary>
-        /// <param name="year">The year.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<BaseItemDto> GetYearAsync(int year)
-        {
-            var url = GetApiUrl("Years/" + year);
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("Persons/" + GetSlugName(name), dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
