@@ -33,8 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MediaBrowser.Model.net35, Version=3.0.4956.15939, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="MediaBrowser.Model.net35">
       <HintPath>..\packages\MediaBrowser.Common.3.0.161\lib\net35\MediaBrowser.Model.net35.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
