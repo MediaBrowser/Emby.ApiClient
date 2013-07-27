@@ -115,7 +115,17 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
             // deserialize the WebSocketMessage with an object payload
-            var messageType = GetMessageType(json);
+            string messageType;
+
+            try
+            {
+                messageType = GetMessageType(json);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error deserializing web socket message", ex);
+                return;
+            }
 
             Logger.Info("Received web socket message: {0}", messageType);
 
