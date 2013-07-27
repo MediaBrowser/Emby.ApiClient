@@ -12,6 +12,7 @@ using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Users;
 using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
@@ -1088,7 +1089,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task AuthenticateUserAsync(string username, byte[] sha1Hash)
+        public Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -1103,7 +1104,7 @@ namespace MediaBrowser.ApiInteraction
             args["username"] = username;
             args["password"] = password;
 
-            return PostAsync<EmptyRequestResult>(url, args);
+            return PostAsync<AuthenticationResult>(url, args);
         }
 
         /// <summary>
