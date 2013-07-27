@@ -1151,10 +1151,17 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the display preferences.
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="client">The client.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id)
+        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client)
         {
-            var url = GetApiUrl("DisplayPreferences/" + id);
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+            dict.Add("client", client);
+
+            var url = GetApiUrl("DisplayPreferences/" + id, dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -1168,14 +1175,19 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences)
+        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client)
         {
             if (displayPreferences == null)
             {
                 throw new ArgumentNullException("displayPreferences");
             }
 
-            var url = GetApiUrl("DisplayPreferences/" + displayPreferences.Id);
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+            dict.Add("client", client);
+
+            var url = GetApiUrl("DisplayPreferences/" + displayPreferences.Id, dict);
 
             return PostAsync<DisplayPreferences, EmptyRequestResult>(url, displayPreferences);
         }
