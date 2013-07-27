@@ -1084,22 +1084,23 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Authenticates a user and returns the result
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="username">The username.</param>
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task AuthenticateUserAsync(string userId, byte[] sha1Hash)
+        public Task AuthenticateUserAsync(string username, byte[] sha1Hash)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(username))
             {
-                throw new ArgumentNullException("userId");
+                throw new ArgumentNullException("username");
             }
 
             var password = BitConverter.ToString(sha1Hash).Replace("-", string.Empty);
-            var url = GetApiUrl("Users/" + userId + "/Authenticate");
+            var url = GetApiUrl("Users/AuthenticateByName");
 
             var args = new Dictionary<string, string>();
 
+            args["username"] = username;
             args["password"] = password;
 
             return PostAsync<EmptyRequestResult>(url, args);
