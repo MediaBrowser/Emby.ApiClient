@@ -513,14 +513,50 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task<BaseItemDto> GetMusicGenreAsync(string name, string userId)
+        public async Task<BaseItemDto> GetMusicGenreAsync(string name, string userId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("MusicGenres/" + GetSlugName(name), dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto>(stream);
+            }
         }
 
-        public Task<BaseItemDto> GetGameGenreAsync(string name, string userId)
+        public async Task<BaseItemDto> GetGameGenreAsync(string name, string userId)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var dict = new QueryStringDictionary();
+
+            dict.Add("userId", userId);
+
+            var url = GetApiUrl("GameGenres/" + GetSlugName(name), dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto>(stream);
+            }
         }
 
         /// <summary>
