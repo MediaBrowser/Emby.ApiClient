@@ -513,6 +513,16 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        public Task<BaseItemDto> GetMusicGenreAsync(string name, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<BaseItemDto> GetGameGenreAsync(string name, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Gets the music genre async.
         /// </summary>
