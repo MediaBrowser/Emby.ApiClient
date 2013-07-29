@@ -443,19 +443,31 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            var index = options.ImageIndex ?? 0;
+            options.Tag = GetImageTag(item, options);
 
-            if (options.ImageType == ImageType.Backdrop)
+            if (item.IsArtist)
             {
-                options.Tag = item.BackdropImageTags[index];
+                return GetArtistImageUrl(item.Name, options);
             }
-            else if (options.ImageType == ImageType.Chapter)
+            if (item.IsGenre)
             {
-                options.Tag = item.Chapters[index].ImageTag;
+                return GetGenreImageUrl(item.Name, options);
             }
-            else
+            if (item.IsGameGenre)
             {
-                options.Tag = item.ImageTags[options.ImageType];
+                return GetGameGenreImageUrl(item.Name, options);
+            }
+            if (item.IsMusicGenre)
+            {
+                return GetMusicGenreImageUrl(item.Name, options);
+            }
+            if (item.IsPerson)
+            {
+                return GetPersonImageUrl(item.Name, options);
+            }
+            if (item.IsStudio)
+            {
+                return GetStudioImageUrl(item.Name, options);
             }
 
             return GetImageUrl(item.Id, options);
@@ -548,30 +560,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the person image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetPersonImageUrl(BaseItemDto item, ImageOptions options)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            options.Tag = GetImageTag(item, options);
-
-            return GetPersonImageUrl(item.Name, options);
-        }
-
-        /// <summary>
         /// Gets the image tag.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -654,58 +642,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the genre image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetGenreImageUrl(BaseItemDto item, ImageOptions options)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            options.Tag = GetImageTag(item, options);
-
-            return GetGenreImageUrl(item.Name, options);
-        }
-
-        /// <summary>
-        /// Gets the music genre image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// item
-        /// or
-        /// options
-        /// </exception>
-        public string GetMusicGenreImageUrl(BaseItemDto item, ImageOptions options)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            options.Tag = GetImageTag(item, options);
-
-            return GetMusicGenreImageUrl(item.Name, options);
-        }
-        
-        /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
         /// <param name="name">The name.</param>
@@ -742,31 +678,26 @@ namespace MediaBrowser.ApiInteraction
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
-        
+
         /// <summary>
-        /// Gets the studio image URL.
+        /// Gets the game genre image URL.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetStudioImageUrl(BaseItemDto item, ImageOptions options)
+        /// <exception cref="System.ArgumentNullException">name</exception>
+        public string GetGameGenreImageUrl(string name, ImageOptions options)
         {
-            if (item == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException("name");
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
+            var url = "GameGenres/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
-            options.Tag = GetImageTag(item, options);
-
-            return GetStudioImageUrl(item.Name, options);
+            return GetImageUrl(url, options, new QueryStringDictionary());
         }
-
+        
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
@@ -784,32 +715,6 @@ namespace MediaBrowser.ApiInteraction
             var url = "Studios/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
-        /// Gets the artist image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item
-        /// or
-        /// options</exception>
-        public string GetArtistImageUrl(BaseItemDto item, ImageOptions options)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            options.Tag = GetImageTag(item, options);
-
-            return GetArtistImageUrl(item.Name, options);
         }
 
         /// <summary>

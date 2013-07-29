@@ -17,23 +17,18 @@ namespace MediaBrowser.ApiInteraction.net35
         string DeviceId { get; set; }
         string DeviceName { get; set; }
         string GetArtImageUrl(BaseItemDto item, ImageOptions options);
-        string GetArtistImageUrl(BaseItemDto item, ImageOptions options);
         string GetArtistImageUrl(string name, ImageOptions options);
         string GetAudioStreamUrl(StreamOptions options);
         string[] GetBackdropImageUrls(BaseItemDto item, ImageOptions options);
-        string GetGenreImageUrl(BaseItemDto item, ImageOptions options);
         string GetGenreImageUrl(string name, ImageOptions options);
         string GetHlsAudioStreamUrl(StreamOptions options);
         string GetHlsVideoStreamUrl(VideoStreamOptions options);
         string GetImageUrl(BaseItemDto item, ImageOptions options);
         string GetImageUrl(string itemId, ImageOptions options);
         string GetLogoImageUrl(BaseItemDto item, ImageOptions options);
-        string GetMusicGenreImageUrl(BaseItemDto item, ImageOptions options);
         string GetMusicGenreImageUrl(string name, ImageOptions options);
-        string GetPersonImageUrl(BaseItemDto item, ImageOptions options);
         string GetPersonImageUrl(BaseItemPerson item, ImageOptions options);
         string GetPersonImageUrl(string name, ImageOptions options);
-        string GetStudioImageUrl(BaseItemDto item, ImageOptions options);
         string GetStudioImageUrl(string name, ImageOptions options);
         string GetUserImageUrl(UserDto user, ImageOptions options);
         string GetUserImageUrl(string userId, ImageOptions options);
