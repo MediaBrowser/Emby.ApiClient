@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Users;
 using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
@@ -98,6 +99,17 @@ namespace MediaBrowser.ApiInteraction.net35
         {
             var url = GetApiUrl("Users");
 
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the public users.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetPublicUsers(Action<UserDto[]> onSuccess, Action<Exception> onError)
+        {
+            var url = GetApiUrl("Users/Public");
             GetSerializedData(url, onSuccess, onError);
         }
 
@@ -246,6 +258,32 @@ namespace MediaBrowser.ApiInteraction.net35
                 var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(password ?? string.Empty));
                 AuthenticateUser(userId, hash, x => onResponse(true), x => onResponse(false));
             }
+        }
+
+        /// <summary>
+        /// Authenticates the user by name.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="sha1Hash">The sha1 hash.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">username</exception>
+        public void AuthenticateByName(string username, byte[] sha1Hash, Action<AuthenticationResult> onSuccess, Action<Exception> onError)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new ArgumentNullException("username");
+            }
+
+            var password = BitConverter.ToString(sha1Hash).Replace("-", string.Empty);
+            var url = GetApiUrl("Users/AuthenticateByName");
+
+            var args = new Dictionary<string, string>();
+
+            args["username"] = username;
+            args["password"] = password;
+
+            Post<AuthenticationResult>(url, args, onSuccess, onError);
         }
 
         /// <summary>
