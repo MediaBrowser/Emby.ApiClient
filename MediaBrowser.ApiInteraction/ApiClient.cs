@@ -438,6 +438,66 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the game genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        public async Task<ItemsResult> GetGameGenresAsync(ItemsByNameQuery query)
+        {
+            var url = GetItemByNameListUrl("GameGenres", query);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        public async Task<ItemsResult> GetGenresAsync(ItemsByNameQuery query)
+        {
+            var url = GetItemByNameListUrl("Genres", query);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the music genres async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        public async Task<ItemsResult> GetMusicGenresAsync(ItemsByNameQuery query)
+        {
+            var url = GetItemByNameListUrl("Genres", query);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the studios async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        public async Task<ItemsResult> GetStudiosAsync(ItemsByNameQuery query)
+        {
+            var url = GetItemByNameListUrl("Genres", query);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets the artists.
         /// </summary>
         /// <param name="query">The query.</param>

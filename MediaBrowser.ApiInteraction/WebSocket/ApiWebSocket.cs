@@ -19,7 +19,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         private readonly IClientWebSocket _webSocket;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
         /// <param name="webSocket">The web socket.</param>
         /// <param name="logger">The logger.</param>
@@ -31,7 +31,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
         /// <param name="webSocket">The web socket.</param>
         public ApiWebSocket(IClientWebSocket webSocket)
@@ -137,8 +137,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="itemId">The current item id (if any)</param>
         /// <param name="itemName">The current item name (if any)</param>
         /// <param name="context">An optional, client-specific value indicating the area or section being browsed</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
         public Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken)
         {
             var vals = new List<string>
@@ -156,6 +156,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             return SendAsync("Context", string.Join("|", vals.ToArray()), cancellationToken);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is open.
+        /// </summary>
+        /// <value><c>true</c> if this instance is open; otherwise, <c>false</c>.</value>
         public bool IsOpen
         {
             get { return _webSocket != null && _webSocket.State == WebSocketState.Open; }
