@@ -67,6 +67,7 @@
     <Compile Include="BaseApiClient.cs" />
     <Compile Include="ApiClient.cs" />
     <Compile Include="HttpMessageHandlerFactory.cs" />
+    <Compile Include="IApiClient.cs" />
     <Compile Include="IAsyncHttpClient.cs" />
     <Compile Include="IBaseApiClient.cs" />
     <Compile Include="WebSocket\ApiWebSocket.cs" />
