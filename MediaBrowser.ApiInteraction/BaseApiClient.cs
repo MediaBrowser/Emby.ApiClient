@@ -14,7 +14,7 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Provides api methods that are usable on all platforms
     /// </summary>
-    public abstract class BaseApiClient : IDisposable
+    public abstract class BaseApiClient : IDisposable, IBaseApiClient
     {
         /// <summary>
         /// Gets the logger.

@@ -55,6 +55,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\BaseApiClient.cs">
       <Link>BaseApiClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\IBaseApiClient.cs">
+      <Link>IBaseApiClient.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\NewtonsoftJsonSerializer.cs">
       <Link>NewtonsoftJsonSerializer.cs</Link>
     </Compile>
