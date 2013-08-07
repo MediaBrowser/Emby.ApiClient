@@ -1451,7 +1451,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SearchHintResult> GetSearchHints(string userId, string searchTerm, int? startIndex = null, int? limit = null)
+        public async Task<SearchHintResult> GetSearchHintsAsync(string userId, string searchTerm, int? startIndex = null, int? limit = null)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
