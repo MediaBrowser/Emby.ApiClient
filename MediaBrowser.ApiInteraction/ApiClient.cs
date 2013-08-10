@@ -438,6 +438,90 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the instant mix from album async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetInstantMixFromAlbumAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetInstantMixUrl(query, "Albums");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the instant mix from artist async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsByNameQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetInstantMixByNameUrl(query, "Artists");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the instant mix from music genre async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsByNameQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetInstantMixByNameUrl(query, "MusicGenres");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the instant mix from song async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemsResult> GetInstantMixFromSongAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetInstantMixUrl(query, "Songs");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets the game genres async.
         /// </summary>
         /// <param name="query">The query.</param>

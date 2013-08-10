@@ -329,8 +329,6 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary { };
 
-            dict.Add("Id", query.Id);
-
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 
@@ -340,6 +338,76 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return GetApiUrl(type + "/" + query.Id + "/Similar", dict);
+        }
+
+        /// <summary>
+        /// Gets the instant mix URL.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// query
+        /// or
+        /// type
+        /// </exception>
+        protected string GetInstantMixUrl(SimilarItemsQuery query, string type)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            return GetApiUrl(type + "/" + query.Id + "/InstantMix", dict);
+        }
+
+        /// <summary>
+        /// Gets the instant mix by name URL.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// query
+        /// or
+        /// type
+        /// </exception>
+        protected string GetInstantMixByNameUrl(SimilarItemsByNameQuery query, string type)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            return GetApiUrl(type + "/" + GetSlugName(query.Name) + "/InstantMix", dict);
         }
 
         /// <summary>
