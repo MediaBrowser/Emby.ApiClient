@@ -102,16 +102,17 @@ namespace MediaBrowser.ApiInteraction
         /// Gets an image stream based on a url
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="System.ArgumentNullException">url</exception>
-        public Task<Stream> GetImageStreamAsync(string url)
+        public Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url))
             {
                 throw new ArgumentNullException("url");
             }
 
-            return HttpClient.GetAsync(url, CancellationToken.None);
+            return HttpClient.GetAsync(url, cancellationToken);
         }
 
         /// <summary>
