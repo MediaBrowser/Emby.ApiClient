@@ -228,11 +228,11 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<UserDto[]> GetPublicUsersAsync()
+        public async Task<UserDto[]> GetPublicUsersAsync(CancellationToken cancellationToken)
         {
             var url = GetApiUrl("Users/Public");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<UserDto[]>(stream);
             }
@@ -1366,7 +1366,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client)
+        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client, CancellationToken cancellationToken)
         {
             var dict = new QueryStringDictionary();
 
@@ -1375,7 +1375,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("DisplayPreferences/" + id, dict);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<DisplayPreferences>(stream);
             }
@@ -1456,11 +1456,16 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns>Task{Stream}.</returns>
-        public Task<Stream> GetSerializedStreamAsync(string url)
+        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken)
         {
             url = AddDataFormat(url);
 
-            return HttpClient.GetAsync(url, CancellationToken.None);
+            return HttpClient.GetAsync(url, cancellationToken);
+        }
+
+        public Task<Stream> GetSerializedStreamAsync(string url)
+        {
+            return GetSerializedStreamAsync(url, CancellationToken.None);
         }
 
         public async Task<NotificationsSummary> GetNotificationsSummary(string userId)
@@ -1600,7 +1605,7 @@ namespace MediaBrowser.ApiInteraction
         /// or
         /// userId
         /// </exception>
-        public async Task<ItemReviewsResult> GetCriticReviews(string itemId, int? startIndex = null, int? limit = null)
+        public async Task<ItemReviewsResult> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1614,7 +1619,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Items/" + itemId + "/CriticReviews", queryString);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemReviewsResult>(stream);
             }
