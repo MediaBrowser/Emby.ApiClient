@@ -1526,7 +1526,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent)
+        public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
         {
             var queryString = new QueryStringDictionary();
 
@@ -1535,7 +1535,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Items/" + itemId + "/ThemeMedia", queryString);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<AllThemeMediaResult>(stream);
             }
@@ -1563,7 +1563,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParent)
+        public async Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
         {
             var queryString = new QueryStringDictionary();
 
@@ -1572,13 +1572,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Items/" + itemId + "/ThemeSongs", queryString);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ThemeMediaResult>(stream);
             }
         }
 
-        public async Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParent)
+        public async Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
         {
             var queryString = new QueryStringDictionary();
 
@@ -1587,7 +1587,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Items/" + itemId + "/ThemeVideos", queryString);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ThemeMediaResult>(stream);
             }
