@@ -86,6 +86,8 @@ namespace MediaBrowser.ApiInteraction
 
                 EnsureSuccessStatusCode(msg);
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
@@ -129,6 +131,8 @@ namespace MediaBrowser.ApiInteraction
                 
                 EnsureSuccessStatusCode(msg);
 
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
