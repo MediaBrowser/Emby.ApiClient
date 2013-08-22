@@ -998,7 +998,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed)
+        public Task<UserItemDataDto> UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1013,10 +1013,10 @@ namespace MediaBrowser.ApiInteraction
 
             if (wasPlayed)
             {
-                return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+                return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
             }
 
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return DeleteAsync<UserItemDataDto>(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -1027,7 +1027,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite)
+        public Task<UserItemDataDto> UpdateFavoriteStatusAsync(string itemId, string userId, bool isFavorite)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1042,10 +1042,10 @@ namespace MediaBrowser.ApiInteraction
 
             if (isFavorite)
             {
-                return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+                return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
             }
 
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return DeleteAsync<UserItemDataDto>(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -1246,7 +1246,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ClearUserItemRatingAsync(string itemId, string userId)
+        public Task<UserItemDataDto> ClearUserItemRatingAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1260,7 +1260,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating");
 
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return DeleteAsync<UserItemDataDto>(url, CancellationToken.None);
         }
 
         /// <summary>
@@ -1271,7 +1271,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task UpdateUserItemRatingAsync(string itemId, string userId, bool likes)
+        public Task<UserItemDataDto> UpdateUserItemRatingAsync(string itemId, string userId, bool likes)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1289,7 +1289,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating", dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -1423,6 +1423,24 @@ namespace MediaBrowser.ApiInteraction
             const string contentType = "application/x-www-form-urlencoded";
 
             using (var stream = await HttpClient.PostAsync(url, contentType, postContent, CancellationToken.None).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<T>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the async.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{``0}.</returns>
+        private async Task<T> DeleteAsync<T>(string url, CancellationToken cancellationToken)
+            where T : class
+        {
+            url = AddDataFormat(url);
+
+            using (var stream = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }

@@ -160,7 +160,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task DeleteAsync(string url, CancellationToken cancellationToken)
+        public async Task<Stream> DeleteAsync(string url, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -173,6 +173,10 @@ namespace MediaBrowser.ApiInteraction
                     OnResponseReceived(url, msg.StatusCode);
                     
                     EnsureSuccessStatusCode(msg);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
             }
             catch (HttpRequestException ex)

@@ -39,7 +39,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task DeleteAsync(string url, CancellationToken cancellationToken);
+        Task<Stream> DeleteAsync(string url, CancellationToken cancellationToken);
 
         /// <summary>
         /// Posts the async.
