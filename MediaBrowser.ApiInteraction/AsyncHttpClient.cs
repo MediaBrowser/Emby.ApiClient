@@ -23,9 +23,12 @@ namespace MediaBrowser.ApiInteraction
         /// Called when [response received].
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="verb">The verb.</param>
         /// <param name="statusCode">The status code.</param>
-        private void OnResponseReceived(string url, HttpStatusCode statusCode)
+        private void OnResponseReceived(string url, string verb, HttpStatusCode statusCode)
         {
+            Logger.Debug("Received {0} status code from {1}: {2}", statusCode, verb, url);
+
             if (HttpResponseReceived != null)
             {
                 try
@@ -76,13 +79,13 @@ namespace MediaBrowser.ApiInteraction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Info("Get {0}", url);
+            Logger.Info("GET {0}", url);
             
             try
             {
                 var msg = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
-                OnResponseReceived(url, msg.StatusCode);
+                OnResponseReceived(url, "GET", msg.StatusCode);
 
                 EnsureSuccessStatusCode(msg);
 
@@ -119,7 +122,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
         public async Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
         {
-            Logger.Info("Post {0}", url);
+            Logger.Info("POST {0}", url);
             
             var content = new StringContent(postContent, Encoding.UTF8, contentType);
 
@@ -127,7 +130,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 var msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
 
-                OnResponseReceived(url, msg.StatusCode);
+                OnResponseReceived(url, "POST", msg.StatusCode);
                 
                 EnsureSuccessStatusCode(msg);
 
@@ -164,20 +167,19 @@ namespace MediaBrowser.ApiInteraction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Info("Delete {0}", url);
+            Logger.Info("DELETE {0}", url);
 
             try
             {
-                using (var msg = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
-                {
-                    OnResponseReceived(url, msg.StatusCode);
-                    
-                    EnsureSuccessStatusCode(msg);
+                var msg = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                OnResponseReceived(url, "DELETE", msg.StatusCode);
 
-                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
+                EnsureSuccessStatusCode(msg);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
             {
