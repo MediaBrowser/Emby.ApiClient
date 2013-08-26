@@ -280,7 +280,7 @@ namespace MediaBrowser.ApiInteraction.net35
 
             var args = new Dictionary<string, string>();
 
-            args["username"] = username;
+            args["username"] = Uri.EscapeUriString(username);
             args["password"] = password;
 
             Post<AuthenticationResult>(url, args, onSuccess, onError);
@@ -291,7 +291,8 @@ namespace MediaBrowser.ApiInteraction.net35
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="sha1Hash">The sha1 hash.</param>
-        /// <returns>Task.</returns>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
         /// <exception cref="System.ArgumentNullException">userId</exception>
         public void AuthenticateUser(string userId, byte[] sha1Hash, Action<EmptyRequestResult> onSuccess, Action<Exception> onError)
         {

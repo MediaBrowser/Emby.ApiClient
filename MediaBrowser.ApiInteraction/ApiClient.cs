@@ -1311,7 +1311,8 @@ namespace MediaBrowser.ApiInteraction
 
             var args = new Dictionary<string, string>();
 
-            args["username"] = username;
+            args["username"] = Uri.EscapeDataString(username);
+            Logger.Debug("Username: {0}", Uri.EscapeDataString(username));
             args["password"] = password;
 
             return PostAsync<AuthenticationResult>(url, args);
