@@ -69,6 +69,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<BrowseRequestEventArgs> BrowseCommand;
         public event EventHandler<PlayRequestEventArgs> PlayCommand;
         public event EventHandler<PlaystateRequestEventArgs> PlaystateCommand;
+        public event EventHandler<MessageCommandEventArgs> MessageCommand;
+        public event EventHandler<SystemCommandEventArgs> SystemCommand;
 
         public event EventHandler<EventArgs> NotificationAdded;
         public event EventHandler<EventArgs> NotificationUpdated;
@@ -239,6 +241,20 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             else if (string.Equals(messageType, "NotificationsMarkedRead"))
             {
                 FireEvent(NotificationsMarkedRead, this, EventArgs.Empty);
+            }
+            else if (string.Equals(messageType, "SystemCommand"))
+            {
+                FireEvent(SystemCommand, this, new SystemCommandEventArgs
+                {
+                    Command = _jsonSerializer.DeserializeFromString<WebSocketMessage<SystemCommand>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "MessageCommand"))
+            {
+                FireEvent(MessageCommand, this, new MessageCommandEventArgs
+                {
+                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<MessageCommand>>(json).Data
+                });
             }
         }
 
