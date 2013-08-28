@@ -1188,7 +1188,7 @@ namespace MediaBrowser.ApiInteraction
             dict.Add("itemType", itemType);
             dict.AddIfNotNullOrEmpty("context", context);
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Viewing/", dict);
+            var url = GetApiUrl("Sessions/" + sessionId + "/Viewing", dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
@@ -1218,7 +1218,55 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("StartPositionTicks", request.StartPositionTicks);
             dict.Add("PlayCommand", request.PlayCommand.ToString());
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Playing/", dict);
+            var url = GetApiUrl("Sessions/" + sessionId + "/Playing", dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+        public Task SendMessageCommandAsync(string sessionId, MessageCommand command)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+            if (command == null)
+            {
+                throw new ArgumentNullException("command");
+            }
+            if (string.IsNullOrEmpty(command.Header))
+            {
+                throw new ArgumentException("Please supply a message header");
+            }
+            if (string.IsNullOrEmpty(command.Text))
+            {
+                throw new ArgumentException("Please supply a message text");
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("TimeoutMs", command.TimeoutMs);
+            dict.Add("Text", command.Text);
+            dict.Add("Header", command.Header);
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/Message", dict);
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+        /// <summary>
+        /// Sends the system command async.
+        /// </summary>
+        /// <param name="sessionId">The session id.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">sessionId</exception>
+        public Task SendSystemCommandAsync(string sessionId, SystemCommand command)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/System/" + command);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
