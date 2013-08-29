@@ -1086,7 +1086,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused)
+        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1100,12 +1100,13 @@ namespace MediaBrowser.ApiInteraction
 
             if (WebSocketConnection != null && WebSocketConnection.IsOpen)
             {
-                return WebSocketConnection.SendAsync("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower());
+                return WebSocketConnection.SendAsync("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower() + "|" + isMuted.ToString().ToLower());
             }
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("positionTicks", positionTicks);
             dict.Add("isPaused", isPaused);
+            dict.Add("isMuted", isMuted);
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
 
@@ -1435,7 +1436,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client)
+        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
         {
             if (displayPreferences == null)
             {

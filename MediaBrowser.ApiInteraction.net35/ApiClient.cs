@@ -351,7 +351,7 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public void ReportPlaybackProgress(string itemId, string userId, long? positionTicks, bool isPaused, Action<bool> onResponse)
+        public void ReportPlaybackProgress(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted, Action<bool> onResponse)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -365,12 +365,13 @@ namespace MediaBrowser.ApiInteraction.net35
 
             if (WebSocketConnection != null && WebSocketConnection.IsOpen)
             {
-                WebSocketConnection.Send("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower());
+                WebSocketConnection.Send("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower() + "|" + isMuted.ToString().ToLower());
             }
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("positionTicks", positionTicks);
             dict.Add("isPaused", isPaused);
+            dict.Add("isMuted", isMuted);
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
 
