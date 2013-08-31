@@ -16,6 +16,15 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
+        public event EventHandler ServerLocationChanged;
+        private void OnServerLocationChanged()
+        {
+            if (ServerLocationChanged != null)
+            {
+                ServerLocationChanged(this, EventArgs.Empty);
+            }
+        }
+
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -71,17 +80,49 @@ namespace MediaBrowser.ApiInteraction
             ApplicationVersion = applicationVersion;
         }
 
+        private string _serverHostName;
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerHostName { get; set; }
+        public string ServerHostName
+        {
+            get { return _serverHostName; }
 
+            set
+            {
+                var changed = !string.Equals(_serverHostName, value);
+
+                _serverHostName = value;
+
+                if (changed)
+                {
+                    OnServerLocationChanged();
+                }
+            }
+        }
+
+        private int _serverApiPort;
         /// <summary>
         /// Gets or sets the port number used by the API
         /// </summary>
         /// <value>The server API port.</value>
-        public int ServerApiPort { get; set; }
+        public int ServerApiPort
+        {
+            get { return _serverApiPort; }
+
+            set
+            {
+                var changed = _serverApiPort != value;
+
+                _serverApiPort = value;
+
+                if (changed)
+                {
+                    OnServerLocationChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the type of the client.
@@ -122,7 +163,7 @@ namespace MediaBrowser.ApiInteraction
             set
             {
                 _currentUserId = value;
-                OnCurrentUserChanged();
+                OnAuthorizationInfoChanged();
             }
         }
 
@@ -195,7 +236,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Called when [current user changed].
         /// </summary>
-        protected virtual void OnCurrentUserChanged()
+        protected virtual void OnAuthorizationInfoChanged()
         {
 
         }

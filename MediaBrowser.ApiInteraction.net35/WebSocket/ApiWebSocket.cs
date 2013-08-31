@@ -20,27 +20,18 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly IClientWebSocket _webSocket;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
-        /// </summary>
-        /// <param name="webSocket">The web socket.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        public ApiWebSocket(IClientWebSocket webSocket, ILogger logger, IJsonSerializer jsonSerializer)
-            : base(logger, jsonSerializer)
+        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, IClientWebSocket webSocket)
+            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
         {
             _webSocket = webSocket;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
-        /// </summary>
-        /// <param name="webSocket">The web socket.</param>
-        public ApiWebSocket(IClientWebSocket webSocket)
-            : this(webSocket, new NullLogger(), new NewtonsoftJsonSerializer())
+        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, IClientWebSocket webSocket)
+            : base(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
         {
+            _webSocket = webSocket;
         }
-
+        
         public void Connect(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, string applicationVersion, Action<Exception> onError)
         {
             var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
@@ -60,9 +51,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
-        public void Connect(string serverHostName, int serverWebSocketPort, Action<Exception> onError)
+        public void Connect(Action<Exception> onError)
         {
-            var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
+            var url = GetWebSocketUrl(ServerHostName, ServerWebSocketPort);
             try
             {
                 _webSocket.Connect(url, () => 

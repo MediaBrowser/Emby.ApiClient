@@ -10,6 +10,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public interface IClientWebSocket : IDisposable
     {
+        event EventHandler Closed;
+
         /// <summary>
         /// Gets or sets the state.
         /// </summary>

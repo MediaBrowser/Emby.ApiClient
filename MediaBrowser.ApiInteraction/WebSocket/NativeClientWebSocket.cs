@@ -11,6 +11,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public class NativeClientWebSocket : IClientWebSocket
     {
+        public event EventHandler Closed;
+        
         /// <summary>
         /// The _client
         /// </summary>
@@ -20,7 +22,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly ILogger _logger;
 
-        private SemaphoreSlim _sendResource = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _sendResource = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeClientWebSocket" /> class.
@@ -102,6 +104,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             if (result.CloseStatus.HasValue)
             {
+                OnClosed();
                 throw new WebSocketException("Connection closed");
             }
 
@@ -156,6 +159,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        void OnClosed()
+        {
+            if (Closed != null)
+            {
+                Closed(this, EventArgs.Empty);
+            }
+        }
+        
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

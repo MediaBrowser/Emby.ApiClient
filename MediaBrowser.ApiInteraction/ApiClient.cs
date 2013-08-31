@@ -91,9 +91,9 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Called when [current user changed].
         /// </summary>
-        protected override void OnCurrentUserChanged()
+        protected override void OnAuthorizationInfoChanged()
         {
-            base.OnCurrentUserChanged();
+            base.OnAuthorizationInfoChanged();
 
             HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }

@@ -77,6 +77,36 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<EventArgs> NotificationsMarkedRead;
 
         /// <summary>
+        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// </summary>
+        /// <value>The name of the server host.</value>
+        public string ServerHostName { get; private set; }
+
+        /// <summary>
+        /// Gets the server web socket port.
+        /// </summary>
+        /// <value>The server web socket port.</value>
+        public int ServerWebSocketPort { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the type of the client.
+        /// </summary>
+        /// <value>The type of the client.</value>
+        public string ApplicationName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        public string ApplicationVersion { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
+        /// <value>The device id.</value>
+        public string DeviceId { get; private set; }
+        
+        /// <summary>
         /// Occurs when [restart required].
         /// </summary>
         public event EventHandler<EventArgs> RestartRequired;
@@ -91,10 +121,15 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer)
+        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName)
         {
             Logger = logger;
             _jsonSerializer = jsonSerializer;
+            ApplicationName = applicationName;
+            ApplicationVersion = applicationVersion;
+            DeviceId = deviceId;
+            ServerWebSocketPort = serverWebSocketPort;
+            ServerHostName = serverHostName;
         }
 
         /// <summary>

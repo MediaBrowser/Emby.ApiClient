@@ -56,6 +56,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 _socket.Open();
 
                 _socket.Opened += (sender, args) => taskCompletionSource.TrySetResult(true);
+                _socket.Closed += _socket_Closed;
             }
             catch (Exception ex)
             {
@@ -65,6 +66,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
 
             return taskCompletionSource.Task;
+        }
+
+        void _socket_Closed(object sender, EventArgs e)
+        {
+            if (Closed != null)
+            {
+                Closed(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -110,5 +119,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 _socket = null;
             }
         }
+
+        public event EventHandler Closed;
     }
 }

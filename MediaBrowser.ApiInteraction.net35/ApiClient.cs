@@ -72,9 +72,9 @@ namespace MediaBrowser.ApiInteraction.net35
         {
         }
 
-        protected override void OnCurrentUserChanged()
+        protected override void OnAuthorizationInfoChanged()
         {
-            base.OnCurrentUserChanged();
+            base.OnAuthorizationInfoChanged();
             _httpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
         }
 

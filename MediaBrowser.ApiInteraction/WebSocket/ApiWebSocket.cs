@@ -9,63 +9,70 @@ using System.Threading.Tasks;
 namespace MediaBrowser.ApiInteraction.WebSocket
 {
     /// <summary>
-    /// Class ApiWebSocket
+    /// Establishes a web socket connection to the server.
+    /// When disconnected, the Closed event will fire.
+    /// In addition, this also supports a periodic timer to reconnect if needed
     /// </summary>
-    public class ApiWebSocket : BaseApiWebSocket
+    public class ApiWebSocket : BaseApiWebSocket, IDisposable
     {
+        public event EventHandler Closed;
+
         /// <summary>
         /// The _web socket
         /// </summary>
-        private readonly IClientWebSocket _webSocket;
+        private readonly Func<IClientWebSocket> _webSocketFactory;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
-        /// </summary>
-        /// <param name="webSocket">The web socket.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        public ApiWebSocket(IClientWebSocket webSocket, ILogger logger, IJsonSerializer jsonSerializer)
-            : base(logger, jsonSerializer)
+        private IClientWebSocket _currentWebSocket;
+
+        private Timer _ensureTimer;
+
+        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
+            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
         {
-            _webSocket = webSocket;
+            _webSocketFactory = webSocketFactory;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
-        /// </summary>
-        /// <param name="webSocket">The web socket.</param>
-        public ApiWebSocket(IClientWebSocket webSocket)
-            : this(webSocket, new NullLogger(), new NewtonsoftJsonSerializer())
+        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
+            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, webSocketFactory)
         {
+            _webSocketFactory = webSocketFactory;
+        }
+
+        private readonly Task _trueTaskResult = Task.Factory.StartNew(() => { });
+
+        public Task EnsureConnection(CancellationToken cancellationToken)
+        {
+            return IsOpen ? _trueTaskResult : ConnectAsync(cancellationToken);
         }
 
         /// <summary>
         /// Connects the async.
         /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, string applicationVersion, CancellationToken cancellationToken)
+        public async Task ConnectAsync(CancellationToken cancellationToken)
         {
-            var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
+            var url = GetWebSocketUrl(ServerHostName, ServerWebSocketPort);
 
             try
             {
-                await _webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+                var socket = _webSocketFactory();
+
+                await socket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
 
                 Logger.Info("Connected to {0}", url);
 
-                _webSocket.OnReceiveDelegate = OnMessageReceived;
+                socket.OnReceiveDelegate = OnMessageReceived;
 
-                var idMessage = GetIdentificationMessage(clientName, deviceId, applicationVersion);
+                var idMessage = GetIdentificationMessage(ApplicationName, DeviceId, ApplicationVersion);
 
                 Logger.Info("Sending web socket identification message {0}", idMessage);
 
                 await SendAsync(IdentificationMessageName, idMessage).ConfigureAwait(false);
+
+                socket.Closed += _currentWebSocket_Closed;
+
+                ReplaceSocket(socket);
             }
             catch (Exception ex)
             {
@@ -75,28 +82,25 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
-        /// <summary>
-        /// Connects the async.
-        /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task ConnectAsync(string serverHostName, int serverWebSocketPort, CancellationToken cancellationToken)
+        private void ReplaceSocket(IClientWebSocket socket)
         {
-            var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
+            var previousSocket = _currentWebSocket;
 
-            try
+            _currentWebSocket = socket;
+
+            if (previousSocket != null)
             {
-                await _webSocket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
-
-                Logger.Info("Connected to {0}", url);
-
-                _webSocket.OnReceiveDelegate = OnMessageReceived;
+                previousSocket.Dispose();
             }
-            catch (Exception ex)
+        }
+
+        void _currentWebSocket_Closed(object sender, EventArgs e)
+        {
+            Logger.Warn("Web socket connection closed.");
+
+            if (Closed != null)
             {
-                Logger.ErrorException("Error connecting to {0}", ex, url);
+                Closed(this, EventArgs.Empty);
             }
         }
 
@@ -126,7 +130,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             try
             {
-                await _webSocket.SendAsync(bytes, WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
+                await _currentWebSocket.SendAsync(bytes, WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -168,7 +172,39 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <value><c>true</c> if this instance is open; otherwise, <c>false</c>.</value>
         public bool IsOpen
         {
-            get { return _webSocket != null && _webSocket.State == WebSocketState.Open; }
+            get { return _currentWebSocket != null && _currentWebSocket.State == WebSocketState.Open; }
+        }
+
+        public void StartEnsureConnectionTimer(int intervalMs)
+        {
+            StopEnsureConnectionTimer();
+
+            _ensureTimer = new Timer(TimerCallback, null, intervalMs, intervalMs);
+        }
+
+        public void StopEnsureConnectionTimer()
+        {
+            if (_ensureTimer != null)
+            {
+                _ensureTimer.Dispose();
+                _ensureTimer = null;
+            }
+        }
+
+        private void TimerCallback(object state)
+        {
+            EnsureConnection(CancellationToken.None);
+        }
+
+        public void Dispose()
+        {
+            StopEnsureConnectionTimer();
+
+            if (_currentWebSocket != null)
+            {
+                _currentWebSocket.Dispose();
+                _currentWebSocket = null;
+            }
         }
     }
 }
