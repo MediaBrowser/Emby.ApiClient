@@ -74,6 +74,8 @@ From here you can subscribe to the various events available on the web socket:
             webSocket.UserUpdated += webSocket_UserUpdated;
 ```
 
+In addition, ApiClient has a WebSocketConnection property. After connecting to the web socket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead.
+
 Note that if this is being used from a client application, some of these events will actually be remote control commands. An example of a remote control event is PlayCommand, meaning the server is instructing the client to begin playing something.
 
 
