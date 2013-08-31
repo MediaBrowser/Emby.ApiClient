@@ -14,7 +14,7 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Provides api methods that are usable on all platforms
     /// </summary>
-    public abstract class BaseApiClient : IDisposable, IBaseApiClient
+    public abstract class BaseApiClient : IDisposable
     {
         /// <summary>
         /// Gets the logger.
@@ -282,6 +282,8 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("MaxOfficialRating", query.MaxOfficialRating);
 
             dict.Add("recursive", query.Recursive);
+
+            dict.AddIfNotNull("MinIndexNumber", query.MinIndexNumber);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres);
@@ -766,7 +768,7 @@ namespace MediaBrowser.ApiInteraction
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
-        
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>

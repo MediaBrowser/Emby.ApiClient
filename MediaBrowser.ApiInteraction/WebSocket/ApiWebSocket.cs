@@ -61,11 +61,17 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 _webSocket.OnReceiveDelegate = OnMessageReceived;
 
-                await SendAsync(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId, applicationVersion)).ConfigureAwait(false);
+                var idMessage = GetIdentificationMessage(clientName, deviceId, applicationVersion);
+
+                Logger.Info("Sending web socket identification message {0}", idMessage);
+
+                await SendAsync(IdentificationMessageName, idMessage).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error connecting to {0}", ex, url);
+
+                throw;
             }
         }
 

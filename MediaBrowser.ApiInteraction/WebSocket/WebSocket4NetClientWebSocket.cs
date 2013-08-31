@@ -16,8 +16,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <value>The state.</value>
         public Model.Net.WebSocketState State
         {
-            get { 
-            
+            get
+            {
+
                 switch (_socket.State)
                 {
                     case WebSocketState.Closed:
@@ -44,14 +45,26 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task.</returns>
         public Task ConnectAsync(string url, CancellationToken cancellationToken)
         {
-            return Task.Run(() =>
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            try
             {
                 _socket = new WebSocket4Net.WebSocket(url);
 
                 _socket.MessageReceived += websocket_MessageReceived;
 
                 _socket.Open();
-            });
+
+                _socket.Opened += (sender, args) => taskCompletionSource.TrySetResult(true);
+            }
+            catch (Exception ex)
+            {
+                _socket = null;
+
+                taskCompletionSource.TrySetException(ex);
+            }
+
+            return taskCompletionSource.Task;
         }
 
         /// <summary>
