@@ -68,11 +68,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 Logger.Info("Sending web socket identification message {0}", idMessage);
 
-                await SendAsync(IdentificationMessageName, idMessage).ConfigureAwait(false);
-
                 socket.Closed += _currentWebSocket_Closed;
 
                 ReplaceSocket(socket);
+
+                await SendAsync(IdentificationMessageName, idMessage).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
