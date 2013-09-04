@@ -57,14 +57,22 @@ Then you can simply instantiate ApiWebSocket and open a connection.
 
 ``` c#
 
-            var webSocket = new ApiWebSocket(ClientWebSocketFactory.CreateWebSocket());
-
-			await webSocket.ConnectAsync("localhost", webSocketPort, CancellationToken.None);
+            var webSocket = new ApiWebSocket("localhost", webSocketPort, deviceId, appName, appVersion, ClientWebSocketFactory.CreateWebSocket);
 ```
 
-Please note that ClientWebSocketFactory is not available in the portable class library. In this case you'll need to supply your own implementation of IClientWebSocket.
+The last constructor param is a factory method used to create an instance of IClientWebSocket. This will be called anytime a new connection is made.
+The full .net ApiClient library includes CilentWebSocketFactory. If using the portable version, you'll have to provide your own implementation.
 
-Also note that if this is being used from a client application that requires the user to authenticate, you should use the ConnectAsync overload that allows you to specify the deviceId and clientName;
+Once instantiated, simply call ConnectAsync, and/or periodically call EnsureConnection to re-connect if needed.
+
+``` c#
+
+            await webSocket.ConnectAsync(CancellationToken.None);
+            
+            Or
+            
+            await webSocket.EnsureConnection(CancellationToken.None);
+```
 
 From here you can subscribe to the various events available on the web socket:
 
