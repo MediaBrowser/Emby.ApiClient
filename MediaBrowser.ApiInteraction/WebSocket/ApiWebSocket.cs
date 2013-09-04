@@ -38,6 +38,20 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             _webSocketFactory = webSocketFactory;
         }
 
+        public static async Task<ApiWebSocket> Create(ILogger logger, IJsonSerializer jsonSerializer, ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
+        {
+            var systemInfo = await client.GetSystemInfoAsync().ConfigureAwait(false);
+
+            var socket = new ApiWebSocket(client.ServerHostName, systemInfo.WebSocketPortNumber, client.DeviceId,
+                                          client.ApplicationVersion, client.ClientName, webSocketFactory);
+
+            await socket.ConnectAsync(cancellationToken).ConfigureAwait(false);
+
+            client.WebSocketConnection = socket;
+
+            return socket;
+        }
+
         private readonly Task _trueTaskResult = Task.Factory.StartNew(() => { });
 
         public Task EnsureConnection(CancellationToken cancellationToken)
