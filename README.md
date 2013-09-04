@@ -63,7 +63,7 @@ Then you can simply instantiate ApiWebSocket and open a connection.
 The last constructor param is a factory method used to create an instance of IClientWebSocket. This will be called anytime a new connection is made.
 The full .net ApiClient library includes CilentWebSocketFactory. If using the portable version, you'll have to provide your own implementation.
 
-Once instantiated, simply call ConnectAsync, and/or periodically call EnsureConnection to re-connect if needed.
+Once instantiated, simply call ConnectAsync, and/or periodically call EnsureConnectionAsync to re-connect if needed.
 
 ``` c#
 
@@ -71,10 +71,19 @@ Once instantiated, simply call ConnectAsync, and/or periodically call EnsureConn
             
             Or
             
-            await webSocket.EnsureConnection(CancellationToken.None);
+            await webSocket.EnsureConnectionAsync(CancellationToken.None);
 ```
 
-From here you can subscribe to the various events available on the web socket:
+There is a Closed event that will fire anytime the connection is lost. From there you can attempt to reconnect. ApiWebSocket also supports the use of a timer to periodically call EnsureConnectionAsync:
+
+``` c#
+
+            webSocket.StartEnsureConnectionTimer(int intervalMs);
+            
+            webSocket.StopEnsureConnectionTimer();
+```
+
+ApiWebSocket has various events that can be used to receive notifications from the server:
 
 
 ``` c#
@@ -82,9 +91,9 @@ From here you can subscribe to the various events available on the web socket:
             webSocket.UserUpdated += webSocket_UserUpdated;
 ```
 
-In addition, ApiClient has a WebSocketConnection property. After connecting to the web socket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead.
+# Linking with ApiClient #
 
-Note that if this is being used from a client application, some of these events will actually be remote control commands. An example of a remote control event is PlayCommand, meaning the server is instructing the client to begin playing something.
+ApiClient has a WebSocketConnection property. After creating ApiWebSocket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead. This is optional and omitting this will not result in any loss of functionality with the http-based ApiClient.
 
 
 # Logging and Interfaces #
