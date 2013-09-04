@@ -63,7 +63,7 @@ Then you can simply instantiate ApiWebSocket and open a connection.
 The last constructor param is a factory method used to create an instance of IClientWebSocket. This will be called anytime a new connection is made.
 The full .net ApiClient library includes CilentWebSocketFactory. If using the portable version, you'll have to provide your own implementation.
 
-Once instantiated, simply call EnsureConnectionAsync. Even once connected, this method can be called at anytime to reconnect if needed.
+Once instantiated, simply call EnsureConnectionAsync. Even once connected, this method can be called at anytime to verify connection status and reconnect if needed.
 
 ``` c#
 
