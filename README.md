@@ -57,16 +57,29 @@ Then you can simply instantiate ApiWebSocket and open a connection.
 
 ``` c#
 
-            var webSocket = new ApiWebSocket(ClientWebSocketFactory.CreateWebSocket());
-
-			await webSocket.ConnectAsync("localhost", webSocketPort, CancellationToken.None);
+            var webSocket = new ApiWebSocket("localhost", webSocketPort, deviceId, appName, appVersion, ClientWebSocketFactory.CreateWebSocket);
 ```
 
-Please note that ClientWebSocketFactory is not available in the portable class library. In this case you'll need to supply your own implementation of IClientWebSocket.
+The last constructor param is a factory method used to create an instance of IClientWebSocket. This will be called anytime a new connection is made.
+The full .net ApiClient library includes CilentWebSocketFactory. If using the portable version, you'll have to provide your own implementation.
 
-Also note that if this is being used from a client application that requires the user to authenticate, you should use the ConnectAsync overload that allows you to specify the deviceId and clientName;
+Once instantiated, simply call EnsureConnectionAsync. Even once connected, this method can be called at anytime to verify connection status and reconnect if needed.
 
-From here you can subscribe to the various events available on the web socket:
+``` c#
+
+            await webSocket.EnsureConnectionAsync(CancellationToken.None);
+```
+
+There is a Closed event that will fire anytime the connection is lost. From there you can attempt to reconnect. ApiWebSocket also supports the use of a timer to periodically call EnsureConnectionAsync:
+
+``` c#
+
+            webSocket.StartEnsureConnectionTimer(int intervalMs);
+            
+            webSocket.StopEnsureConnectionTimer();
+```
+
+ApiWebSocket has various events that can be used to receive notifications from the server:
 
 
 ``` c#
@@ -74,9 +87,9 @@ From here you can subscribe to the various events available on the web socket:
             webSocket.UserUpdated += webSocket_UserUpdated;
 ```
 
-In addition, ApiClient has a WebSocketConnection property. After connecting to the web socket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead.
+# Linking with ApiClient #
 
-Note that if this is being used from a client application, some of these events will actually be remote control commands. An example of a remote control event is PlayCommand, meaning the server is instructing the client to begin playing something.
+ApiClient has a WebSocketConnection property. After creating ApiWebSocket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead. This is optional and omitting this will not result in any loss of functionality with the http-based ApiClient.
 
 
 # Logging and Interfaces #
