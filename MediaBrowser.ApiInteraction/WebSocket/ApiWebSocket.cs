@@ -15,6 +15,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public class ApiWebSocket : BaseApiWebSocket, IDisposable
     {
+        /// <summary>
+        /// Occurs when [closed].
+        /// </summary>
         public event EventHandler Closed;
 
         /// <summary>
@@ -22,22 +25,57 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly Func<IClientWebSocket> _webSocketFactory;
 
+        /// <summary>
+        /// The _current web socket
+        /// </summary>
         private IClientWebSocket _currentWebSocket;
 
+        /// <summary>
+        /// The _ensure timer
+        /// </summary>
         private Timer _ensureTimer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="applicationName">Name of the application.</param>
+        /// <param name="webSocketFactory">The web socket factory.</param>
         public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
             : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
         {
             _webSocketFactory = webSocketFactory;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// </summary>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="applicationName">Name of the application.</param>
+        /// <param name="webSocketFactory">The web socket factory.</param>
         public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
             : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, webSocketFactory)
         {
             _webSocketFactory = webSocketFactory;
         }
 
+        /// <summary>
+        /// Creates the specified logger.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="client">The client.</param>
+        /// <param name="webSocketFactory">The web socket factory.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{ApiWebSocket}.</returns>
         public static async Task<ApiWebSocket> Create(ILogger logger, IJsonSerializer jsonSerializer, ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
         {
             var systemInfo = await client.GetSystemInfoAsync().ConfigureAwait(false);
@@ -45,16 +83,33 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             var socket = new ApiWebSocket(client.ServerHostName, systemInfo.WebSocketPortNumber, client.DeviceId,
                                           client.ApplicationVersion, client.ClientName, webSocketFactory);
 
-            await socket.ConnectAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await socket.ConnectAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                socket.Dispose();
+
+                throw;
+            }
 
             client.WebSocketConnection = socket;
 
             return socket;
         }
 
+        /// <summary>
+        /// The _true task result
+        /// </summary>
         private readonly Task _trueTaskResult = Task.Factory.StartNew(() => { });
 
-        public Task EnsureConnection(CancellationToken cancellationToken)
+        /// <summary>
+        /// Ensures the connection.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task EnsureConnectionAsync(CancellationToken cancellationToken)
         {
             return IsOpen ? _trueTaskResult : ConnectAsync(cancellationToken);
         }
@@ -96,6 +151,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        /// <summary>
+        /// Replaces the socket.
+        /// </summary>
+        /// <param name="socket">The socket.</param>
         private void ReplaceSocket(IClientWebSocket socket)
         {
             var previousSocket = _currentWebSocket;
@@ -108,6 +167,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        /// <summary>
+        /// Handles the Closed event of the _currentWebSocket control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void _currentWebSocket_Closed(object sender, EventArgs e)
         {
             Logger.Warn("Web socket connection closed.");
@@ -189,6 +253,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             get { return _currentWebSocket != null && _currentWebSocket.State == WebSocketState.Open; }
         }
 
+        /// <summary>
+        /// Starts the ensure connection timer.
+        /// </summary>
+        /// <param name="intervalMs">The interval ms.</param>
         public void StartEnsureConnectionTimer(int intervalMs)
         {
             StopEnsureConnectionTimer();
@@ -196,6 +264,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             _ensureTimer = new Timer(TimerCallback, null, intervalMs, intervalMs);
         }
 
+        /// <summary>
+        /// Stops the ensure connection timer.
+        /// </summary>
         public void StopEnsureConnectionTimer()
         {
             if (_ensureTimer != null)
@@ -205,11 +276,18 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        /// <summary>
+        /// Timers the callback.
+        /// </summary>
+        /// <param name="state">The state.</param>
         private void TimerCallback(object state)
         {
-            EnsureConnection(CancellationToken.None);
+            EnsureConnectionAsync(CancellationToken.None);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             StopEnsureConnectionTimer();
