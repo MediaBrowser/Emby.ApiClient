@@ -76,6 +76,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<EventArgs> NotificationUpdated;
         public event EventHandler<EventArgs> NotificationsMarkedRead;
 
+        public event EventHandler<EventArgs> ServerRestarting;
+        public event EventHandler<EventArgs> ServerShuttingDown;
+
+        public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
+        
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -176,6 +181,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             else if (string.Equals(messageType, "RestartRequired"))
             {
                 FireEvent(RestartRequired, this, EventArgs.Empty);
+            }
+            else if (string.Equals(messageType, "ServerRestarting"))
+            {
+                FireEvent(ServerRestarting, this, EventArgs.Empty);
+            }
+            else if (string.Equals(messageType, "ServerShuttingDown"))
+            {
+                FireEvent(ServerShuttingDown, this, EventArgs.Empty);
             }
             else if (string.Equals(messageType, "UserDeleted"))
             {
@@ -289,6 +302,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 FireEvent(MessageCommand, this, new MessageCommandEventArgs
                 {
                     Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<MessageCommand>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "Sessions"))
+            {
+                FireEvent(SessionsUpdated, this, new SessionUpdatesEventArgs
+                {
+                    Sessions = _jsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto[]>>(json).Data
                 });
             }
         }

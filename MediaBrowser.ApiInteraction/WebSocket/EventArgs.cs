@@ -128,6 +128,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public PlaystateRequest Request { get; set; }
     }
 
+    /// <summary>
+    /// Class MessageCommandEventArgs
+    /// </summary>
     public class MessageCommandEventArgs : EventArgs
     {
         /// <summary>
@@ -137,12 +140,23 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public MessageCommand Request { get; set; }
     }
 
+    /// <summary>
+    /// Class SystemCommandEventArgs
+    /// </summary>
     public class SystemCommandEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets or sets the request.
+        /// Gets or sets the command.
         /// </summary>
-        /// <value>The request.</value>
+        /// <value>The command.</value>
         public SystemCommand Command { get; set; }
+    }
+
+    /// <summary>
+    /// Class SessionUpdatesEventArgs
+    /// </summary>
+    public class SessionUpdatesEventArgs : EventArgs
+    {
+        public SessionInfoDto[] Sessions { get; set; }
     }
 }

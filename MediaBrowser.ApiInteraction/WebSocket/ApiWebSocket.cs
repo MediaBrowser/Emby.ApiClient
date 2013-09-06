@@ -36,7 +36,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         private Timer _ensureTimer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
@@ -53,7 +53,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiWebSocket"/> class.
+        /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
         /// <param name="serverHostName">Name of the server host.</param>
         /// <param name="serverWebSocketPort">The server web socket port.</param>
@@ -171,7 +171,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Handles the Closed event of the _currentWebSocket control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void _currentWebSocket_Closed(object sender, EventArgs e)
         {
             Logger.Warn("Web socket connection closed.");
@@ -274,6 +274,25 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 _ensureTimer.Dispose();
                 _ensureTimer = null;
             }
+        }
+
+        /// <summary>
+        /// Starts the receiving session updates.
+        /// </summary>
+        /// <param name="intervalMs">The interval ms.</param>
+        /// <returns>Task.</returns>
+        public Task StartReceivingSessionUpdates(int intervalMs)
+        {
+            return SendAsync("SessionsStart", string.Format("{0},{0}", intervalMs));
+        }
+
+        /// <summary>
+        /// Stops the receiving session updates.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task StopReceivingSessionUpdates()
+        {
+            return SendAsync("SessionsStop", string.Empty);
         }
 
         /// <summary>
