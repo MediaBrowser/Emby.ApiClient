@@ -10,6 +10,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public interface IClientWebSocket : IDisposable
     {
+        /// <summary>
+        /// Occurs when [closed].
+        /// </summary>
         event EventHandler Closed;
 
         /// <summary>
@@ -30,8 +33,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        Action<byte[]> OnReceiveDelegate { get; set; }
-        
+        Action<byte[]> OnReceiveBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
+        Action<string> OnReceive { get; set; }
+
         /// <summary>
         /// Sends the async.
         /// </summary>

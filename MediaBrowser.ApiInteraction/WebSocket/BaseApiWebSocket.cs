@@ -66,21 +66,54 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         public event EventHandler<LibraryChangedEventArgs> LibraryChanged;
 
+        /// <summary>
+        /// Occurs when [browse command].
+        /// </summary>
         public event EventHandler<BrowseRequestEventArgs> BrowseCommand;
+        /// <summary>
+        /// Occurs when [play command].
+        /// </summary>
         public event EventHandler<PlayRequestEventArgs> PlayCommand;
+        /// <summary>
+        /// Occurs when [playstate command].
+        /// </summary>
         public event EventHandler<PlaystateRequestEventArgs> PlaystateCommand;
+        /// <summary>
+        /// Occurs when [message command].
+        /// </summary>
         public event EventHandler<MessageCommandEventArgs> MessageCommand;
+        /// <summary>
+        /// Occurs when [system command].
+        /// </summary>
         public event EventHandler<SystemCommandEventArgs> SystemCommand;
 
+        /// <summary>
+        /// Occurs when [notification added].
+        /// </summary>
         public event EventHandler<EventArgs> NotificationAdded;
+        /// <summary>
+        /// Occurs when [notification updated].
+        /// </summary>
         public event EventHandler<EventArgs> NotificationUpdated;
+        /// <summary>
+        /// Occurs when [notifications marked read].
+        /// </summary>
         public event EventHandler<EventArgs> NotificationsMarkedRead;
 
+        /// <summary>
+        /// Occurs when [server restarting].
+        /// </summary>
         public event EventHandler<EventArgs> ServerRestarting;
+        /// <summary>
+        /// Occurs when [server shutting down].
+        /// </summary>
         public event EventHandler<EventArgs> ServerShuttingDown;
 
+        /// <summary>
+        /// Occurs when [sessions updated].
+        /// </summary>
         public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
-        
+
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -110,7 +143,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; private set; }
-        
+
         /// <summary>
         /// Occurs when [restart required].
         /// </summary>
@@ -126,6 +159,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="serverHostName">Name of the server host.</param>
+        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="applicationName">Name of the application.</param>
         protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName)
         {
             Logger = logger;
@@ -156,6 +194,15 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
+            OnMessageReceived(json);
+        }
+
+        /// <summary>
+        /// Called when [message received].
+        /// </summary>
+        /// <param name="json">The json.</param>
+        protected void OnMessageReceived(string json)
+        {
             // deserialize the WebSocketMessage with an object payload
             string messageType;
 
@@ -202,7 +249,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             else if (string.Equals(messageType, "ScheduledTaskStarted"))
             {
                 var taskName = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json).Data;
-                
+
                 FireEvent(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
                 {
                     Name = taskName
@@ -374,8 +421,15 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
     }
 
+    /// <summary>
+    /// Class WebSocketMessage
+    /// </summary>
     class WebSocketMessage
     {
+        /// <summary>
+        /// Gets or sets the type of the message.
+        /// </summary>
+        /// <value>The type of the message.</value>
         public string MessageType { get; set; }
     }
 }

@@ -131,7 +131,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 Logger.Info("Connected to {0}", url);
 
-                socket.OnReceiveDelegate = OnMessageReceived;
+                socket.OnReceiveBytes = OnMessageReceived;
+                socket.OnReceive = OnMessageReceived;
 
                 var idMessage = GetIdentificationMessage(ApplicationName, DeviceId, ApplicationVersion);
 

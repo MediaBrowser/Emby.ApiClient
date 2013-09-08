@@ -1,13 +1,18 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
 
 namespace MediaBrowser.ApiInteraction.WebSocket
 {
+    /// <summary>
+    /// Class WebSocket4NetClientWebSocket
+    /// </summary>
     public class WebSocket4NetClientWebSocket : IClientWebSocket
     {
+        /// <summary>
+        /// The _socket
+        /// </summary>
         private WebSocket4Net.WebSocket _socket;
 
         /// <summary>
@@ -68,6 +73,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             return taskCompletionSource.Task;
         }
 
+        /// <summary>
+        /// Handles the Closed event of the _socket control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void _socket_Closed(object sender, EventArgs e)
         {
             if (Closed != null)
@@ -80,12 +90,12 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Handles the MessageReceived event of the websocket control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="MessageReceivedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="MessageReceivedEventArgs" /> instance containing the event data.</param>
         void websocket_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            if (OnReceiveDelegate != null)
+            if (OnReceive != null)
             {
-                OnReceiveDelegate(Encoding.UTF8.GetBytes(e.Message));
+                OnReceive(e.Message);
             }
         }
 
@@ -93,7 +103,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Action<byte[]> OnReceiveDelegate { get; set; }
+        public Action<byte[]> OnReceiveBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
+        public Action<string> OnReceive { get; set; }
 
         /// <summary>
         /// Sends the async.
@@ -120,6 +136,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        /// <summary>
+        /// Occurs when [closed].
+        /// </summary>
         public event EventHandler Closed;
+
+
     }
 }

@@ -11,8 +11,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public class NativeClientWebSocket : IClientWebSocket
     {
+        /// <summary>
+        /// Occurs when [closed].
+        /// </summary>
         public event EventHandler Closed;
-        
+
         /// <summary>
         /// The _client
         /// </summary>
@@ -22,6 +25,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// The _send resource
+        /// </summary>
         private readonly SemaphoreSlim _sendResource = new SemaphoreSlim(1, 1);
 
         /// <summary>
@@ -38,7 +44,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Action<byte[]> OnReceiveDelegate { get; set; }
+        public Action<byte[]> OnReceiveBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the on receive.
+        /// </summary>
+        /// <value>The on receive.</value>
+        public Action<string> OnReceive { get; set; }
 
         /// <summary>
         /// Connects the async.
@@ -82,9 +94,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     break;
                 }
 
-                if (OnReceiveDelegate != null)
+                if (OnReceiveBytes != null)
                 {
-                    OnReceiveDelegate(bytes);
+                    OnReceiveBytes(bytes);
                 }
             }
         }
@@ -159,6 +171,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        /// <summary>
+        /// Called when [closed].
+        /// </summary>
         void OnClosed()
         {
             if (Closed != null)
@@ -166,7 +181,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 Closed(this, EventArgs.Empty);
             }
         }
-        
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

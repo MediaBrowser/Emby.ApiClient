@@ -380,6 +380,11 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
             }
 
+            if (string.IsNullOrEmpty(query.Id))
+            {
+                throw new ArgumentNullException("query");
+            }
+
             return GetApiUrl(type + "/" + query.Id + "/Similar", dict);
         }
 
@@ -413,6 +418,11 @@ namespace MediaBrowser.ApiInteraction
             if (query.Fields != null)
             {
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            if (string.IsNullOrEmpty(query.Id))
+            {
+                throw new ArgumentNullException("query");
             }
 
             return GetApiUrl(type + "/" + query.Id + "/InstantMix", dict);
@@ -488,6 +498,11 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
             }
 
+            if (query.ImageTypes != null)
+            {
+                dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
+            }
+            
             dict.Add("recursive", query.Recursive);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
