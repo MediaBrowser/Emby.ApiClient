@@ -1691,5 +1691,14 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<ItemReviewsResult>(stream);
             }
         }
+
+        public async Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
+            where T : class
+        {
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<T>(stream);
+            }
+        }
     }
 }

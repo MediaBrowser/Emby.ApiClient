@@ -87,10 +87,21 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 {
                     bytes = await ReceiveBytesAsync(CancellationToken.None).ConfigureAwait(false);
                 }
+                catch (OperationCanceledException)
+                {
+                    OnClosed();
+                    break;
+                }
                 catch (WebSocketException ex)
                 {
                     _logger.ErrorException("Error receiving web socket message", ex);
 
+                    break;
+                }
+
+                // Connection closed
+                if (bytes == null)
+                {
                     break;
                 }
 
@@ -117,7 +128,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             if (result.CloseStatus.HasValue)
             {
                 OnClosed();
-                throw new WebSocketException("Connection closed");
+                return null;
             }
 
             return buffer.Array;
@@ -176,6 +187,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         void OnClosed()
         {
+            _logger.Info("Web socket connection closed by server.");
+
             if (Closed != null)
             {
                 Closed(this, EventArgs.Empty);
