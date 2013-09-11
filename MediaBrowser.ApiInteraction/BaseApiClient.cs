@@ -228,7 +228,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="handler">The handler.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">handler</exception>
-        protected string GetApiUrl(string handler)
+        public string GetApiUrl(string handler)
         {
             return GetApiUrl(handler, new QueryStringDictionary());
         }
@@ -342,6 +342,9 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("Years", query.Years);
 
+            dict.AddIfNotNull("IsHD", query.IsHD);
+            dict.AddIfNotNull("HasParentalRating", query.HasParentalRating);
+            
             dict.AddIfNotNullOrEmpty("IndexBy", query.IndexBy);
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
