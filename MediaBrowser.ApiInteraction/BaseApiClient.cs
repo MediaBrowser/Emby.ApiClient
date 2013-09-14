@@ -339,6 +339,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("Years", query.Years);
 
+            dict.AddIfNotNull("ParentIndexNumber", query.ParentIndexNumber);
             dict.AddIfNotNull("IsHD", query.IsHD);
             dict.AddIfNotNull("HasParentalRating", query.HasParentalRating);
             
