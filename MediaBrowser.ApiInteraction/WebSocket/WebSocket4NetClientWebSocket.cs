@@ -131,7 +131,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             if (_socket != null)
             {
-                _socket.Close();
+                var state = State;
+
+                if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
+                {
+                    _socket.Close();
+                }
+
                 _socket = null;
             }
         }
