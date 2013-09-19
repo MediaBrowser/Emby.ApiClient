@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
@@ -10,10 +11,17 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// </summary>
     public class WebSocket4NetClientWebSocket : IClientWebSocket
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// The _socket
         /// </summary>
         private WebSocket4Net.WebSocket _socket;
+
+        public WebSocket4NetClientWebSocket(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Gets or sets the state.
@@ -129,24 +137,37 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         public void Dispose()
         {
-            if (_socket != null)
+            var task = Close();
+
+            Task.WaitAll(task);
+        }
+
+        /// <summary>
+        /// Closes this instance.
+        /// </summary>
+        public Task Close()
+        {
+            return Task.Run(() =>
             {
-                var state = State;
-
-                if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
+                if (_socket != null)
                 {
-                    _socket.Close();
-                }
+                    var state = State;
 
-                _socket = null;
-            }
+                    if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
+                    {
+                        _logger.Info("Sending web socket close message");
+
+                        _socket.Close();
+                    }
+
+                    _socket = null;
+                }
+            });
         }
 
         /// <summary>
         /// Occurs when [closed].
         /// </summary>
         public event EventHandler Closed;
-
-
     }
 }

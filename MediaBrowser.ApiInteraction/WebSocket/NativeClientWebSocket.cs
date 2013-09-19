@@ -171,6 +171,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             get
             {
+                if (_client == null)
+                {
+                    return Model.Net.WebSocketState.None;
+                }
+
                 Model.Net.WebSocketState commonState;
 
                 if (!Enum.TryParse(_client.State.ToString(), true, out commonState))
@@ -195,6 +200,18 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
         }
 
+        public async Task Close()
+        {
+            if (_client != null && _client.State == WebSocketState.Open)
+            {
+                _logger.Info("Sending web socket close message");
+
+                await _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None).ConfigureAwait(false);
+
+                _client.Dispose();
+            }
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -211,7 +228,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             if (dispose)
             {
-                _client.Dispose();
+                var task = Close();
+
+                Task.WaitAll(task);
             }
         }
     }

@@ -314,7 +314,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             if (_currentWebSocket != null)
             {
-                _currentWebSocket.Dispose();
+                try
+                {
+                    _currentWebSocket.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error disposing web socket {0}", ex);
+                }
                 _currentWebSocket = null;
             }
         }

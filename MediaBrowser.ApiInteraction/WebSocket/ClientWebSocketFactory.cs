@@ -22,7 +22,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
             catch (NotSupportedException)
             {
-                return new WebSocket4NetClientWebSocket();
+                return new WebSocket4NetClientWebSocket(logger);
             }
         }
 
