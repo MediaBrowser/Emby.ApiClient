@@ -25,9 +25,12 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="verb">The verb.</param>
         /// <param name="statusCode">The status code.</param>
-        private void OnResponseReceived(string url, string verb, HttpStatusCode statusCode)
+        /// <param name="requestTime">The request time.</param>
+        private void OnResponseReceived(string url, string verb, HttpStatusCode statusCode, DateTime requestTime)
         {
-            Logger.Debug("Received {0} status code from {1}: {2}", statusCode, verb, url);
+            var duration = DateTime.Now - requestTime;
+
+            Logger.Debug("Received {0} status code after {1} ms from {2}: {3}", statusCode, duration.TotalMilliseconds, verb, url);
 
             if (HttpResponseReceived != null)
             {
@@ -45,7 +48,7 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the HTTP client.
         /// </summary>
@@ -80,12 +83,14 @@ namespace MediaBrowser.ApiInteraction
             cancellationToken.ThrowIfCancellationRequested();
 
             Logger.Info("GET {0}", url);
-            
+
             try
             {
+                var requestTime = DateTime.Now;
+
                 var msg = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
-                OnResponseReceived(url, "GET", msg.StatusCode);
+                OnResponseReceived(url, "GET", msg.StatusCode, requestTime);
 
                 EnsureSuccessStatusCode(msg);
 
@@ -106,7 +111,7 @@ namespace MediaBrowser.ApiInteraction
             catch (Exception ex)
             {
                 Logger.ErrorException("Error requesting {0}", ex, url);
-                
+
                 throw;
             }
         }
@@ -123,19 +128,21 @@ namespace MediaBrowser.ApiInteraction
         public async Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
         {
             Logger.Info("POST {0}", url);
-            
+
             var content = new StringContent(postContent, Encoding.UTF8, contentType);
 
             try
             {
+                var requestTime = DateTime.Now;
+
                 var msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
 
-                OnResponseReceived(url, "POST", msg.StatusCode);
-                
+                OnResponseReceived(url, "POST", msg.StatusCode, requestTime);
+
                 EnsureSuccessStatusCode(msg);
 
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
@@ -171,9 +178,11 @@ namespace MediaBrowser.ApiInteraction
 
             try
             {
+                var requestTime = DateTime.Now;
+
                 var msg = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
-                OnResponseReceived(url, "DELETE", msg.StatusCode);
+                OnResponseReceived(url, "DELETE", msg.StatusCode, requestTime);
 
                 EnsureSuccessStatusCode(msg);
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -549,6 +550,16 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
             queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
 
+            if (options.Format != ImageOutputFormat.Original)
+            {
+                queryParams.Add("Format", options.Format.ToString());
+            }
+
+            if (options.Indicator != ImageOverlay.None)
+            {
+                queryParams.Add("Indicator", options.Indicator.ToString());
+            }
+            
             return GetApiUrl(baseUrl, queryParams);
         }
 
@@ -1090,6 +1101,8 @@ namespace MediaBrowser.ApiInteraction
 
             queryParams.AddIfNotNullOrEmpty("Profile", options.Profile);
             queryParams.AddIfNotNullOrEmpty("Level", options.Level);
+
+            queryParams.AddIfNotNull("TimeStampOffsetMs", options.TimeStampOffsetMs);
 
             return GetMediaStreamUrl(handler, options, queryParams);
         }

@@ -242,9 +242,14 @@ namespace MediaBrowser.ApiInteraction
         /// Gets active client sessions.
         /// </summary>
         /// <returns>Task{SessionInfoDto[]}.</returns>
-        public async Task<SessionInfoDto[]> GetClientSessionsAsync()
+        public async Task<SessionInfoDto[]> GetClientSessionsAsync(SessionQuery query)
         {
-            var url = GetApiUrl("Sessions");
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNullOrEmpty("ControllableByUserId", query.ControllableByUserId);
+            queryString.AddIfNotNull("SupportsRemoteControl", query.SupportsRemoteControl);
+
+            var url = GetApiUrl("Sessions", queryString);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
