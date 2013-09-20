@@ -218,6 +218,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 if (_client != null)
                 {
+                    if (_client.State == WebSocketState.Open)
+                    {
+                        // Can't wait on this. Try to close gracefully though.
+                        _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                    }
                     _client.Dispose();
                 }
             }
