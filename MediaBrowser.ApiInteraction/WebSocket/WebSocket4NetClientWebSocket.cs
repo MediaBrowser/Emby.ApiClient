@@ -137,32 +137,19 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         public void Dispose()
         {
-            var task = Close();
-
-            Task.WaitAll(task);
-        }
-
-        /// <summary>
-        /// Closes this instance.
-        /// </summary>
-        public Task Close()
-        {
-            return Task.Run(() =>
+            if (_socket != null)
             {
-                if (_socket != null)
+                var state = State;
+
+                if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
                 {
-                    var state = State;
+                    _logger.Info("Sending web socket close message");
 
-                    if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
-                    {
-                        _logger.Info("Sending web socket close message");
-
-                        _socket.Close();
-                    }
-
-                    _socket = null;
+                    _socket.Close();
                 }
-            });
+
+                _socket = null;
+            }
         }
 
         /// <summary>

@@ -555,9 +555,9 @@ namespace MediaBrowser.ApiInteraction
                 queryParams.Add("Format", options.Format.ToString());
             }
 
-            if (options.Indicator != ImageOverlay.None)
+            if (options.Indicator.HasValue)
             {
-                queryParams.Add("Indicator", options.Indicator.ToString());
+                queryParams.Add("Indicator", options.Indicator.Value.ToString());
             }
             
             return GetApiUrl(baseUrl, queryParams);

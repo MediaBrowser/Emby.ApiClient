@@ -50,10 +50,5 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendAsync(byte[] bytes, WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Closes this instance.
-        /// </summary>
-        Task Close();
     }
 }

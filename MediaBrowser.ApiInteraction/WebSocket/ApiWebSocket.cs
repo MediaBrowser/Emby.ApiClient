@@ -272,6 +272,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             if (_ensureTimer != null)
             {
+                Logger.Debug("Stopping web socket timer");
+                
                 _ensureTimer.Dispose();
                 _ensureTimer = null;
             }
@@ -314,6 +316,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
             if (_currentWebSocket != null)
             {
+                Logger.Debug("Disposing client web socket");
+                
                 try
                 {
                     _currentWebSocket.Dispose();
