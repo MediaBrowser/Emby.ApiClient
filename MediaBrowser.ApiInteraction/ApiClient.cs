@@ -993,17 +993,51 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Marks an item as played or unplayed.
-        /// This should not be used to update playstate following playback.
-        /// There are separate playstate check-in methods for that. This should be used for a
-        /// separate option to reset playstate.
+        /// Gets the game system summaries async.
+        /// </summary>
+        /// <returns>Task{List{GameSystemSummary}}.</returns>
+        public async Task<List<GameSystemSummary>> GetGameSystemSummariesAsync(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("Games/SystemSummaries");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<GameSystemSummary>>(stream);
+            }
+        }
+
+        public Task<UserItemDataDto> MarkPlayedAsync(string itemId, string userId, DateTime? datePlayed)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var dict = new QueryStringDictionary();
+            
+            //dict.AddIfNotNull("DatePlayed", datePlayed);
+
+            var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId, dict);
+
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+        }
+
+        /// <summary>
+        /// Marks the unplayed async.
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task<UserItemDataDto> UpdatePlayedStatusAsync(string itemId, string userId, bool wasPlayed)
+        /// <returns>Task{UserItemDataDto}.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// itemId
+        /// or
+        /// userId
+        /// </exception>
+        public Task<UserItemDataDto> MarkUnplayedAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1015,11 +1049,6 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId);
-
-            if (wasPlayed)
-            {
-                return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
-            }
 
             return DeleteAsync<UserItemDataDto>(url, CancellationToken.None);
         }
