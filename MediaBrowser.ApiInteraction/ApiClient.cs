@@ -1087,9 +1087,11 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
+        /// <param name="canSeek">if set to <c>true</c> [can seek].</param>
+        /// <param name="queueableMediaTypes">The queueable media types.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackStartAsync(string itemId, string userId)
+        public Task ReportPlaybackStartAsync(string itemId, string userId, bool canSeek, List<string> queueableMediaTypes)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1103,10 +1105,17 @@ namespace MediaBrowser.ApiInteraction
 
             if (WebSocketConnection != null && WebSocketConnection.IsOpen)
             {
-                return WebSocketConnection.SendAsync("PlaybackStart", itemId);
+                var queueTypes = string.Join(",", queueableMediaTypes);
+                var msg = string.Format("{0}|{1}|{2}", itemId, canSeek, queueTypes);
+
+                return WebSocketConnection.SendAsync("PlaybackStart", msg);
             }
 
-            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId);
+            var dict = new QueryStringDictionary();
+            dict.Add("CanSeek", canSeek);
+            dict.Add("QueueableMediaTypes", queueableMediaTypes);
+
+            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
