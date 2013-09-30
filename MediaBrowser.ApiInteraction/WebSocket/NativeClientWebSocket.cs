@@ -30,6 +30,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly SemaphoreSlim _sendResource = new SemaphoreSlim(1, 1);
 
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeClientWebSocket" /> class.
         /// </summary>
@@ -85,7 +87,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 try
                 {
-                    bytes = await ReceiveBytesAsync(CancellationToken.None).ConfigureAwait(false);
+                    bytes = await ReceiveBytesAsync(_cancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -155,7 +157,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
                 }
 
-                await _client.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, cancellationToken).ConfigureAwait(false);
+                var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
+
+                await _client.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, linkedTokenSource.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -216,6 +220,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             if (dispose)
             {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                
                 if (_client != null)
                 {
                     if (_client.State == WebSocketState.Open)
