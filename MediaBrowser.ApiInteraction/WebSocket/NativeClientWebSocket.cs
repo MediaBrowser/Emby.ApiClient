@@ -221,7 +221,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             if (dispose)
             {
                 _cancellationTokenSource.Cancel();
-                _cancellationTokenSource.Dispose();
                 
                 if (_client != null)
                 {
