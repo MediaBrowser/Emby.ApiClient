@@ -1103,6 +1103,8 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("userId");
             }
 
+            Logger.Debug("ReportPlaybackStart: Item {0}", itemId);
+
             if (WebSocketConnection != null && WebSocketConnection.IsOpen)
             {
                 var queueTypes = string.Join(",", queueableMediaTypes);
@@ -1176,6 +1178,10 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("userId");
             }
 
+            var positionDisplay = positionTicks.HasValue ? TimeSpan.FromTicks(positionTicks.Value).ToString() : "---";
+
+            Logger.Debug("ReportPlaybackStopped: Item {0}, Position: {1}", itemId, positionDisplay);
+            
             if (WebSocketConnection != null && WebSocketConnection.IsOpen)
             {
                 return WebSocketConnection.SendAsync("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)));

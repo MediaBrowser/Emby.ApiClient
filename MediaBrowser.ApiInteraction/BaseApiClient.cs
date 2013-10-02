@@ -555,11 +555,13 @@ namespace MediaBrowser.ApiInteraction
                 queryParams.Add("Format", options.Format.ToString());
             }
 
-            if (options.Indicator.HasValue)
+            if (options.AddPlayedIndicator)
             {
-                queryParams.Add("Indicator", options.Indicator.Value.ToString());
+                queryParams.Add("AddPlayedIndicator", true);
             }
-            
+            queryParams.AddIfNotNull("PercentPlayed", options.PercentPlayed);
+            queryParams.AddIfNotNullOrEmpty("BackgroundColor", options.BackgroundColor);
+
             return GetApiUrl(baseUrl, queryParams);
         }
 
