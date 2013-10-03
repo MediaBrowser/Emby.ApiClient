@@ -20,19 +20,19 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly IClientWebSocket _webSocket;
 
-        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, IClientWebSocket webSocket)
-            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
+        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, IClientWebSocket webSocket)
+            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName)
         {
             _webSocket = webSocket;
         }
 
-        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, IClientWebSocket webSocket)
-            : base(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
+        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, IClientWebSocket webSocket)
+            : base(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName)
         {
             _webSocket = webSocket;
         }
         
-        public void Connect(string serverHostName, int serverWebSocketPort, string clientName, string deviceId, string applicationVersion, Action<Exception> onError)
+        public void Connect(string serverHostName, int serverWebSocketPort, Action<Exception> onError)
         {
             var url = GetWebSocketUrl(serverHostName, serverWebSocketPort);
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 {
                     Logger.Info("Connected to {0}", url);
                     _webSocket.OnReceiveDelegate = OnMessageReceived;
-                    Send(IdentificationMessageName, GetIdentificationMessage(clientName, deviceId, applicationVersion), onError);
+                    Send(IdentificationMessageName, GetIdentificationMessage(), onError);
                 }, onError);
             }
             catch (Exception ex)

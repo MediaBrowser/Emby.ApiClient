@@ -133,6 +133,12 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public string ApplicationName { get; private set; }
 
         /// <summary>
+        /// Gets the name of the device.
+        /// </summary>
+        /// <value>The name of the device.</value>
+        public string DeviceName { get; private set; }
+        
+        /// <summary>
         /// Gets or sets the application version.
         /// </summary>
         /// <value>The application version.</value>
@@ -164,7 +170,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
-        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName)
+        /// <param name="deviceName">Name of the device.</param>
+        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName)
         {
             Logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -173,6 +180,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             DeviceId = deviceId;
             ServerWebSocketPort = serverWebSocketPort;
             ServerHostName = serverHostName;
+            DeviceName = deviceName;
         }
 
         /// <summary>
@@ -411,13 +419,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Gets the identification message.
         /// </summary>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
         /// <returns>System.String.</returns>
-        protected string GetIdentificationMessage(string clientName, string deviceId, string applicationVersion)
+        protected string GetIdentificationMessage()
         {
-            return clientName + "|" + deviceId + "|" + applicationVersion;
+            return ApplicationName + "|" + DeviceId + "|" + ApplicationVersion + "|" + DeviceName;
         }
     }
 

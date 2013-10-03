@@ -274,10 +274,14 @@ namespace MediaBrowser.ApiInteraction
         {
             if (string.IsNullOrEmpty(parameter))
             {
+                Logger.Debug("Removing Authorization http header");
+
                 HttpClient.DefaultRequestHeaders.Remove("Authorization");
             }
             else
             {
+                Logger.Debug("Applying Authorization http header: {0}", parameter);
+                
                 HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, parameter);
             }
         }

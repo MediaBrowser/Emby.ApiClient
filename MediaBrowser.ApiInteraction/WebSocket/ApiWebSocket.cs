@@ -45,9 +45,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
+        /// <param name="deviceName">Name of the device.</param>
         /// <param name="webSocketFactory">The web socket factory.</param>
-        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
-            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName)
+        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
+            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName)
         {
             _webSocketFactory = webSocketFactory;
         }
@@ -60,9 +61,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
+        /// <param name="deviceName">Name of the device.</param>
         /// <param name="webSocketFactory">The web socket factory.</param>
-        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, Func<IClientWebSocket> webSocketFactory)
-            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, webSocketFactory)
+        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
+            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName, webSocketFactory)
         {
             _webSocketFactory = webSocketFactory;
         }
@@ -81,7 +83,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             var systemInfo = await client.GetSystemInfoAsync().ConfigureAwait(false);
 
             var socket = new ApiWebSocket(client.ServerHostName, systemInfo.WebSocketPortNumber, client.DeviceId,
-                                          client.ApplicationVersion, client.ClientName, webSocketFactory);
+                                          client.ApplicationVersion, client.ClientName, client.DeviceName, webSocketFactory);
 
             try
             {
@@ -134,7 +136,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 socket.OnReceiveBytes = OnMessageReceived;
                 socket.OnReceive = OnMessageReceived;
 
-                var idMessage = GetIdentificationMessage(ApplicationName, DeviceId, ApplicationVersion);
+                var idMessage = GetIdentificationMessage();
 
                 Logger.Info("Sending web socket identification message {0}", idMessage);
 
