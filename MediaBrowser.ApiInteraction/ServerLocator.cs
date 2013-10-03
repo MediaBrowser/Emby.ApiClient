@@ -14,7 +14,6 @@ namespace MediaBrowser.ApiInteraction
             return FindServer(2000, cancellationToken);
         }
 
-
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
@@ -36,49 +35,50 @@ namespace MediaBrowser.ApiInteraction
         private async void FindServer(TaskCompletionSource<IPEndPoint> taskCompletionSource, int timeout)
         {
             // Create a udp client
-            var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort()));
-
-            client.Client.ReceiveTimeout = timeout;
-
-            // Construct the message the server is expecting
-            var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer?");
-
-            // Send it - must be IPAddress.Broadcast, 7359
-            var targetEndPoint = new IPEndPoint(IPAddress.Broadcast, 7359);
-
-            // Send the broadcast
-            await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
-
-            try
+            using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
             {
-                // Get a result back
-                var result = await client.ReceiveAsync().ConfigureAwait(false);
+                client.Client.ReceiveTimeout = timeout;
 
-                if (result.RemoteEndPoint.Port == targetEndPoint.Port)
+                // Construct the message the server is expecting
+                var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer?");
+
+                // Send it - must be IPAddress.Broadcast, 7359
+                var targetEndPoint = new IPEndPoint(IPAddress.Broadcast, 7359);
+
+                // Send the broadcast
+                await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
+
+                try
                 {
-                    // Convert bytes to text
-                    var text = Encoding.UTF8.GetString(result.Buffer);
+                    // Get a result back
+                    var result = await client.ReceiveAsync().ConfigureAwait(false);
 
-                    // Expected response : MediaBrowserServer|192.168.1.1:1234
-                    // If the response is what we're expecting, proceed
-                    if (text.StartsWith("mediabrowserserver", StringComparison.OrdinalIgnoreCase))
+                    if (result.RemoteEndPoint.Port == targetEndPoint.Port)
                     {
-                        text = text.Split('|')[1];
+                        // Convert bytes to text
+                        var text = Encoding.UTF8.GetString(result.Buffer);
 
-                        var vals = text.Split(':');
+                        // Expected response : MediaBrowserServer|192.168.1.1:1234
+                        // If the response is what we're expecting, proceed
+                        if (text.StartsWith("mediabrowserserver", StringComparison.OrdinalIgnoreCase))
+                        {
+                            text = text.Split('|')[1];
 
-                        var endpoint = new IPEndPoint(IPAddress.Parse(vals[0]), int.Parse(vals[1]));
+                            var vals = text.Split(':');
 
-                        taskCompletionSource.SetResult(endpoint);
-                        return;
+                            var endpoint = new IPEndPoint(IPAddress.Parse(vals[0]), int.Parse(vals[1]));
+
+                            taskCompletionSource.SetResult(endpoint);
+                            return;
+                        }
                     }
-                }
 
-                taskCompletionSource.SetException(new ArgumentException("Unexpected response"));
-            }
-            catch (SocketException ex)
-            {
-                taskCompletionSource.SetException(ex);
+                    taskCompletionSource.SetException(new ArgumentException("Unexpected response"));
+                }
+                catch (Exception ex)
+                {
+                    taskCompletionSource.TrySetException(ex);
+                }
             }
         }
 
