@@ -149,7 +149,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <returns>Task{System.String[]}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<string[]> GetIntrosAsync(string itemId, string userId)
+        public async Task<ItemsResult> GetIntrosAsync(string itemId, string userId)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -165,7 +165,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<string[]>(stream);
+                return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
