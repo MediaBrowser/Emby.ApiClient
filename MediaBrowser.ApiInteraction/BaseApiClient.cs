@@ -515,6 +515,9 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
 
+            dict.AddIfNotNullOrEmpty("NameLessThan", query.NameLessThan);
+            dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
+
             return GetApiUrl(type, dict);
         }
 
