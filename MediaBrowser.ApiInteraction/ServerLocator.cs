@@ -45,11 +45,11 @@ namespace MediaBrowser.ApiInteraction
                 // Send it - must be IPAddress.Broadcast, 7359
                 var targetEndPoint = new IPEndPoint(IPAddress.Broadcast, 7359);
 
-                // Send the broadcast
-                await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
-
                 try
                 {
+                    // Send the broadcast
+                    await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
+
                     // Get a result back
                     var result = await client.ReceiveAsync().ConfigureAwait(false);
 
