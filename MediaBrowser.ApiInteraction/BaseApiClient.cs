@@ -348,6 +348,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             dict.AddIfNotNull("MinPlayers", query.MinPlayers);
+            dict.AddIfNotNull("MaxPlayers", query.MaxPlayers);
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
             dict.AddIfNotNullOrEmpty("AlbumArtistStartsWithOrGreater", query.AlbumArtistStartsWithOrGreater);
             
