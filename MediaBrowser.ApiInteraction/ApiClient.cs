@@ -1749,5 +1749,47 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<T>(stream);
             }
         }
+
+        /// <summary>
+        /// Gets the index of the game player.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{ItemIndex}}.</returns>
+        public async Task<List<ItemIndex>> GetGamePlayerIndex(string userId, CancellationToken cancellationToken)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+
+            var url = GetApiUrl("Games/PlayerIndex", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<ItemIndex>>(stream);
+            }
+        }
+
+        /// <summary>
+        /// Gets the index of the year.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="includeItemTypes">The include item types.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{List{ItemIndex}}.</returns>
+        public async Task<List<ItemIndex>> GetYearIndex(string userId, string[] includeItemTypes, CancellationToken cancellationToken)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+            queryString.AddIfNotNull("IncludeItemTypes", includeItemTypes);
+
+            var url = GetApiUrl("Items/YearIndex", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<ItemIndex>>(stream);
+            }
+        }
     }
 }

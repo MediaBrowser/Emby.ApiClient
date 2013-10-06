@@ -82,7 +82,7 @@ namespace MediaBrowser.ApiInteraction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Info("GET {0}", url);
+            Logger.Debug("GET {0}", url);
 
             try
             {
