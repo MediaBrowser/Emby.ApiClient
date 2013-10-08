@@ -2,10 +2,15 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Users;
 using MediaBrowser.Model.Web;
 using System;
@@ -196,6 +201,26 @@ namespace MediaBrowser.ApiInteraction.net35
         }
 
         /// <summary>
+        /// Gets the name of the item by.
+        /// </summary>
+        /// <param name="type">the plural type name ea. Artists, Genres, Studios</param>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public void GetItemsByName(string type, ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            string url = base.GetItemByNameListUrl(type, query);
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
         /// Gets the genres.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -204,13 +229,73 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <exception cref="System.ArgumentNullException">query</exception>
         public void GetGenres(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
         {
+            GetItemsByName("Genres", query, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the next up.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public void GetNextUp(NextUpQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
             if (query == null)
             {
                 throw new ArgumentNullException("query");
             }
 
-            string url = base.GetItemByNameListUrl("Genres", query);
+            var dict = new QueryStringDictionary { };
 
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.Add("UserId", query.UserId);
+
+            var url = GetApiUrl("Shows/NextUp", dict);
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets people by query.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetPeople(PersonsQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
+            var url = GetItemByNameListUrl("Persons", query);
+
+            if (query.PersonTypes != null && query.PersonTypes.Length > 0)
+            {
+                url += "&PersonTypes=" + string.Join(",", query.PersonTypes);
+            }
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets similar items.
+        /// </summary>
+        /// <param name="type">The type of item.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public void GetSimilarItems(string type, SimilarItemsQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, type);
             GetSerializedData(url, onSuccess, onError);
         }
 
@@ -223,14 +308,7 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <exception cref="System.ArgumentNullException">query</exception>
         public void GetStudios(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            string url = base.GetItemByNameListUrl("Studios", query);
-
-            GetSerializedData(url, onSuccess, onError);
+            GetItemsByName("Studios", query, onSuccess, onError);
         }
 
         /// <summary>
@@ -240,9 +318,7 @@ namespace MediaBrowser.ApiInteraction.net35
         /// <param name="onError">The on error.</param>
         public void GetServerConfiguration(Action<ServerConfiguration> onSuccess, Action<Exception> onError)
         {
-            var url = GetApiUrl("System/Configuration");
-
-            GetSerializedData(url, onSuccess, onError);
+            GetOperation("System/Configuration", onSuccess, onError);
         }
 
         /// <summary>
@@ -411,6 +487,276 @@ namespace MediaBrowser.ApiInteraction.net35
             _httpClient.Delete(url, x => onResponse(false));
         }
 
+        /// <summary>
+        /// Restarts the server.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void RestartServer(Action<EmptyRequestResult> onSuccess, Action<Exception> onError)
+        {
+            var url = GetApiUrl("System/Restart");
+
+            Post(url, new QueryStringDictionary(), onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the installed plugins.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetInstalledPlugins(Action<PluginInfo[]> onSuccess, Action<Exception> onError)
+        {
+            GetOperation("Plugins", onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the scheduled tasks.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetScheduledTasks(Action<TaskInfo[]> onSuccess, Action<Exception> onError)
+        {
+            GetOperation("ScheduledTasks", onSuccess, onError);
+        }
+
+
+        /// <summary>
+        /// Gets the operation.
+        /// </summary>
+        /// <typeparam name="TResponse">The type of the response.</typeparam>
+        /// <param name="operation">The operation.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        protected void GetOperation<TResponse>(string operation, Action<TResponse> onSuccess, Action<Exception> onError)
+        {
+            var url = GetApiUrl(operation);
+
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the scheduled task.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">id</exception>
+        public void GetScheduledTask(Guid id, Action<TaskInfo> onSuccess, Action<Exception> onError)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("ScheduledTasks/" + id);
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the parental ratings.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetParentalRatings(Action<List<ParentalRating>> onSuccess, Action<Exception> onError)
+        {
+            var url = GetApiUrl("Localization/ParentalRatings");
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the local trailers.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetLocalTrailers(string userId, string itemId, Action<BaseItemDto[]> onSuccess, Action<Exception> onError)
+        {
+            GetExtras("LocalTrailers", userId, itemId, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the special features.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetSpecialFeatures(string userId, string itemId, Action<BaseItemDto[]> onSuccess, Action<Exception> onError)
+        {
+            GetExtras("SpecialFeatures", userId, itemId, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the extras.
+        /// </summary>
+        /// <param name="extraType">Type of the extra.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// userId
+        /// or
+        /// itemId
+        /// </exception>
+        private void GetExtras(string extraType, string userId, string itemId, Action<BaseItemDto[]> onSuccess, Action<Exception> onError)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/" + extraType);
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the cultures.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetCultures(Action<CultureDto[]> onSuccess, Action<Exception> onError)
+        {
+            GetOperation("Localization/Cultures", onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the countries.
+        /// </summary>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetCountries(Action<CountryInfo[]> onSuccess, Action<Exception> onError)
+        {
+            GetOperation("Localization/Countries", onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the notifications summary.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetNotificationsSummary(string userId, Action<NotificationsSummary> onSuccess, Action<Exception> onError)
+        {
+            GetOperation("Notifications/" + userId + "/Summary", onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the notifications.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        public void GetNotifications(NotificationQuery query, Action<NotificationResult> onSuccess, Action<Exception> onError)
+        {
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("ItemIds", query.IsRead);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            var url = GetApiUrl("Notifications/" + query.UserId, dict);
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Gets the search hints.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="searchTerm">The search term.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="limit">The limit.</param>
+        /// <exception cref="System.ArgumentNullException">searchTerm</exception>
+        public void GetSearchHints(string userId, string searchTerm, Action<SearchHintResult> onSuccess, Action<Exception> onError, int? startIndex = null, int? limit = null)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                throw new ArgumentNullException("searchTerm");
+            }
+
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("searchTerm", searchTerm);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
+            queryString.AddIfNotNull("startIndex", startIndex);
+            queryString.AddIfNotNull("limit", limit);
+
+            var url = GetApiUrl("Search/Hints", queryString);
+            
+            GetSerializedData(url, onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Marks the played.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="datePlayed">The date played.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// itemId
+        /// or
+        /// userId
+        /// </exception>
+        public void MarkPlayed(string itemId, string userId, DateTime? datePlayed, Action<UserItemDataDto> onSuccess, Action<Exception> onError)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var dict = new QueryStringDictionary();
+            //dict.AddIfNotNull("DatePlayed", datePlayed);
+            var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId, dict);
+
+            Post(url, new Dictionary<string, string>(), onSuccess, onError);
+        }
+
+        /// <summary>
+        /// Marks the unplayed.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="onResponse">The on response.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// itemId
+        /// or
+        /// userId
+        /// </exception>
+        public void MarkUnplayed(string itemId, string userId, Action<bool> onResponse)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId);
+            _httpClient.Delete(url, x => onResponse(false)); // todo: response object
+        }
+
+        /// <summary>
+        /// Posts the specified URL.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="url">The URL.</param>
+        /// <param name="args">The arguments.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
         public void Post<T>(string url, Dictionary<string, string> args, Action<T> onSuccess, Action<Exception> onError)
            where T : class
         {
@@ -438,6 +784,15 @@ namespace MediaBrowser.ApiInteraction.net35
             }, onError);
         }
 
+        /// <summary>
+        /// Posts the specified URL.
+        /// </summary>
+        /// <typeparam name="TInputType">The type of the input type.</typeparam>
+        /// <typeparam name="TOutputType">The type of the output type.</typeparam>
+        /// <param name="url">The URL.</param>
+        /// <param name="obj">The object.</param>
+        /// <param name="onSuccess">The on success.</param>
+        /// <param name="onError">The on error.</param>
         protected void Post<TInputType, TOutputType>(string url, TInputType obj, Action<TOutputType> onSuccess, Action<Exception> onError)
             where TOutputType : class
         {
