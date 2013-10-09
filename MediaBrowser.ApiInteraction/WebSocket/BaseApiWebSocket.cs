@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -15,7 +16,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
     /// <summary>
     /// Class ApiWebSocket
     /// </summary>
-    public abstract class BaseApiWebSocket
+    public abstract class BaseApiWebSocket : IServerEvents
     {
         /// <summary>
         /// The _logger
@@ -115,6 +116,16 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
 
         /// <summary>
+        /// Occurs when [restart required].
+        /// </summary>
+        public event EventHandler<EventArgs> RestartRequired;
+
+        /// <summary>
+        /// Occurs when [user data changed].
+        /// </summary>
+        public event EventHandler<UserDataChangedEventArgs> UserDataChanged;
+        
+        /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>
@@ -149,11 +160,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; private set; }
-
-        /// <summary>
-        /// Occurs when [restart required].
-        /// </summary>
-        public event EventHandler<EventArgs> RestartRequired;
 
         /// <summary>
         /// The identification message name
@@ -364,6 +370,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 FireEvent(SessionsUpdated, this, new SessionUpdatesEventArgs
                 {
                     Sessions = _jsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto[]>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "UserDataChanged"))
+            {
+                FireEvent(UserDataChanged, this, new UserDataChangedEventArgs
+                {
+                    ChangeInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDataChangeInfo>>(json).Data
                 });
             }
         }
