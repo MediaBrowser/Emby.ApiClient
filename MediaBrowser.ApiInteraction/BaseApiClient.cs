@@ -81,48 +81,29 @@ namespace MediaBrowser.ApiInteraction
             ApplicationVersion = applicationVersion;
         }
 
-        private string _serverHostName;
         /// <summary>
-        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// Gets the name of the server host.
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerHostName
-        {
-            get { return _serverHostName; }
+        public string ServerHostName { get; private set; }
 
-            set
-            {
-                var changed = !string.Equals(_serverHostName, value);
-
-                _serverHostName = value;
-
-                if (changed)
-                {
-                    OnServerLocationChanged();
-                }
-            }
-        }
-
-        private int _serverApiPort;
         /// <summary>
-        /// Gets or sets the port number used by the API
+        /// Gets the server API port.
         /// </summary>
         /// <value>The server API port.</value>
-        public int ServerApiPort
+        public int ServerApiPort { get; private set; }
+
+        /// <summary>
+        /// Changes the server location.
+        /// </summary>
+        /// <param name="hostName">Name of the host.</param>
+        /// <param name="port">The port.</param>
+        public void ChangeServerLocation(string hostName, int port)
         {
-            get { return _serverApiPort; }
+            ServerHostName = hostName;
+            ServerApiPort = port;
 
-            set
-            {
-                var changed = _serverApiPort != value;
-
-                _serverApiPort = value;
-
-                if (changed)
-                {
-                    OnServerLocationChanged();
-                }
-            }
+            OnServerLocationChanged();
         }
 
         /// <summary>

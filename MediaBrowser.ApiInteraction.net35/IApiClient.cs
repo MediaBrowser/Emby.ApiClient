@@ -37,8 +37,9 @@ namespace MediaBrowser.ApiInteraction.net35
         string GetYearImageUrl(int year, ImageOptions options);
         int? ImageQuality { get; set; }
         IJsonSerializer JsonSerializer { get; set; }
-        int ServerApiPort { get; set; }
-        string ServerHostName { get; set; }
+        int ServerApiPort { get; }
+        string ServerHostName { get; }
+        void ChangeServerLocation(string hostName, int apiPort);
         void AuthenticateUser(string userId, byte[] sha1Hash, Action<MediaBrowser.Model.Entities.EmptyRequestResult> onSuccess, Action<Exception> onError);
         void AuthenticateUser(string userId, string password, Action<bool> onResponse);
         void GetGenres(ItemsByNameQuery query, Action<ItemsResult> onSuccess, Action<Exception> onError);
