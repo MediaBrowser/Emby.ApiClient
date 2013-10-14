@@ -47,6 +47,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 try 
                 {
+                    if (_socket != null && _socket.State == WebSocketState.Open)
+                    {
+                        _socket.Close();
+                    }
+                    
                     _socket = new WebSocket4Net.WebSocket(url);
                     _socket.Opened += (sender, arg) => onSuccess();
                     _socket.MessageReceived += websocket_MessageReceived;

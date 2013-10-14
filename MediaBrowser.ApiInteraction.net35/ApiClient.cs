@@ -899,5 +899,17 @@ namespace MediaBrowser.ApiInteraction.net35
                 onSuccess(data);
             }, onError);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (!disposing) return;
+
+            if (WebSocketConnection != null)
+            {
+                WebSocketConnection.Dispose();
+                WebSocketConnection = null;
+            }
+        }
     }
 }
