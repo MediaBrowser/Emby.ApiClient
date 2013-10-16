@@ -129,6 +129,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 var socket = _webSocketFactory();
 
+                Logger.Info("Created new web socket of type {0}", socket.GetType().Name);
+                
                 await socket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
 
                 Logger.Info("Connected to {0}", url);
@@ -145,6 +147,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 ReplaceSocket(socket);
 
                 await SendAsync(IdentificationMessageName, idMessage).ConfigureAwait(false);
+
+                OnConnected();
             }
             catch (Exception ex)
             {

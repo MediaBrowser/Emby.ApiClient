@@ -196,8 +196,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         void OnClosed()
         {
-            _logger.Info("Web socket connection closed by server.");
-
             if (Closed != null)
             {
                 Closed(this, EventArgs.Empty);
@@ -226,6 +224,8 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 {
                     if (_client.State == WebSocketState.Open)
                     {
+                        _logger.Info("Sending web socket close message.");
+
                         // Can't wait on this. Try to close gracefully though.
                         _client.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                     }

@@ -111,6 +111,11 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<EventArgs> ServerShuttingDown;
 
         /// <summary>
+        /// Occurs when [connected].
+        /// </summary>
+        public event EventHandler<EventArgs> Connected;
+        
+        /// <summary>
         /// Occurs when [sessions updated].
         /// </summary>
         public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
@@ -393,13 +398,21 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
+        /// Called when [connected].
+        /// </summary>
+        protected void OnConnected()
+        {
+            FireEvent(Connected, this, EventArgs.Empty);
+        }
+
+        /// <summary>
         /// Queues the event if not null.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="handler">The handler.</param>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void FireEvent<T>(EventHandler<T> handler, object sender, T args)
+        protected void FireEvent<T>(EventHandler<T> handler, object sender, T args)
             where T : EventArgs
         {
             if (handler != null)
