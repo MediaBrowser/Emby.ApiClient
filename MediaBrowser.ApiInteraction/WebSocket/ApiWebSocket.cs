@@ -113,7 +113,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task.</returns>
         public Task EnsureConnectionAsync(CancellationToken cancellationToken)
         {
-            return IsOpen ? _trueTaskResult : ConnectAsync(cancellationToken);
+            return IsConnected ? _trueTaskResult : ConnectAsync(cancellationToken);
         }
 
         /// <summary>
@@ -252,10 +252,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is open.
+        /// Gets a value indicating whether this instance is connected.
         /// </summary>
-        /// <value><c>true</c> if this instance is open; otherwise, <c>false</c>.</value>
-        public bool IsOpen
+        /// <value><c>true</c> if this instance is connected; otherwise, <c>false</c>.</value>
+        public override bool IsConnected
         {
             get { return _currentWebSocket != null && _currentWebSocket.State == WebSocketState.Open; }
         }

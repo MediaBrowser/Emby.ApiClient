@@ -387,6 +387,15 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is connected.
+        /// </summary>
+        /// <value><c>true</c> if this instance is connected; otherwise, <c>false</c>.</value>
+        public abstract bool IsConnected
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets the type of the message.
         /// </summary>
         /// <param name="json">The json.</param>

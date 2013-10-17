@@ -348,18 +348,7 @@ namespace MediaBrowser.ApiInteraction.net35
                 throw new ArgumentNullException("query");
             }
 
-            var dict = new QueryStringDictionary();
-
-            if (query.Fields != null)
-            {
-                dict.Add("fields", query.Fields.Select(f => f.ToString()));
-            }
-
-            dict.AddIfNotNull("Limit", query.Limit);
-            dict.AddIfNotNull("StartIndex", query.StartIndex);
-            dict.Add("UserId", query.UserId);
-
-            string url = GetApiUrl("Shows/NextUp", dict);
+            var url = GetNextUpUrl(query);
 
             GetSerializedData(url, onSuccess, onError);
         }
@@ -452,7 +441,7 @@ namespace MediaBrowser.ApiInteraction.net35
                 throw new ArgumentNullException("userId");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 WebSocketConnection.Send("PlaybackStart", itemId);
             }
@@ -490,7 +479,7 @@ namespace MediaBrowser.ApiInteraction.net35
                 throw new ArgumentNullException("userId");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 WebSocketConnection.Send("PlaybackProgress",
                     itemId + "|" +
@@ -533,7 +522,7 @@ namespace MediaBrowser.ApiInteraction.net35
                 throw new ArgumentNullException("userId");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 WebSocketConnection.Send("PlaybackStopped",
                     itemId + "|" +

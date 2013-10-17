@@ -291,25 +291,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("query");
             }
 
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var dict = new QueryStringDictionary { };
-
-            if (query.Fields != null)
-            {
-                dict.Add("fields", query.Fields.Select(f => f.ToString()));
-            }
-
-            dict.AddIfNotNull("Limit", query.Limit);
-
-            dict.AddIfNotNull("StartIndex", query.StartIndex);
-
-            dict.Add("UserId", query.UserId);
-
-            var url = GetApiUrl("Shows/NextUp", dict);
+            var url = GetNextUpUrl(query);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -1018,8 +1000,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var dict = new QueryStringDictionary();
-            
-            //dict.AddIfNotNull("DatePlayed", datePlayed);
+
+            if (datePlayed.HasValue)
+            {
+                dict.Add("DatePlayed", datePlayed.Value.ToString("yyyyMMddHHmmss"));
+            }
 
             var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId, dict);
 
@@ -1105,7 +1090,7 @@ namespace MediaBrowser.ApiInteraction
 
             Logger.Debug("ReportPlaybackStart: Item {0}", itemId);
 
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 var queueTypes = string.Join(",", queueableMediaTypes);
                 var msg = string.Format("{0}|{1}|{2}", itemId, canSeek, queueTypes);
@@ -1143,7 +1128,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("userId");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 return WebSocketConnection.SendAsync("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower() + "|" + isMuted.ToString().ToLower());
             }
@@ -1181,8 +1166,8 @@ namespace MediaBrowser.ApiInteraction
             var positionDisplay = positionTicks.HasValue ? TimeSpan.FromTicks(positionTicks.Value).ToString() : "---";
 
             Logger.Debug("ReportPlaybackStopped: Item {0}, Position: {1}", itemId, positionDisplay);
-            
-            if (WebSocketConnection != null && WebSocketConnection.IsOpen)
+
+            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
                 return WebSocketConnection.SendAsync("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)));
             }

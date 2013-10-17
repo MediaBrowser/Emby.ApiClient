@@ -76,13 +76,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </value>
         public int RetryInterval { get; set; }
 
-        /// <summary>
-        /// Gets a value indicating whether the socket [is open].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [is open]; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsOpen
+        public override bool IsConnected
         {
             get { return _socket != null && _socket.State == WebSocketState.Open; }
         }
@@ -198,7 +192,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         protected void EnsureConnection(object state)
         {
             // if the socket is already open do nothing
-            if (IsOpen) return;
+            if (IsConnected) return;
 
             // try to connect
             Connect(true);

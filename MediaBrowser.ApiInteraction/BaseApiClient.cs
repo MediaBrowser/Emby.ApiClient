@@ -332,10 +332,71 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("MaxPlayers", query.MaxPlayers);
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
             dict.AddIfNotNullOrEmpty("AlbumArtistStartsWithOrGreater", query.AlbumArtistStartsWithOrGreater);
-            
+
+            dict.AddIfNotNull("HasPremiereDate", query.HasPremiereDate);
+            if (query.LocationTypes != null && query.LocationTypes.Length > 0)
+            {
+                dict.Add("LocationTypes", query.LocationTypes.Select(f => f.ToString()));
+            }
+            if (query.ExcludeLocationTypes != null && query.ExcludeLocationTypes.Length > 0)
+            {
+                dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
+            }
+            if (query.MinPremiereDate.HasValue)
+            {
+                dict.Add("MinPremiereDate", query.MinPremiereDate.Value.ToString("yyyyMMddHHmmss"));
+            }
+            if (query.MaxPremiereDate.HasValue)
+            {
+                dict.Add("MaxPremiereDate", query.MaxPremiereDate.Value.ToString("yyyyMMddHHmmss"));
+            }
+ 
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
         }
 
+        /// <summary>
+        /// Gets the next up.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        protected string GetNextUpUrl(NextUpQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+
+            dict.Add("UserId", query.UserId);
+
+            dict.AddIfNotNull("HasPremiereDate", query.HasPremiereDate);
+            if (query.ExcludeLocationTypes != null && query.ExcludeLocationTypes.Length > 0)
+            {
+                dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
+            }
+            if (query.MinPremiereDate.HasValue)
+            {
+                dict.Add("MinPremiereDate", query.MinPremiereDate.Value.ToString("yyyyMMddHHmmss"));
+            }
+            if (query.MaxPremiereDate.HasValue)
+            {
+                dict.Add("MaxPremiereDate", query.MaxPremiereDate.Value.ToString("yyyyMMddHHmmss"));
+            }
+
+            return GetApiUrl("Shows/NextUp", dict);
+        }
+        
         /// <summary>
         /// Gets the similar item list URL.
         /// </summary>
