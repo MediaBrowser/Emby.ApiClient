@@ -547,6 +547,11 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
             }
 
+            if (query.Filters != null)
+            {
+                dict.Add("Filters", query.Filters.Select(f => f.ToString()));
+            }
+            
             if (query.ImageTypes != null)
             {
                 dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
