@@ -130,7 +130,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 var socket = _webSocketFactory();
 
                 Logger.Info("Created new web socket of type {0}", socket.GetType().Name);
-                
+
                 await socket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
 
                 Logger.Info("Connected to {0}", url);
@@ -156,6 +156,25 @@ namespace MediaBrowser.ApiInteraction.WebSocket
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Changes the server location.
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <param name="webSocketPort">The web socket port.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task ChangeServerLocation(string host, int webSocketPort, CancellationToken cancellationToken)
+        {
+            StopEnsureConnectionTimer();
+
+            DisposeCurrentSocket();
+
+            ServerHostName = host;
+            ServerWebSocketPort = webSocketPort;
+
+            return ConnectAsync(cancellationToken);
         }
 
         /// <summary>
@@ -279,7 +298,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             if (_ensureTimer != null)
             {
                 Logger.Debug("Stopping web socket timer");
-                
+
                 _ensureTimer.Dispose();
                 _ensureTimer = null;
             }
@@ -313,20 +332,17 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             EnsureConnectionAsync(CancellationToken.None);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        private void DisposeCurrentSocket()
         {
-            StopEnsureConnectionTimer();
+            var socket = _currentWebSocket;
 
-            if (_currentWebSocket != null)
+            if (socket != null)
             {
                 Logger.Debug("Disposing client web socket");
-                
+
                 try
                 {
-                    _currentWebSocket.Dispose();
+                    socket.Dispose();
                 }
                 catch (Exception ex)
                 {
@@ -334,6 +350,16 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 }
                 _currentWebSocket = null;
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            StopEnsureConnectionTimer();
+
+            DisposeCurrentSocket();
         }
     }
 }

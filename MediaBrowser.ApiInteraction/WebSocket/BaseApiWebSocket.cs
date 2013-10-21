@@ -134,13 +134,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerHostName { get; private set; }
+        public string ServerHostName { get; protected set; }
 
         /// <summary>
         /// Gets the server web socket port.
         /// </summary>
         /// <value>The server web socket port.</value>
-        public int ServerWebSocketPort { get; private set; }
+        public int ServerWebSocketPort { get; protected set; }
 
         /// <summary>
         /// Gets or sets the type of the client.
