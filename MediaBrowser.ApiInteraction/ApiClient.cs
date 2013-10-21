@@ -169,16 +169,23 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ItemCounts> GetItemCountsAsync(string userId)
+        /// <summary>
+        /// Gets the item counts async.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemCounts}.</returns>
+        /// <exception cref="System.ArgumentNullException">query</exception>
+        public async Task<ItemCounts> GetItemCountsAsync(ItemCountsQuery query)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (query == null)
             {
-                throw new ArgumentNullException("userId");
+                throw new ArgumentNullException("query");
             }
 
             var dict = new QueryStringDictionary { };
 
-            dict.Add("UserId", userId);
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+            dict.AddIfNotNull("IsFavorite", query.IsFavorite);
 
             var url = GetApiUrl("Items/Counts", dict);
 
