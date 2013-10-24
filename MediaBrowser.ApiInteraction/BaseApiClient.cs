@@ -1019,6 +1019,33 @@ namespace MediaBrowser.ApiInteraction
             return null;
         }
 
+        public string GetThumbImageUrl(BaseItemDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.ImageType = ImageType.Thumb;
+
+            var itemId = item.HasThumb ? item.Id : item.ParentThumbItemId;
+            var imageTag = item.HasThumb ? item.ImageTags[ImageType.Thumb] : item.ParentThumbImageTag;
+
+            if (!string.IsNullOrEmpty(itemId))
+            {
+                options.Tag = imageTag;
+
+                return GetImageUrl(itemId, options);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// This is a helper to get the art image url from a given BaseItemDto. If the actual item does not have a logo, it will return the logo from the first parent that does, or null.
         /// </summary>
