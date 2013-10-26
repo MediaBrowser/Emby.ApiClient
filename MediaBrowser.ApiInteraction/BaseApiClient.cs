@@ -333,7 +333,6 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
             dict.AddIfNotNullOrEmpty("AlbumArtistStartsWithOrGreater", query.AlbumArtistStartsWithOrGreater);
 
-            dict.AddIfNotNull("HasPremiereDate", query.HasPremiereDate);
             if (query.LocationTypes != null && query.LocationTypes.Length > 0)
             {
                 dict.Add("LocationTypes", query.LocationTypes.Select(f => f.ToString()));
@@ -342,15 +341,10 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
             }
-            if (query.MinPremiereDate.HasValue)
-            {
-                dict.Add("MinPremiereDate", query.MinPremiereDate.Value.ToString("yyyyMMddHHmmss"));
-            }
-            if (query.MaxPremiereDate.HasValue)
-            {
-                dict.Add("MaxPremiereDate", query.MaxPremiereDate.Value.ToString("yyyyMMddHHmmss"));
-            }
- 
+
+            dict.AddIfNotNull("IsMissing", query.IsMissing);
+            dict.AddIfNotNull("IsUnaired", query.IsUnaired);
+            
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
         }
 
@@ -379,20 +373,6 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("StartIndex", query.StartIndex);
 
             dict.Add("UserId", query.UserId);
-
-            dict.AddIfNotNull("HasPremiereDate", query.HasPremiereDate);
-            if (query.ExcludeLocationTypes != null && query.ExcludeLocationTypes.Length > 0)
-            {
-                dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
-            }
-            if (query.MinPremiereDate.HasValue)
-            {
-                dict.Add("MinPremiereDate", query.MinPremiereDate.Value.ToString("yyyyMMddHHmmss"));
-            }
-            if (query.MaxPremiereDate.HasValue)
-            {
-                dict.Add("MaxPremiereDate", query.MaxPremiereDate.Value.ToString("yyyyMMddHHmmss"));
-            }
 
             return GetApiUrl("Shows/NextUp", dict);
         }
