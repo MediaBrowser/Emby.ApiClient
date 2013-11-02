@@ -8,11 +8,29 @@
     <IgnoreFiles>
     </IgnoreFiles>
   </SpellChecker>
-  <HelpFile>
-    <DocumentInternals>True</DocumentInternals>
-    <DocumentProtected>True</DocumentProtected>
-    <DocumentPrivates>True</DocumentPrivates>
-    <HeaderText>+</HeaderText>
-    <FooterHtml></FooterHtml>
-  </HelpFile>
+<HelpConfigurations selected="HelpFile">
+  <HelpConfiguration name="HelpFile">
+    <OutputPath>D:\Development\MediaBrowser.ApiClient\Help</OutputPath>
+    <ImageFolderPath />
+    <HtmlFormats>
+      <HtmlHelp>true</HtmlHelp>
+      <MSHelpViewer>false</MSHelpViewer>
+      <MSHelp2>false</MSHelp2>
+      <Website>false</Website>
+    </HtmlFormats>
+    <IncludeScopes>
+      <Public>true</Public>
+      <Internal>true</Internal>
+      <Protected>true</Protected>
+      <Private>true</Private>
+      <Inherited>true</Inherited>
+      <EnableTags>false</EnableTags>
+      <TagList />
+    </IncludeScopes>
+    <ResolveCrefLinks>true</ResolveCrefLinks>
+    <HeaderText> </HeaderText>
+    <FooterText />
+    <SelectedProjects />
+  </HelpConfiguration>
+</HelpConfigurations>
 </GhostDoc>
