@@ -28,7 +28,7 @@
       <TagList />
     </IncludeScopes>
     <ResolveCrefLinks>true</ResolveCrefLinks>
-    <HeaderText> </HeaderText>
+    <HeaderText />
     <FooterText />
     <SelectedProjects />
   </HelpConfiguration>
