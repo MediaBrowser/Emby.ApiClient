@@ -328,6 +328,9 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("IndexBy", query.IndexBy);
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
+            dict.AddIfNotNull("MinCriticRating", query.MinCriticRating);
+            dict.AddIfNotNull("MinCommunityRating", query.MinCommunityRating);
+            
             dict.AddIfNotNull("MinPlayers", query.MinPlayers);
             dict.AddIfNotNull("MaxPlayers", query.MaxPlayers);
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
