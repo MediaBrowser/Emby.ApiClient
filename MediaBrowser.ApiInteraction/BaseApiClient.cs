@@ -349,6 +349,8 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IsUnaired", query.IsUnaired);
             dict.AddIfNotNull("IsVirtualUnaired", query.IsVirtualUnaired);
 
+            dict.AddIfNotNull("AiredDuringSeason", query.AiredDuringSeason);
+            
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
         }
 
