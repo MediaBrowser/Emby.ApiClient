@@ -369,6 +369,35 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("SeasonNumber", query.SeasonNumber);
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("Fields", query.Fields.Select(f => f.ToString()));
+            }
+            if (query.ExcludeLocationTypes != null)
+            {
+                dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
+            }
+
+            var url = GetApiUrl("Shows/" + query.SeriesId + "/Episodes", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
         /// <summary>
         /// Gets the similar games async.
         /// </summary>
