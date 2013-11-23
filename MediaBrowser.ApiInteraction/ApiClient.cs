@@ -378,7 +378,7 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary { };
 
-            dict.AddIfNotNull("SeasonNumber", query.SeasonNumber);
+            dict.AddIfNotNull("Season", query.SeasonNumber);
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 
             if (query.Fields != null)
