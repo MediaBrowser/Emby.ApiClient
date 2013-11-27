@@ -1742,7 +1742,7 @@ namespace MediaBrowser.ApiInteraction
         /// or
         /// userId
         /// </exception>
-        public async Task<ItemReviewsResult> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null)
+        public async Task<QueryResult<ItemReview>> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1758,14 +1758,14 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ItemReviewsResult>(stream);
+                return DeserializeFromStream<QueryResult<ItemReview>>(stream);
             }
         }
 
         public async Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
             where T : class
         {
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
