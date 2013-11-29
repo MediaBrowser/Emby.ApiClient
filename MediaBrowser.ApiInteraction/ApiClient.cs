@@ -385,10 +385,37 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("Fields", query.Fields.Select(f => f.ToString()));
             }
-            if (query.ExcludeLocationTypes != null)
+
+            dict.AddIfNotNull("IsMissing", query.IsMissing);
+            dict.AddIfNotNull("IsVirtualUnaired", query.IsVirtualUnaired);
+
+            var url = GetApiUrl("Shows/" + query.SeriesId + "/Episodes", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                dict.Add("ExcludeLocationTypes", query.ExcludeLocationTypes.Select(f => f.ToString()));
+                return DeserializeFromStream<ItemsResult>(stream);
             }
+        }
+
+        public async Task<ItemsResult> GetSeasonsAsync(SeasonQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("Fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            dict.AddIfNotNull("IsMissing", query.IsMissing);
+            dict.AddIfNotNull("IsVirtualUnaired", query.IsVirtualUnaired);
+            dict.AddIfNotNull("IsSpecialSeason", query.IsSpecialSeason);
 
             var url = GetApiUrl("Shows/" + query.SeriesId + "/Episodes", dict);
 
