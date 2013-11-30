@@ -70,9 +70,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
         public ApiClient(ILogger logger, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : this(new AsyncHttpClient(logger), logger, serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
+        {
+        }
+
+        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
             : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
         {
-            HttpClient = new AsyncHttpClient(logger);
+            HttpClient = httpClient;
 
             var param = AuthorizationParameter;
 
@@ -81,7 +86,7 @@ namespace MediaBrowser.ApiInteraction
                 HttpClient.SetAuthorizationHeader(AuthorizationScheme, param);
             }
         }
-
+        
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
