@@ -424,7 +424,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IsVirtualUnaired", query.IsVirtualUnaired);
             dict.AddIfNotNull("IsSpecialSeason", query.IsSpecialSeason);
 
-            var url = GetApiUrl("Shows/" + query.SeriesId + "/Episodes", dict);
+            var url = GetApiUrl("Shows/" + query.SeriesId + "/Seasons", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
