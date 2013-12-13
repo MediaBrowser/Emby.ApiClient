@@ -112,14 +112,14 @@ namespace MediaBrowser.ApiInteraction
 
             var httpWebRequest = GetRequest(url, httpMethod);
 
-            if (!string.IsNullOrEmpty(content))
+            if (!string.IsNullOrEmpty(content) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
                 var bytes = Encoding.UTF8.GetBytes(content);
 
                 httpWebRequest.ContentType = contentType;
+                httpWebRequest.SendChunked = false;
                 httpWebRequest.ContentLength = bytes.Length;
                 httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
-                httpWebRequest.SendChunked = false;
             }
 
             try
