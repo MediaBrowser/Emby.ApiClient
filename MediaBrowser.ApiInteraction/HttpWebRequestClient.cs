@@ -119,6 +119,7 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.ContentType = contentType;
                 httpWebRequest.ContentLength = bytes.Length;
                 httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
+                httpWebRequest.SendChunked = false;
             }
 
             try

@@ -325,7 +325,6 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IsHD", query.IsHD);
             dict.AddIfNotNull("HasParentalRating", query.HasParentalRating);
             
-            dict.AddIfNotNullOrEmpty("IndexBy", query.IndexBy);
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             dict.AddIfNotNull("MinCriticRating", query.MinCriticRating);
