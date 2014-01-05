@@ -309,9 +309,10 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("MinIndexNumber", query.MinIndexNumber);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
-            dict.AddIfNotNull("Genres", query.Genres);
+            dict.AddIfNotNull("Genres", query.Genres, "|");
+            dict.AddIfNotNull("Genres", query.AllGenres, "|");
             dict.AddIfNotNull("Ids", query.Ids);
-            dict.AddIfNotNull("Studios", query.Studios);
+            dict.AddIfNotNull("Studios", query.Studios, "|");
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
             dict.AddIfNotNull("Artists", query.Artists);

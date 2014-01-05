@@ -1846,5 +1846,25 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<List<ItemIndex>>(stream);
             }
         }
+
+        public Task ReportCapabilities(string sessionId, ClientCapabilities capabilities, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                throw new ArgumentNullException("sessionId");
+            }
+
+            if (capabilities == null)
+            {
+                throw new ArgumentNullException("capabilities");
+            }
+
+            var dict = new QueryStringDictionary();
+            dict.AddIfNotNull("PlayableMediaTypes", capabilities.PlayableMediaTypes);
+
+            var url = GetApiUrl("Sessions/" + sessionId + "/Capabilities", dict);
+
+            return PostAsync<EmptyRequestResult>(url, dict);
+        }
     }
 }
