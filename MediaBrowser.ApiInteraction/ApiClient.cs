@@ -820,7 +820,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = GetApiUrl("System/Restart");
 
-            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary());
+            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1078,7 +1078,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/PlayedItems/" + itemId, dict);
 
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1131,7 +1131,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (isFavorite)
             {
-                return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+                return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>(), CancellationToken.None);
             }
 
             return DeleteAsync<UserItemDataDto>(url, CancellationToken.None);
@@ -1174,7 +1174,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1210,7 +1210,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1295,7 +1295,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Viewing", dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1325,7 +1325,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Playing", dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         public Task SendMessageCommandAsync(string sessionId, MessageCommand command)
@@ -1354,7 +1354,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Message", dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1373,7 +1373,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/System/" + command);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1389,7 +1389,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Playing/" + request.Command.ToString(), dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1442,7 +1442,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Users/" + userId + "/Items/" + itemId + "/Rating", dict);
 
-            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>());
+            return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         /// <summary>
@@ -1467,7 +1467,7 @@ namespace MediaBrowser.ApiInteraction
             args["username"] = Uri.EscapeDataString(username);
             args["password"] = password;
 
-            return PostAsync<AuthenticationResult>(url, args);
+            return PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
         }
 
         /// <summary>
@@ -1563,8 +1563,9 @@ namespace MediaBrowser.ApiInteraction
         /// <typeparam name="T"></typeparam>
         /// <param name="url">The URL.</param>
         /// <param name="args">The args.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``0}.</returns>
-        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args)
+        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, CancellationToken cancellationToken)
             where T : class
         {
             url = AddDataFormat(url);
@@ -1575,7 +1576,7 @@ namespace MediaBrowser.ApiInteraction
 
             const string contentType = "application/x-www-form-urlencoded";
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -1670,7 +1671,7 @@ namespace MediaBrowser.ApiInteraction
 
             url = GetApiUrl(url, dict);
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
         public Task UpdateNotification(Notification notification)
@@ -1712,19 +1713,25 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SearchHintResult> GetSearchHintsAsync(string userId, string searchTerm, int? startIndex = null, int? limit = null)
+        public async Task<SearchHintResult> GetSearchHintsAsync(SearchQuery query)
         {
-            if (string.IsNullOrEmpty(searchTerm))
+            if (query == null || string.IsNullOrEmpty(query.SearchTerm))
             {
-                throw new ArgumentNullException("searchTerm");
+                throw new ArgumentNullException("query");
             }
 
             var queryString = new QueryStringDictionary();
 
-            queryString.Add("searchTerm", searchTerm);
-            queryString.AddIfNotNullOrEmpty("UserId", userId);
-            queryString.AddIfNotNull("startIndex", startIndex);
-            queryString.AddIfNotNull("limit", limit);
+            queryString.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
+            queryString.AddIfNotNullOrEmpty("UserId", query.UserId);
+            queryString.AddIfNotNull("StartIndex", query.StartIndex);
+            queryString.AddIfNotNull("Limit", query.Limit);
+
+            queryString.Add("IncludeArtists", query.IncludeArtists);
+            queryString.Add("IncludeGenres", query.IncludeGenres);
+            queryString.Add("IncludeMedia", query.IncludeMedia);
+            queryString.Add("IncludePeople", query.IncludePeople);
+            queryString.Add("IncludeStudios", query.IncludeStudios);
 
             var url = GetApiUrl("Search/Hints", queryString);
 
@@ -1864,7 +1871,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/" + sessionId + "/Capabilities", dict);
 
-            return PostAsync<EmptyRequestResult>(url, dict);
+            return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
         }
     }
 }
