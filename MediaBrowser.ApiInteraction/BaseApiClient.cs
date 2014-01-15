@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
@@ -651,6 +652,40 @@ namespace MediaBrowser.ApiInteraction
             {
                 return GetStudioImageUrl(item.Name, options);
             }
+
+            return GetImageUrl(item.Id, options);
+        }
+
+        public string GetImageUrl(RecordingInfoDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[options.ImageType];
+
+            return GetImageUrl(item.Id, options);
+        }
+
+        public string GetImageUrl(ChannelInfoDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[options.ImageType];
 
             return GetImageUrl(item.Id, options);
         }

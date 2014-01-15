@@ -4,6 +4,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Plugins;
@@ -1872,6 +1873,87 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sessions/" + sessionId + "/Capabilities", dict);
 
             return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
+        }
+
+        public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("LiveTv/Recordings");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<LiveTvInfo>(stream);
+            }
+        }
+
+        public async Task<QueryResult<RecordingGroupDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            var url = GetApiUrl("LiveTv/Recordings/Groups", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<RecordingGroupDto>>(stream);
+            }
+        }
+
+        public async Task<QueryResult<RecordingInfoDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+            dict.AddIfNotNullOrEmpty("ChannelId", query.ChannelId);
+            dict.AddIfNotNullOrEmpty("GroupId", query.GroupId);
+            dict.AddIfNotNullOrEmpty("Id", query.Id);
+            dict.AddIfNotNullOrEmpty("SeriesTimerId", query.SeriesTimerId);
+            dict.AddIfNotNull("IsRecording", query.IsRecording);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            var url = GetApiUrl("LiveTv/Recordings", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<RecordingInfoDto>>(stream);
+            }
+        }
+
+        public async Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            if (query.ChannelType.HasValue)
+            {
+                dict.Add("ChannelType", query.ChannelType.Value.ToString());
+            }
+
+            var url = GetApiUrl("LiveTv/Recordings", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<ChannelInfoDto>>(stream);
+            }
         }
     }
 }
