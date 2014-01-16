@@ -87,7 +87,7 @@ namespace MediaBrowser.ApiInteraction
                 HttpClient.SetAuthorizationHeader(AuthorizationScheme, param);
             }
         }
-        
+
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -388,7 +388,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 
             dict.AddIfNotNullOrEmpty("SeasonId", query.SeasonId);
-            
+
             if (query.Fields != null)
             {
                 dict.Add("Fields", query.Fields.Select(f => f.ToString()));
@@ -1918,7 +1918,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("GroupId", query.GroupId);
             dict.AddIfNotNullOrEmpty("Id", query.Id);
             dict.AddIfNotNullOrEmpty("SeriesTimerId", query.SeriesTimerId);
-            dict.AddIfNotNull("IsRecording", query.IsRecording);
+            dict.AddIfNotNull("IsInProgress", query.IsInProgress);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNull("Limit", query.Limit);
 
@@ -1953,6 +1953,176 @@ namespace MediaBrowser.ApiInteraction
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<QueryResult<ChannelInfoDto>>(stream);
+            }
+        }
+
+        public Task CancelLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("LiveTv/SeriesTimers/" + id, dict);
+
+            return HttpClient.DeleteAsync(url, cancellationToken);
+        }
+
+        public Task CancelLiveTvTimerAsync(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("LiveTv/Timers/" + id, dict);
+
+            return HttpClient.DeleteAsync(url, cancellationToken);
+        }
+
+        public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("LiveTv/Recordings/" + id, dict);
+
+            return HttpClient.DeleteAsync(url, cancellationToken);
+        }
+
+        public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+            dict.AddIfNotNullOrEmpty("userId", userId);
+
+            var url = GetApiUrl("LiveTv/Channels/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ChannelInfoDto>(stream);
+            }
+        }
+
+        public async Task<RecordingInfoDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+            dict.AddIfNotNullOrEmpty("userId", userId);
+
+            var url = GetApiUrl("LiveTv/Recordings/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<RecordingInfoDto>(stream);
+            }
+        }
+
+        public async Task<RecordingGroupDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+            dict.AddIfNotNullOrEmpty("userId", userId);
+
+            var url = GetApiUrl("LiveTv/Recordings/Groups/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<RecordingGroupDto>(stream);
+            }
+        }
+
+        public async Task<SeriesTimerInfoDto> GetLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("LiveTv/SeriesTimers/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SeriesTimerInfoDto>(stream);
+            }
+        }
+
+        public async Task<QueryResult<SeriesTimerInfoDto>> GetLiveTvSeriesTimersAsync(SeriesTimerQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("SortBy", query.SortBy);
+            dict.Add("SortOrder", query.SortOrder.ToString());
+
+            var url = GetApiUrl("LiveTv/SeriesTimers", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<SeriesTimerInfoDto>>(stream);
+            }
+        }
+
+        public async Task<TimerInfoDto> GetLiveTvTimerAsync(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("LiveTv/Timers/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<TimerInfoDto>(stream);
+            }
+        }
+
+        public async Task<QueryResult<TimerInfoDto>> GetLiveTvTimersAsync(TimerQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("ChannelId", query.ChannelId);
+            dict.AddIfNotNullOrEmpty("SeriesTimerId", query.SeriesTimerId);
+
+            var url = GetApiUrl("LiveTv/Timers", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<TimerInfoDto>>(stream);
             }
         }
     }
