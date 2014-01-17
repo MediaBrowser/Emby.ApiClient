@@ -2125,5 +2125,69 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<QueryResult<TimerInfoDto>>(stream);
             }
         }
+
+        public async Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            if (query.MaxEndDate.HasValue)
+            {
+                dict.Add("MaxEndDate", query.MaxEndDate.Value.ToString("o"));
+            }
+            if (query.MaxStartDate.HasValue)
+            {
+                dict.Add("MaxStartDate", query.MaxStartDate.Value.ToString("o"));
+            }
+            if (query.MinEndDate.HasValue)
+            {
+                dict.Add("MinEndDate", query.MinEndDate.Value.ToString("o"));
+            }
+            if (query.MinStartDate.HasValue)
+            {
+                dict.Add("MinStartDate", query.MinStartDate.Value.ToString("o"));
+            }
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+
+            if (query.ChannelIdList != null)
+            {
+                dict.Add("ChannelIds", string.Join(",", query.ChannelIdList));
+            }
+
+            // TODO: This endpoint supports POST if the query string is too long
+            var url = GetApiUrl("LiveTv/Programs", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<ProgramInfoDto>>(stream);
+            }
+        }
+
+        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNull("HasAired", query.HasAired);
+            dict.AddIfNotNull("IsAiring", query.IsAiring);
+
+            var url = GetApiUrl("LiveTv/Programs/Recommended", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<ProgramInfoDto>>(stream);
+            }
+        }
     }
 }

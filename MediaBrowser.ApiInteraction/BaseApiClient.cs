@@ -690,6 +690,23 @@ namespace MediaBrowser.ApiInteraction
             return GetImageUrl(item.Id, options);
         }
 
+        public string GetImageUrl(ProgramInfoDto item, ImageOptions options)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            options.Tag = item.ImageTags[options.ImageType];
+
+            return GetImageUrl(item.Id, options);
+        }
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
