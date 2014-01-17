@@ -1877,7 +1877,7 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken)
         {
-            var url = GetApiUrl("LiveTv/Recordings");
+            var url = GetApiUrl("LiveTv/Info");
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
@@ -1948,7 +1948,7 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("ChannelType", query.ChannelType.Value.ToString());
             }
 
-            var url = GetApiUrl("LiveTv/Recordings", dict);
+            var url = GetApiUrl("LiveTv/Channels", dict);
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
