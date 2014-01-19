@@ -318,6 +318,9 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
             dict.AddIfNotNull("Artists", query.Artists);
 
+            dict.AddIfNotNull("IsPlayed", query.IsPlayed);
+            dict.AddIfNotNull("IsInBoxSet", query.IsInBoxSet);
+            
             dict.AddIfNotNullOrEmpty("Person", query.Person);
             dict.AddIfNotNull("PersonTypes", query.PersonTypes);
 
@@ -529,6 +532,8 @@ namespace MediaBrowser.ApiInteraction
                 dict["sortOrder"] = query.SortOrder.ToString();
             }
 
+            dict.AddIfNotNull("IsPlayed", query.IsPlayed);
+            
             if (query.Fields != null)
             {
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));

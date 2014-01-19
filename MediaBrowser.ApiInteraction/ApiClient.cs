@@ -2135,21 +2135,23 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary { };
 
+            const string isoDateFormat = "o";
+
             if (query.MaxEndDate.HasValue)
             {
-                dict.Add("MaxEndDate", query.MaxEndDate.Value.ToString("o"));
+                dict.Add("MaxEndDate", query.MaxEndDate.Value.ToUniversalTime().ToString(isoDateFormat));
             }
             if (query.MaxStartDate.HasValue)
             {
-                dict.Add("MaxStartDate", query.MaxStartDate.Value.ToString("o"));
+                dict.Add("MaxStartDate", query.MaxStartDate.Value.ToUniversalTime().ToString(isoDateFormat));
             }
             if (query.MinEndDate.HasValue)
             {
-                dict.Add("MinEndDate", query.MinEndDate.Value.ToString("o"));
+                dict.Add("MinEndDate", query.MinEndDate.Value.ToUniversalTime().ToString(isoDateFormat));
             }
             if (query.MinStartDate.HasValue)
             {
-                dict.Add("MinStartDate", query.MinStartDate.Value.ToString("o"));
+                dict.Add("MinStartDate", query.MinStartDate.Value.ToUniversalTime().ToString(isoDateFormat));
             }
 
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
