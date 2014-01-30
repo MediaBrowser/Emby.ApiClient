@@ -1076,8 +1076,8 @@ namespace MediaBrowser.ApiInteraction
 
             options.ImageType = ImageType.Thumb;
 
-            var itemId = item.HasThumb ? item.Id : item.ParentThumbItemId;
-            var imageTag = item.HasThumb ? item.ImageTags[ImageType.Thumb] : item.ParentThumbImageTag;
+            var itemId = item.HasThumb ? item.Id : item.SeriesThumbImageTag.HasValue ? item.SeriesId : item.ParentThumbItemId;
+            var imageTag = item.HasThumb ? item.ImageTags[ImageType.Thumb] : item.SeriesThumbImageTag ?? item.ParentThumbImageTag;
 
             if (!string.IsNullOrEmpty(itemId))
             {
