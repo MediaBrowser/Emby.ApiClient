@@ -94,7 +94,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     OnClosed();
                     break;
                 }
-                catch (WebSocketException ex)
+                catch (Exception ex)
                 {
                     _logger.ErrorException("Error receiving web socket message", ex);
 
