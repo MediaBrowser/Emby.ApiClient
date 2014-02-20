@@ -632,7 +632,7 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>Task{ItemsResult}.</returns>
         public async Task<ItemsResult> GetStudiosAsync(ItemsByNameQuery query)
         {
-            var url = GetItemByNameListUrl("Genres", query);
+            var url = GetItemByNameListUrl("Studios", query);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
