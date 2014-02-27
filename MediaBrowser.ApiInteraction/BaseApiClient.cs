@@ -633,31 +633,6 @@ namespace MediaBrowser.ApiInteraction
 
             options.Tag = GetImageTag(item, options);
 
-            if (item.IsArtist)
-            {
-                return GetArtistImageUrl(item.Name, options);
-            }
-            if (item.IsGenre)
-            {
-                return GetGenreImageUrl(item.Name, options);
-            }
-            if (item.IsGameGenre)
-            {
-                return GetGameGenreImageUrl(item.Name, options);
-            }
-            if (item.IsMusicGenre)
-            {
-                return GetMusicGenreImageUrl(item.Name, options);
-            }
-            if (item.IsPerson)
-            {
-                return GetPersonImageUrl(item.Name, options);
-            }
-            if (item.IsStudio)
-            {
-                return GetStudioImageUrl(item.Name, options);
-            }
-
             return GetImageUrl(item.Id, options);
         }
 
@@ -841,30 +816,6 @@ namespace MediaBrowser.ApiInteraction
             var url = "Persons/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
-        /// Gets the year image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        public string GetYearImageUrl(BaseItemDto item, ImageOptions options)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            options.Tag = GetImageTag(item, options);
-
-            return GetYearImageUrl(int.Parse(item.Name), options);
         }
 
         /// <summary>
