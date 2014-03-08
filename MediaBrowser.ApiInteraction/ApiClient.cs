@@ -1519,7 +1519,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("System/Configuration");
 
-            return PostAsync<ServerConfiguration, EmptyRequestResult>(url, configuration);
+            return PostAsync<ServerConfiguration, EmptyRequestResult>(url, configuration, CancellationToken.None);
         }
 
         /// <summary>
@@ -1543,7 +1543,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("ScheduledTasks/" + id + "/Triggers");
 
-            return PostAsync<TaskTriggerInfo[], EmptyRequestResult>(url, triggers);
+            return PostAsync<TaskTriggerInfo[], EmptyRequestResult>(url, triggers, CancellationToken.None);
         }
 
         /// <summary>
@@ -1588,7 +1588,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("DisplayPreferences/" + displayPreferences.Id, dict);
 
-            return PostAsync<DisplayPreferences, EmptyRequestResult>(url, displayPreferences);
+            return PostAsync<DisplayPreferences, EmptyRequestResult>(url, displayPreferences, cancellationToken);
         }
 
         /// <summary>
@@ -1641,8 +1641,9 @@ namespace MediaBrowser.ApiInteraction
         /// <typeparam name="TOutputType">The type of the T output type.</typeparam>
         /// <param name="url">The URL.</param>
         /// <param name="obj">The obj.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``1}.</returns>
-        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj)
+        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj, CancellationToken cancellationToken)
             where TOutputType : class
         {
             url = AddDataFormat(url);
@@ -1651,7 +1652,7 @@ namespace MediaBrowser.ApiInteraction
 
             var postContent = SerializeToJson(obj);
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<TOutputType>(stream);
             }
@@ -1661,6 +1662,7 @@ namespace MediaBrowser.ApiInteraction
         /// This is a helper around getting a stream from the server that contains serialized data
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken)
         {
@@ -1688,7 +1690,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = GetApiUrl("Notifications/" + notification.UserId);
 
-            return PostAsync<Notification, Notification>(url, notification);
+            return PostAsync<Notification, Notification>(url, notification, CancellationToken.None);
         }
 
         public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
@@ -1712,7 +1714,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = GetApiUrl("Notifications/" + notification.UserId + "/" + notification.Id);
 
-            return PostAsync<Notification, EmptyRequestResult>(url, notification);
+            return PostAsync<Notification, EmptyRequestResult>(url, notification, CancellationToken.None);
         }
 
         public async Task<NotificationResult> GetNotificationsAsync(NotificationQuery query)
@@ -2223,6 +2225,111 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<QueryResult<ProgramInfoDto>>(stream);
             }
+        }
+
+        public Task CreateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            if (timer == null)
+            {
+                throw new ArgumentNullException("timer");
+            }
+
+            var url = GetApiUrl("LiveTv/SeriesTimers");
+
+            return PostAsync<SeriesTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
+        }
+
+        public Task CreateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            if (timer == null)
+            {
+                throw new ArgumentNullException("timer");
+            }
+
+            var url = GetApiUrl("LiveTv/Timers");
+
+            return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
+        }
+
+        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(programId))
+            {
+                throw new ArgumentNullException("programId");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("programId", programId);
+
+            var url = GetApiUrl("LiveTv/Timers/Defaults", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SeriesTimerInfoDto>(stream);
+            }
+        }
+
+        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("LiveTv/Timers/Defaults");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SeriesTimerInfoDto>(stream);
+            }
+        }
+
+        public async Task<GuideInfo> GetLiveTvGuideInfo(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("LiveTv/GuideInfo");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<GuideInfo>(stream);
+            }
+        }
+
+        public async Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var dict = new QueryStringDictionary { };
+            dict.AddIfNotNullOrEmpty("userId", userId);
+
+            var url = GetApiUrl("LiveTv/Programs/" + id, dict);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ProgramInfoDto>(stream);
+            }
+        }
+
+        public Task UpdateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            if (timer == null)
+            {
+                throw new ArgumentNullException("timer");
+            }
+
+            var url = GetApiUrl("LiveTv/SeriesTimers/" + timer.Id);
+
+            return PostAsync<SeriesTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
+        }
+
+        public Task UpdateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken)
+        {
+            if (timer == null)
+            {
+                throw new ArgumentNullException("timer");
+            }
+
+            var url = GetApiUrl("LiveTv/Timers/" + timer.Id);
+
+            return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
     }
 }
