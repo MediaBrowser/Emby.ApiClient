@@ -1174,39 +1174,40 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Reports to the server that the user has begun playing an item
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="canSeek">if set to <c>true</c> [can seek].</param>
-        /// <param name="queueableMediaTypes">The queueable media types.</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackStartAsync(string itemId, string userId, bool canSeek, List<string> queueableMediaTypes)
+        public Task ReportPlaybackStartAsync(PlaybackStartInfo info)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+            if (string.IsNullOrEmpty(info.ItemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(info.UserId))
             {
                 throw new ArgumentNullException("userId");
             }
 
-            Logger.Debug("ReportPlaybackStart: Item {0}", itemId);
+            Logger.Debug("ReportPlaybackStart: Item {0}", info.ItemId);
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                var queueTypes = string.Join(",", queueableMediaTypes);
-                var msg = string.Format("{0}|{1}|{2}", itemId, canSeek, queueTypes);
+                var queueTypes = string.Join(",", info.QueueableMediaTypes);
+                var msg = string.Format("{0}|{1}|{2}|{3}", info.ItemId, info.IsSeekable, queueTypes, info.MediaSourceId ?? string.Empty);
 
                 return WebSocketConnection.SendAsync("PlaybackStart", msg);
             }
 
             var dict = new QueryStringDictionary();
-            dict.Add("CanSeek", canSeek);
-            dict.Add("QueueableMediaTypes", queueableMediaTypes);
+            dict.Add("CanSeek", info.IsSeekable);
+            dict.Add("QueueableMediaTypes", info.QueueableMediaTypes);
 
-            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
+            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
@@ -1214,35 +1215,44 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Reports playback progress to the server
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="positionTicks">The position ticks.</param>
-        /// <param name="isPaused">if set to <c>true</c> [is paused].</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackProgressAsync(string itemId, string userId, long? positionTicks, bool isPaused, bool isMuted)
+        public Task ReportPlaybackProgressAsync(PlaybackProgressInfo info)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+            if (string.IsNullOrEmpty(info.ItemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(info.UserId))
             {
                 throw new ArgumentNullException("userId");
             }
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                return WebSocketConnection.SendAsync("PlaybackProgress", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" + isPaused.ToString().ToLower() + "|" + isMuted.ToString().ToLower());
+                var msg = info.ItemId + "|" +
+                          (info.PositionTicks == null
+                              ? ""
+                              : info.PositionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" +
+                          info.IsPaused.ToString().ToLower() + "|" + info.IsMuted.ToString().ToLower();
+
+                msg += "|" + (info.MediaSourceId ?? string.Empty);
+
+                return WebSocketConnection.SendAsync("PlaybackProgress", msg);
             }
 
             var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("positionTicks", positionTicks);
-            dict.Add("isPaused", isPaused);
-            dict.Add("isMuted", isMuted);
+            dict.AddIfNotNull("positionTicks", info.PositionTicks);
+            dict.Add("isPaused", info.IsPaused);
+            dict.Add("isMuted", info.IsMuted);
 
-            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId + "/Progress", dict);
+            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId + "/Progress", dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
@@ -1250,36 +1260,45 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Reports to the server that the user has stopped playing an item
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <param name="positionTicks">The position ticks.</param>
+        /// <param name="info">The information.</param>
         /// <returns>Task{UserItemDataDto}.</returns>
         /// <exception cref="System.ArgumentNullException">itemId</exception>
-        public Task ReportPlaybackStoppedAsync(string itemId, string userId, long? positionTicks)
+        public Task ReportPlaybackStoppedAsync(PlaybackStopInfo info)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+            if (string.IsNullOrEmpty(info.ItemId))
             {
                 throw new ArgumentNullException("itemId");
             }
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(info.UserId))
             {
                 throw new ArgumentNullException("userId");
             }
 
-            var positionDisplay = positionTicks.HasValue ? TimeSpan.FromTicks(positionTicks.Value).ToString() : "---";
+            var positionDisplay = info.PositionTicks.HasValue ? TimeSpan.FromTicks(info.PositionTicks.Value).ToString() : "---";
 
-            Logger.Debug("ReportPlaybackStopped: Item {0}, Position: {1}", itemId, positionDisplay);
+            Logger.Debug("ReportPlaybackStopped: Item {0}, Position: {1}", info.ItemId, positionDisplay);
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                return WebSocketConnection.SendAsync("PlaybackStopped", itemId + "|" + (positionTicks == null ? "" : positionTicks.Value.ToString(CultureInfo.InvariantCulture)));
+                var msg = info.ItemId + "|" +
+                          (info.PositionTicks == null
+                              ? ""
+                              : info.PositionTicks.Value.ToString(CultureInfo.InvariantCulture));
+
+                msg += "|" + (info.MediaSourceId ?? string.Empty);
+
+                return WebSocketConnection.SendAsync("PlaybackStopped", msg);
             }
 
             var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("positionTicks", positionTicks);
+            dict.AddIfNotNull("positionTicks", info.PositionTicks);
 
-            var url = GetApiUrl("Users/" + userId + "/PlayingItems/" + itemId, dict);
+            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
 
             return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
@@ -2239,7 +2258,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SeriesTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
 
-        public Task CreateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken)
+        public Task CreateLiveTvTimerAsync(BaseTimerInfoDto timer, CancellationToken cancellationToken)
         {
             if (timer == null)
             {
@@ -2248,7 +2267,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/Timers");
 
-            return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
+            return PostAsync<BaseTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
 
         public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken)

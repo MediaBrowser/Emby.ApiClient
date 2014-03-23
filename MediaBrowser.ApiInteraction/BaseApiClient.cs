@@ -1162,11 +1162,8 @@ namespace MediaBrowser.ApiInteraction
         {
             var queryParams = new QueryStringDictionary();
 
-            if (options.VideoCodec.HasValue)
-            {
-                queryParams["VideoCodec"] = options.VideoCodec.Value.ToString();
-            }
-
+            queryParams.AddIfNotNullOrEmpty("VideoCodec", options.VideoCodec);
+            
             queryParams.AddIfNotNull("VideoBitRate", options.VideoBitRate);
             queryParams.AddIfNotNull("Width", options.Width);
             queryParams.AddIfNotNull("Height", options.Height);
@@ -1210,12 +1207,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("queryParams");
             }
 
-            if (options.AudioCodec.HasValue)
-            {
-                queryParams["audioCodec"] = options.AudioCodec.Value.ToString();
-            }
+            queryParams.AddIfNotNullOrEmpty("AudioCodec", options.AudioCodec);
 
-            queryParams.AddIfNotNull("audiochannels", options.MaxAudioChannels);
+            queryParams.AddIfNotNull("MaxAudioChannels", options.MaxAudioChannels);
             queryParams.AddIfNotNull("audiosamplerate", options.MaxAudioSampleRate);
             queryParams.AddIfNotNull("AudioBitRate", options.AudioBitRate);
             queryParams.AddIfNotNull("StartTimeTicks", options.StartTimeTicks);
