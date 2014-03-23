@@ -1206,6 +1206,7 @@ namespace MediaBrowser.ApiInteraction
             var dict = new QueryStringDictionary();
             dict.Add("CanSeek", info.IsSeekable);
             dict.Add("QueueableMediaTypes", info.QueueableMediaTypes);
+            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
 
             var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
 
@@ -1251,6 +1252,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("positionTicks", info.PositionTicks);
             dict.Add("isPaused", info.IsPaused);
             dict.Add("isMuted", info.IsMuted);
+            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
 
             var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId + "/Progress", dict);
 
@@ -1297,6 +1299,7 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("positionTicks", info.PositionTicks);
+            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
 
             var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
 
