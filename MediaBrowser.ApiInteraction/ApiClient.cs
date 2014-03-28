@@ -2353,5 +2353,10 @@ namespace MediaBrowser.ApiInteraction
 
             return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
+
+        public Task SendCommandAsync(string sessionId, GenericCommand request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
