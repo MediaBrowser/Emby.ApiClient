@@ -1420,14 +1420,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="command">The command.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">sessionId</exception>
-        public Task SendSystemCommandAsync(string sessionId, SystemCommand command)
+        public Task SendCommandAsync(string sessionId, GeneralCommand command)
         {
             if (string.IsNullOrEmpty(sessionId))
             {
                 throw new ArgumentNullException("sessionId");
             }
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/System/" + command);
+            var url = GetApiUrl("Sessions/" + sessionId + "/Command/" + command);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
@@ -2352,11 +2352,6 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("LiveTv/Timers/" + timer.Id);
 
             return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
-        }
-
-        public Task SendCommandAsync(string sessionId, GenericCommand request)
-        {
-            throw new NotImplementedException();
         }
     }
 }

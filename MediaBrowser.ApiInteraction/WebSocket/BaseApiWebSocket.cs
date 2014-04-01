@@ -86,7 +86,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Occurs when [system command].
         /// </summary>
-        public event EventHandler<SystemCommandEventArgs> SystemCommand;
+        public event EventHandler<GeneralCommandEventArgs> GeneralCommand;
 
         /// <summary>
         /// Occurs when [notification added].
@@ -356,12 +356,23 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 FireEvent(NotificationsMarkedRead, this, EventArgs.Empty);
             }
-            else if (string.Equals(messageType, "SystemCommand"))
+            else if (string.Equals(messageType, "GeneralCommand"))
             {
-                FireEvent(SystemCommand, this, new SystemCommandEventArgs
+                var args = new GeneralCommandEventArgs
                 {
-                    Command = _jsonSerializer.DeserializeFromString<WebSocketMessage<SystemCommand>>(json).Data
-                });
+                    Command = _jsonSerializer.DeserializeFromString<WebSocketMessage<GeneralCommand>>(json).Data
+                };
+
+                try
+                {
+                    args.KnownCommandType = (GeneralCommandType)Enum.Parse(typeof(GeneralCommandType), args.Command.Name, true);
+                }
+                catch
+                {
+                    // Could be a custom name.
+                }
+
+                FireEvent(GeneralCommand, this, args);
             }
             else if (string.Equals(messageType, "MessageCommand"))
             {
