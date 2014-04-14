@@ -1427,7 +1427,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("sessionId");
             }
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Command/" + command);
+            var url = GetApiUrl("Sessions/" + sessionId + "/Command/" + command.Name);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
