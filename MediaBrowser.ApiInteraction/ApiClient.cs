@@ -1427,9 +1427,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("sessionId");
             }
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Command/" + command.Name);
+            var url = GetApiUrl("Sessions/" + sessionId + "/Command");
 
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+            return PostAsync<GeneralCommand, EmptyRequestResult>(url, command, CancellationToken.None);
         }
 
         /// <summary>
@@ -1912,13 +1912,8 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task ReportCapabilities(string sessionId, ClientCapabilities capabilities, CancellationToken cancellationToken)
+        public Task ReportCapabilities(ClientCapabilities capabilities, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                throw new ArgumentNullException("sessionId");
-            }
-
             if (capabilities == null)
             {
                 throw new ArgumentNullException("capabilities");
@@ -1926,8 +1921,9 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
             dict.AddIfNotNull("PlayableMediaTypes", capabilities.PlayableMediaTypes);
+            dict.AddIfNotNull("SupportedCommands", capabilities.SupportedCommands);
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Capabilities", dict);
+            var url = GetApiUrl("Sessions/Capabilities", dict);
 
             return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
         }

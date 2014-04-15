@@ -246,6 +246,16 @@ namespace MediaBrowser.ApiInteraction
             return queryString.GetUrl(ApiUrl + "/" + handler);
         }
 
+        public string GetSubtitleUrl(SubtitleOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
+            return GetApiUrl("Videos/" + options.ItemId + "/Subtitles/" + options.StreamIndex);
+        }
+
         /// <summary>
         /// Creates a url to return a list of items
         /// </summary>
@@ -320,7 +330,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("IsPlayed", query.IsPlayed);
             dict.AddIfNotNull("IsInBoxSet", query.IsInBoxSet);
-            
+
             dict.AddIfNotNullOrEmpty("Person", query.Person);
             dict.AddIfNotNull("PersonTypes", query.PersonTypes);
 
@@ -329,12 +339,12 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("ParentIndexNumber", query.ParentIndexNumber);
             dict.AddIfNotNull("IsHD", query.IsHD);
             dict.AddIfNotNull("HasParentalRating", query.HasParentalRating);
-            
+
             dict.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
 
             dict.AddIfNotNull("MinCriticRating", query.MinCriticRating);
             dict.AddIfNotNull("MinCommunityRating", query.MinCommunityRating);
-            
+
             dict.AddIfNotNull("MinPlayers", query.MinPlayers);
             dict.AddIfNotNull("MaxPlayers", query.MaxPlayers);
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
@@ -354,7 +364,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IsVirtualUnaired", query.IsVirtualUnaired);
 
             dict.AddIfNotNull("AiredDuringSeason", query.AiredDuringSeason);
-            
+
             return GetApiUrl("Users/" + query.UserId + "/Items", dict);
         }
 
@@ -386,7 +396,7 @@ namespace MediaBrowser.ApiInteraction
 
             return GetApiUrl("Shows/NextUp", dict);
         }
-        
+
         /// <summary>
         /// Gets the similar item list URL.
         /// </summary>
@@ -533,7 +543,7 @@ namespace MediaBrowser.ApiInteraction
             }
 
             dict.AddIfNotNull("IsPlayed", query.IsPlayed);
-            
+
             if (query.Fields != null)
             {
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
@@ -543,12 +553,12 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("Filters", query.Filters.Select(f => f.ToString()));
             }
-            
+
             if (query.ImageTypes != null)
             {
                 dict.Add("ImageTypes", query.ImageTypes.Select(f => f.ToString()));
             }
-            
+
             dict.Add("recursive", query.Recursive);
 
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
@@ -1163,7 +1173,7 @@ namespace MediaBrowser.ApiInteraction
             var queryParams = new QueryStringDictionary();
 
             queryParams.AddIfNotNullOrEmpty("VideoCodec", options.VideoCodec);
-            
+
             queryParams.AddIfNotNull("VideoBitRate", options.VideoBitRate);
             queryParams.AddIfNotNull("Width", options.Width);
             queryParams.AddIfNotNull("Height", options.Height);
