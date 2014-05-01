@@ -114,7 +114,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Occurs when [connected].
         /// </summary>
         public event EventHandler<EventArgs> Connected;
-        
+
         /// <summary>
         /// Occurs when [sessions updated].
         /// </summary>
@@ -129,7 +129,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Occurs when [user data changed].
         /// </summary>
         public event EventHandler<UserDataChangedEventArgs> UserDataChanged;
-        
+
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
         /// </summary>
@@ -153,7 +153,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <value>The name of the device.</value>
         public string DeviceName { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the application version.
         /// </summary>
@@ -323,13 +323,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     PluginInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<PluginInfo>>(json).Data
                 });
             }
-            else if (string.Equals(messageType, "Browse"))
-            {
-                FireEvent(BrowseCommand, this, new BrowseRequestEventArgs
-                {
-                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<BrowseRequest>>(json).Data
-                });
-            }
             else if (string.Equals(messageType, "Play"))
             {
                 FireEvent(PlayCommand, this, new PlayRequestEventArgs
@@ -358,21 +351,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
             else if (string.Equals(messageType, "GeneralCommand"))
             {
-                var args = new GeneralCommandEventArgs
-                {
-                    Command = _jsonSerializer.DeserializeFromString<WebSocketMessage<GeneralCommand>>(json).Data
-                };
-
-                try
-                {
-                    args.KnownCommandType = (GeneralCommandType)Enum.Parse(typeof(GeneralCommandType), args.Command.Name, true);
-                }
-                catch
-                {
-                    // Could be a custom name.
-                }
-
-                FireEvent(GeneralCommand, this, args);
+                OnGeneralCommand(json);
             }
             else if (string.Equals(messageType, "MessageCommand"))
             {
@@ -395,6 +374,50 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     ChangeInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDataChangeInfo>>(json).Data
                 });
             }
+        }
+
+        private void OnGeneralCommand(string json)
+        {
+            var args = new GeneralCommandEventArgs
+            {
+                Command = _jsonSerializer.DeserializeFromString<WebSocketMessage<GeneralCommand>>(json).Data
+            };
+
+            try
+            {
+                args.KnownCommandType = (GeneralCommandType)Enum.Parse(typeof(GeneralCommandType), args.Command.Name, true);
+            }
+            catch
+            {
+                // Could be a custom name.
+            }
+
+            if (args.KnownCommandType.HasValue)
+            {
+                if (args.KnownCommandType.Value == GeneralCommandType.DisplayContent)
+                {
+                    string itemId;
+                    string itemName;
+                    string itemType;
+
+                    args.Command.Arguments.TryGetValue("ItemId", out itemId);
+                    args.Command.Arguments.TryGetValue("ItemName", out itemName);
+                    args.Command.Arguments.TryGetValue("ItemType", out itemType);
+
+                    FireEvent(BrowseCommand, this, new BrowseRequestEventArgs
+                    {
+                        Request = new BrowseRequest
+                        {
+                            ItemId = itemId,
+                            ItemName = itemName,
+                            ItemType = itemType
+                        }
+                    });
+                    return;
+                }
+            }
+
+            FireEvent(GeneralCommand, this, args);
         }
 
         /// <summary>

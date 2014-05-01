@@ -1131,22 +1131,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Formulates a url for streaming audio using the HLS protocol
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
-        public string GetHlsAudioStreamUrl(StreamOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            return GetMediaStreamUrl("audio.m3u8", options, new QueryStringDictionary());
-        }
-
-        /// <summary>
         /// Formulates a url for streaming video using the HLS protocol
         /// </summary>
         /// <param name="options">The options.</param>
@@ -1159,7 +1143,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("options");
             }
 
-            return GetVideoStreamUrl("video.m3u8", options);
+            return GetVideoStreamUrl("Videos/" + options.ItemId + "/stream.m3u8", options);
         }
 
         /// <summary>

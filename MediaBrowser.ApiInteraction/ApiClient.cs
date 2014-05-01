@@ -344,7 +344,7 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
-        
+
         /// <summary>
         /// Gets the similar movies async.
         /// </summary>
@@ -1183,34 +1183,17 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("info");
             }
-            if (string.IsNullOrEmpty(info.ItemId))
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (string.IsNullOrEmpty(info.UserId))
-            {
-                throw new ArgumentNullException("userId");
-            }
 
             Logger.Debug("ReportPlaybackStart: Item {0}", info.ItemId);
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                var queueTypes = string.Join(",", info.QueueableMediaTypes);
-                var msg = string.Format("{0}|{1}|{2}|{3}", info.ItemId, info.IsSeekable, queueTypes, info.MediaSourceId ?? string.Empty);
-
-                return WebSocketConnection.SendAsync("PlaybackStart", msg);
+                return WebSocketConnection.SendAsync("ReportPlaybackStart", JsonSerializer.SerializeToString(info));
             }
 
-            var dict = new QueryStringDictionary();
-            dict.Add("CanSeek", info.IsSeekable);
-            dict.Add("QueueableMediaTypes", info.QueueableMediaTypes);
-            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
+            var url = GetApiUrl("Sessions/Playing");
 
-            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+            return PostAsync<PlaybackStartInfo, EmptyRequestResult>(url, info, CancellationToken.None);
         }
 
         /// <summary>
@@ -1225,38 +1208,15 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("info");
             }
-            if (string.IsNullOrEmpty(info.ItemId))
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (string.IsNullOrEmpty(info.UserId))
-            {
-                throw new ArgumentNullException("userId");
-            }
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                var msg = info.ItemId + "|" +
-                          (info.PositionTicks == null
-                              ? ""
-                              : info.PositionTicks.Value.ToString(CultureInfo.InvariantCulture)) + "|" +
-                          info.IsPaused.ToString().ToLower() + "|" + info.IsMuted.ToString().ToLower();
-
-                msg += "|" + (info.MediaSourceId ?? string.Empty);
-
-                return WebSocketConnection.SendAsync("PlaybackProgress", msg);
+                return WebSocketConnection.SendAsync("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
             }
 
-            var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("positionTicks", info.PositionTicks);
-            dict.Add("isPaused", info.IsPaused);
-            dict.Add("isMuted", info.IsMuted);
-            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
+            var url = GetApiUrl("Sessions/Playing/Progress");
 
-            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId + "/Progress", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+            return PostAsync<PlaybackProgressInfo, EmptyRequestResult>(url, info, CancellationToken.None);
         }
 
         /// <summary>
@@ -1271,39 +1231,15 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("info");
             }
-            if (string.IsNullOrEmpty(info.ItemId))
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (string.IsNullOrEmpty(info.UserId))
-            {
-                throw new ArgumentNullException("userId");
-            }
-
-            var positionDisplay = info.PositionTicks.HasValue ? TimeSpan.FromTicks(info.PositionTicks.Value).ToString() : "---";
-
-            Logger.Debug("ReportPlaybackStopped: Item {0}, Position: {1}", info.ItemId, positionDisplay);
 
             if (WebSocketConnection != null && WebSocketConnection.IsConnected)
             {
-                var msg = info.ItemId + "|" +
-                          (info.PositionTicks == null
-                              ? ""
-                              : info.PositionTicks.Value.ToString(CultureInfo.InvariantCulture));
-
-                msg += "|" + (info.MediaSourceId ?? string.Empty);
-
-                return WebSocketConnection.SendAsync("PlaybackStopped", msg);
+                return WebSocketConnection.SendAsync("ReportPlaybackStopped", JsonSerializer.SerializeToString(info));
             }
 
-            var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("positionTicks", info.PositionTicks);
-            dict.AddIfNotNullOrEmpty("MediaSourceId", info.MediaSourceId);
+            var url = GetApiUrl("Sessions/Playing/Stopped");
 
-            var url = GetApiUrl("Users/" + info.UserId + "/PlayingItems/" + info.ItemId, dict);
-
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return PostAsync<PlaybackStopInfo, EmptyRequestResult>(url, info, CancellationToken.None);
         }
 
         /// <summary>
@@ -1313,45 +1249,26 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="itemId">The id of the item to browse to.</param>
         /// <param name="itemName">The name of the item to browse to.</param>
         /// <param name="itemType">The type of the item to browse to.</param>
-        /// <param name="context">Optional ui context (movies, music, tv, games, etc). The client is free to ignore this.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// sessionId
+        /// <exception cref="System.ArgumentNullException">sessionId
         /// or
         /// itemId
         /// or
         /// itemName
         /// or
-        /// itemType
-        /// </exception>
-        public Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType, string context)
+        /// itemType</exception>
+        public Task SendBrowseCommandAsync(string sessionId, string itemId, string itemName, string itemType)
         {
-            if (string.IsNullOrEmpty(sessionId))
+            var cmd = new GeneralCommand
             {
-                throw new ArgumentNullException("sessionId");
-            }
-            if (string.IsNullOrEmpty(itemId))
-            {
-                throw new ArgumentNullException("itemId");
-            }
-            if (string.IsNullOrEmpty(itemName))
-            {
-                throw new ArgumentNullException("itemName");
-            }
-            if (string.IsNullOrEmpty(itemType))
-            {
-                throw new ArgumentNullException("itemType");
-            }
+                Name = "DisplayContent"
+            };
 
-            var dict = new QueryStringDictionary();
-            dict.Add("itemId", itemId);
-            dict.Add("itemName", itemName);
-            dict.Add("itemType", itemType);
-            dict.AddIfNotNullOrEmpty("context", context);
+            cmd.Arguments["ItemType"] = itemType;
+            cmd.Arguments["ItemId"] = itemId;
+            cmd.Arguments["ItemName"] = itemName;
 
-            var url = GetApiUrl("Sessions/" + sessionId + "/Viewing", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+            return SendCommandAsync(sessionId, cmd);
         }
 
         /// <summary>
@@ -1708,13 +1625,6 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task<Notification> AddNotification(Notification notification)
-        {
-            var url = GetApiUrl("Notifications/" + notification.UserId);
-
-            return PostAsync<Notification, Notification>(url, notification, CancellationToken.None);
-        }
-
         public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
         {
             var url = "Notifications/" + userId;
@@ -1730,13 +1640,6 @@ namespace MediaBrowser.ApiInteraction
             url = GetApiUrl(url, dict);
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
-        }
-
-        public Task UpdateNotification(Notification notification)
-        {
-            var url = GetApiUrl("Notifications/" + notification.UserId + "/" + notification.Id);
-
-            return PostAsync<Notification, EmptyRequestResult>(url, notification, CancellationToken.None);
         }
 
         public async Task<NotificationResult> GetNotificationsAsync(NotificationQuery query)
