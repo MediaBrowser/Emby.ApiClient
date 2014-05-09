@@ -246,7 +246,7 @@ namespace MediaBrowser.ApiInteraction
             return queryString.GetUrl(ApiUrl + "/" + handler);
         }
 
-        public string GetSubtitleUrl(SubtitleOptions options)
+        public string GetSubtitleUrl(SubtitleDownloadOptions options)
         {
             if (options == null)
             {
@@ -602,7 +602,7 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("MaxHeight", options.MaxHeight);
             queryParams.AddIfNotNull("Quality", options.Quality ?? ImageQuality);
 
-            queryParams.AddIfNotNull("Tag", options.Tag);
+            queryParams.AddIfNotNullOrEmpty("Tag", options.Tag);
 
             queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
             queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
@@ -788,8 +788,8 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
-        /// <returns>Guid.</returns>
-        private Guid GetImageTag(BaseItemDto item, ImageOptions options)
+        /// <returns>System.String.</returns>
+        private string GetImageTag(BaseItemDto item, ImageOptions options)
         {
             if (options.ImageType == ImageType.Backdrop)
             {
@@ -798,12 +798,12 @@ namespace MediaBrowser.ApiInteraction
 
             if (options.ImageType == ImageType.Screenshot)
             {
-                //return item.scree[options.ImageIndex ?? 0];
+                return item.ScreenshotImageTags[options.ImageIndex ?? 0];
             }
 
             if (options.ImageType == ImageType.Chapter)
             {
-                return item.Chapters[options.ImageIndex ?? 0].ImageTag.Value;
+                return item.Chapters[options.ImageIndex ?? 0].ImageTag;
             }
 
             return item.ImageTags[options.ImageType];
@@ -958,7 +958,7 @@ namespace MediaBrowser.ApiInteraction
             options.ImageType = ImageType.Backdrop;
 
             string backdropItemId;
-            List<Guid> backdropImageTags;
+            List<string> backdropImageTags;
 
             if (item.BackdropCount == 0)
             {
@@ -1037,7 +1037,7 @@ namespace MediaBrowser.ApiInteraction
 
             options.ImageType = ImageType.Thumb;
 
-            var itemId = item.HasThumb ? item.Id : item.SeriesThumbImageTag.HasValue ? item.SeriesId : item.ParentThumbItemId;
+            var itemId = item.HasThumb ? item.Id : item.SeriesThumbImageTag != null ? item.SeriesId : item.ParentThumbItemId;
             var imageTag = item.HasThumb ? item.ImageTags[ImageType.Thumb] : item.SeriesThumbImageTag ?? item.ParentThumbImageTag;
 
             if (!string.IsNullOrEmpty(itemId))

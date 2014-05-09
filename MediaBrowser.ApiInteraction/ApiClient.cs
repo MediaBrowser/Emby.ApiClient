@@ -948,9 +948,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="id">The id.</param>
         /// <returns>Task{TaskInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public async Task<TaskInfo> GetScheduledTaskAsync(Guid id)
+        public async Task<TaskInfo> GetScheduledTaskAsync(string id)
         {
-            if (id == Guid.Empty)
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
@@ -1303,31 +1303,20 @@ namespace MediaBrowser.ApiInteraction
 
         public Task SendMessageCommandAsync(string sessionId, MessageCommand command)
         {
-            if (string.IsNullOrEmpty(sessionId))
+            var cmd = new GeneralCommand
             {
-                throw new ArgumentNullException("sessionId");
-            }
-            if (command == null)
+                Name = "DisplayMessage"
+            };
+
+            cmd.Arguments["Header"] = command.Header;
+            cmd.Arguments["Text"] = command.Text;
+
+            if (command.TimeoutMs.HasValue)
             {
-                throw new ArgumentNullException("command");
-            }
-            if (string.IsNullOrEmpty(command.Header))
-            {
-                throw new ArgumentException("Please supply a message header");
-            }
-            if (string.IsNullOrEmpty(command.Text))
-            {
-                throw new ArgumentException("Please supply a message text");
+                cmd.Arguments["ItemName"] = command.TimeoutMs.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("TimeoutMs", command.TimeoutMs);
-            dict.Add("Text", command.Text);
-            dict.Add("Header", command.Header);
-
-            var url = GetApiUrl("Sessions/" + sessionId + "/Message", dict);
-
-            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+            return SendCommandAsync(sessionId, cmd);
         }
 
         /// <summary>
@@ -1468,9 +1457,9 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="triggers">The triggers.</param>
         /// <returns>Task{RequestResult}.</returns>
         /// <exception cref="System.ArgumentNullException">id</exception>
-        public Task UpdateScheduledTaskTriggersAsync(Guid id, TaskTriggerInfo[] triggers)
+        public Task UpdateScheduledTaskTriggersAsync(string id, TaskTriggerInfo[] triggers)
         {
-            if (id == Guid.Empty)
+            if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException("id");
             }
@@ -1625,7 +1614,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task MarkNotificationsRead(string userId, IEnumerable<Guid> notificationIdList, bool isRead)
+        public Task MarkNotificationsRead(string userId, IEnumerable<string> notificationIdList, bool isRead)
         {
             var url = "Notifications/" + userId;
 
@@ -1633,7 +1622,7 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
 
-            var ids = notificationIdList.Select(i => i.ToString("N")).ToArray();
+            var ids = notificationIdList.ToArray();
 
             dict.Add("Ids", string.Join(",", ids));
 
@@ -2251,6 +2240,54 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("LiveTv/Timers/" + timer.Id);
 
             return PostAsync<TimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
+        }
+
+        public Task SendString(string sessionId, string text)
+        {
+            var cmd = new GeneralCommand
+            {
+                Name = "SendString"
+            };
+
+            cmd.Arguments["String"] = text;
+
+            return SendCommandAsync(sessionId, cmd);
+        }
+
+        public Task SetAudioStreamIndex(string sessionId, int index)
+        {
+            var cmd = new GeneralCommand
+            {
+                Name = "SetAudioStreamIndex"
+            };
+
+            cmd.Arguments["Index"] = index.ToString(CultureInfo.InvariantCulture);
+
+            return SendCommandAsync(sessionId, cmd);
+        }
+
+        public Task SetSubtitleStreamIndex(string sessionId, int? index)
+        {
+            var cmd = new GeneralCommand
+            {
+                Name = "SetSubtitleStreamIndex"
+            };
+
+            cmd.Arguments["Index"] = (index ?? -1).ToString(CultureInfo.InvariantCulture);
+
+            return SendCommandAsync(sessionId, cmd);
+        }
+
+        public Task SetVolume(string sessionId, int volume)
+        {
+            var cmd = new GeneralCommand
+            {
+                Name = "SetVolume"
+            };
+
+            cmd.Arguments["Volume"] = volume.ToString(CultureInfo.InvariantCulture);
+
+            return SendCommandAsync(sessionId, cmd);
         }
     }
 }

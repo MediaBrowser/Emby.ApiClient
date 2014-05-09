@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using System.Globalization;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
@@ -27,108 +29,35 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
         /// <summary>
-        /// Occurs when [user deleted].
-        /// </summary>
-        public event EventHandler<UserDeletedEventArgs> UserDeleted;
-        /// <summary>
-        /// Occurs when [scheduled task started].
-        /// </summary>
-        public event EventHandler<ScheduledTaskStartedEventArgs> ScheduledTaskStarted;
-        /// <summary>
-        /// Occurs when [scheduled task ended].
-        /// </summary>
-        public event EventHandler<ScheduledTaskEndedEventArgs> ScheduledTaskEnded;
-        /// <summary>
-        /// Occurs when [package installing].
-        /// </summary>
-        public event EventHandler<PackageInstallationEventArgs> PackageInstalling;
-        /// <summary>
-        /// Occurs when [package installation failed].
-        /// </summary>
-        public event EventHandler<PackageInstallationEventArgs> PackageInstallationFailed;
-        /// <summary>
-        /// Occurs when [package installation completed].
-        /// </summary>
-        public event EventHandler<PackageInstallationEventArgs> PackageInstallationCompleted;
-        /// <summary>
-        /// Occurs when [package installation cancelled].
-        /// </summary>
-        public event EventHandler<PackageInstallationEventArgs> PackageInstallationCancelled;
-        /// <summary>
-        /// Occurs when [user updated].
-        /// </summary>
-        public event EventHandler<UserUpdatedEventArgs> UserUpdated;
-        /// <summary>
-        /// Occurs when [plugin uninstalled].
-        /// </summary>
-        public event EventHandler<PluginUninstallEventArgs> PluginUninstalled;
-        /// <summary>
-        /// Occurs when [library changed].
-        /// </summary>
-        public event EventHandler<LibraryChangedEventArgs> LibraryChanged;
-
-        /// <summary>
-        /// Occurs when [browse command].
-        /// </summary>
-        public event EventHandler<BrowseRequestEventArgs> BrowseCommand;
-        /// <summary>
-        /// Occurs when [play command].
-        /// </summary>
-        public event EventHandler<PlayRequestEventArgs> PlayCommand;
-        /// <summary>
-        /// Occurs when [playstate command].
-        /// </summary>
-        public event EventHandler<PlaystateRequestEventArgs> PlaystateCommand;
-        /// <summary>
-        /// Occurs when [message command].
-        /// </summary>
-        public event EventHandler<MessageCommandEventArgs> MessageCommand;
-        /// <summary>
         /// Occurs when [system command].
         /// </summary>
         public event EventHandler<GeneralCommandEventArgs> GeneralCommand;
-
-        /// <summary>
-        /// Occurs when [notification added].
-        /// </summary>
+        public event EventHandler<GenericEventArgs<BrowseRequest>> BrowseCommand;
+        public event EventHandler<GenericEventArgs<LibraryUpdateInfo>> LibraryChanged;
+        public event EventHandler<GenericEventArgs<MessageCommand>> MessageCommand;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCancelled;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationCompleted;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstallationFailed;
+        public event EventHandler<GenericEventArgs<InstallationInfo>> PackageInstalling;
+        public event EventHandler<GenericEventArgs<PlayRequest>> PlayCommand;
+        public event EventHandler<GenericEventArgs<PlaystateRequest>> PlaystateCommand;
+        public event EventHandler<GenericEventArgs<PluginInfo>> PluginUninstalled;
+        public event EventHandler<GenericEventArgs<TaskResult>> ScheduledTaskEnded;
+        public event EventHandler<GenericEventArgs<string>> SendStringCommand;
+        public event EventHandler<GenericEventArgs<int>> SetAudioStreamIndexCommand;
+        public event EventHandler<GenericEventArgs<int>> SetSubtitleStreamIndexCommand;
+        public event EventHandler<GenericEventArgs<int>> SetVolumeCommand;
+        public event EventHandler<GenericEventArgs<UserDataChangeInfo>> UserDataChanged;
+        public event EventHandler<GenericEventArgs<string>> UserDeleted;
+        public event EventHandler<GenericEventArgs<UserDto>> UserUpdated;
         public event EventHandler<EventArgs> NotificationAdded;
-        /// <summary>
-        /// Occurs when [notification updated].
-        /// </summary>
         public event EventHandler<EventArgs> NotificationUpdated;
-        /// <summary>
-        /// Occurs when [notifications marked read].
-        /// </summary>
         public event EventHandler<EventArgs> NotificationsMarkedRead;
-
-        /// <summary>
-        /// Occurs when [server restarting].
-        /// </summary>
         public event EventHandler<EventArgs> ServerRestarting;
-        /// <summary>
-        /// Occurs when [server shutting down].
-        /// </summary>
         public event EventHandler<EventArgs> ServerShuttingDown;
-
-        /// <summary>
-        /// Occurs when [connected].
-        /// </summary>
         public event EventHandler<EventArgs> Connected;
-
-        /// <summary>
-        /// Occurs when [sessions updated].
-        /// </summary>
         public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
-
-        /// <summary>
-        /// Occurs when [restart required].
-        /// </summary>
         public event EventHandler<EventArgs> RestartRequired;
-
-        /// <summary>
-        /// Occurs when [user data changed].
-        /// </summary>
-        public event EventHandler<UserDataChangedEventArgs> UserDataChanged;
 
         /// <summary>
         /// Gets or sets the server host name (myserver or 192.168.x.x)
@@ -222,26 +151,28 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="json">The json.</param>
         protected void OnMessageReceived(string json)
         {
-            // deserialize the WebSocketMessage with an object payload
-            string messageType;
-
             try
             {
-                messageType = GetMessageType(json);
+                OnMessageReceivedInternal(json);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deserializing web socket message", ex);
-                return;
+                Logger.ErrorException("Error in OnMessageReceivedInternal", ex);
             }
+        }
+
+        private void OnMessageReceivedInternal(string json)
+        {
+            // deserialize the WebSocketMessage with an object payload
+            var messageType = GetMessageType(json);
 
             Logger.Info("Received web socket message: {0}", messageType);
 
             if (string.Equals(messageType, "LibraryChanged"))
             {
-                FireEvent(LibraryChanged, this, new LibraryChangedEventArgs
+                FireEvent(LibraryChanged, this, new GenericEventArgs<LibraryUpdateInfo>
                 {
-                    UpdateInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<LibraryUpdateInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<LibraryUpdateInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "RestartRequired"))
@@ -260,81 +191,72 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 var userId = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json).Data;
 
-                FireEvent(UserDeleted, this, new UserDeletedEventArgs
+                FireEvent(UserDeleted, this, new GenericEventArgs<string>
                 {
-                    Id = userId
-                });
-            }
-            else if (string.Equals(messageType, "ScheduledTaskStarted"))
-            {
-                var taskName = _jsonSerializer.DeserializeFromString<WebSocketMessage<string>>(json).Data;
-
-                FireEvent(ScheduledTaskStarted, this, new ScheduledTaskStartedEventArgs
-                {
-                    Name = taskName
+                    Argument = userId
                 });
             }
             else if (string.Equals(messageType, "ScheduledTaskEnded"))
             {
-                FireEvent(ScheduledTaskEnded, this, new ScheduledTaskEndedEventArgs
+                FireEvent(ScheduledTaskEnded, this, new GenericEventArgs<TaskResult>
                 {
-                    Result = _jsonSerializer.DeserializeFromString<WebSocketMessage<TaskResult>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<TaskResult>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PackageInstalling"))
             {
-                FireEvent(PackageInstalling, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstalling, this, new GenericEventArgs<InstallationInfo>
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PackageInstallationFailed"))
             {
-                FireEvent(PackageInstallationFailed, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationFailed, this, new GenericEventArgs<InstallationInfo>
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PackageInstallationCompleted"))
             {
-                FireEvent(PackageInstallationCompleted, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationCompleted, this, new GenericEventArgs<InstallationInfo>
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PackageInstallationCancelled"))
             {
-                FireEvent(PackageInstallationCancelled, this, new PackageInstallationEventArgs
+                FireEvent(PackageInstallationCancelled, this, new GenericEventArgs<InstallationInfo>
                 {
-                    InstallationInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<InstallationInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "UserUpdated"))
             {
-                FireEvent(UserUpdated, this, new UserUpdatedEventArgs
+                FireEvent(UserUpdated, this, new GenericEventArgs<UserDto>
                 {
-                    User = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDto>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDto>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PluginUninstalled"))
             {
-                FireEvent(PluginUninstalled, this, new PluginUninstallEventArgs
+                FireEvent(PluginUninstalled, this, new GenericEventArgs<PluginInfo>
                 {
-                    PluginInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<PluginInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<PluginInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "Play"))
             {
-                FireEvent(PlayCommand, this, new PlayRequestEventArgs
+                FireEvent(PlayCommand, this, new GenericEventArgs<PlayRequest>
                 {
-                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlayRequest>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlayRequest>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "Playstate"))
             {
-                FireEvent(PlaystateCommand, this, new PlaystateRequestEventArgs
+                FireEvent(PlaystateCommand, this, new GenericEventArgs<PlaystateRequest>
                 {
-                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlaystateRequest>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<PlaystateRequest>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "NotificationAdded"))
@@ -353,13 +275,6 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 OnGeneralCommand(json);
             }
-            else if (string.Equals(messageType, "MessageCommand"))
-            {
-                FireEvent(MessageCommand, this, new MessageCommandEventArgs
-                {
-                    Request = _jsonSerializer.DeserializeFromString<WebSocketMessage<MessageCommand>>(json).Data
-                });
-            }
             else if (string.Equals(messageType, "Sessions"))
             {
                 FireEvent(SessionsUpdated, this, new SessionUpdatesEventArgs
@@ -369,9 +284,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             }
             else if (string.Equals(messageType, "UserDataChanged"))
             {
-                FireEvent(UserDataChanged, this, new UserDataChangedEventArgs
+                FireEvent(UserDataChanged, this, new GenericEventArgs<UserDataChangeInfo>
                 {
-                    ChangeInfo = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDataChangeInfo>>(json).Data
+                    Argument = _jsonSerializer.DeserializeFromString<WebSocketMessage<UserDataChangeInfo>>(json).Data
                 });
             }
         }
@@ -404,14 +319,85 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                     args.Command.Arguments.TryGetValue("ItemName", out itemName);
                     args.Command.Arguments.TryGetValue("ItemType", out itemType);
 
-                    FireEvent(BrowseCommand, this, new BrowseRequestEventArgs
+                    FireEvent(BrowseCommand, this, new GenericEventArgs<BrowseRequest>
                     {
-                        Request = new BrowseRequest
+                        Argument = new BrowseRequest
                         {
                             ItemId = itemId,
                             ItemName = itemName,
                             ItemType = itemType
                         }
+                    });
+                    return;
+                }
+                if (args.KnownCommandType.Value == GeneralCommandType.DisplayMessage)
+                {
+                    string header;
+                    string text;
+                    string timeoutMs;
+
+                    args.Command.Arguments.TryGetValue("Header", out header);
+                    args.Command.Arguments.TryGetValue("Text", out text);
+                    args.Command.Arguments.TryGetValue("TimeoutMs", out timeoutMs);
+
+                    long? timeoutVal = string.IsNullOrEmpty(timeoutMs) ? (long?)null : long.Parse(timeoutMs, CultureInfo.InvariantCulture);
+
+                    FireEvent(MessageCommand, this, new GenericEventArgs<MessageCommand>
+                    {
+                        Argument = new MessageCommand
+                        {
+                            Header = header,
+                            Text = text,
+                            TimeoutMs = timeoutVal
+                        }
+                    });
+                    return;
+                }
+                if (args.KnownCommandType.Value == GeneralCommandType.SetVolume)
+                {
+                    string volume;
+
+                    args.Command.Arguments.TryGetValue("Volume", out volume);
+
+                    FireEvent(SetVolumeCommand, this, new GenericEventArgs<int>
+                    {
+                        Argument = int.Parse(volume, CultureInfo.InvariantCulture)
+                    });
+                    return;
+                }
+                if (args.KnownCommandType.Value == GeneralCommandType.SetAudioStreamIndex)
+                {
+                    string index;
+
+                    args.Command.Arguments.TryGetValue("Index", out index);
+
+                    FireEvent(SetAudioStreamIndexCommand, this, new GenericEventArgs<int>
+                    {
+                        Argument = int.Parse(index, CultureInfo.InvariantCulture)
+                    });
+                    return;
+                }
+                if (args.KnownCommandType.Value == GeneralCommandType.SetSubtitleStreamIndex)
+                {
+                    string index;
+
+                    args.Command.Arguments.TryGetValue("Index", out index);
+
+                    FireEvent(SetSubtitleStreamIndexCommand, this, new GenericEventArgs<int>
+                    {
+                        Argument = int.Parse(index, CultureInfo.InvariantCulture)
+                    });
+                    return;
+                }
+                if (args.KnownCommandType.Value == GeneralCommandType.SendString)
+                {
+                    string val;
+
+                    args.Command.Arguments.TryGetValue("String", out val);
+
+                    FireEvent(SendStringCommand, this, new GenericEventArgs<string>
+                    {
+                        Argument = val
                     });
                     return;
                 }
