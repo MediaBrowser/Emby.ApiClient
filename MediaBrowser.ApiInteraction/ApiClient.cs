@@ -14,7 +14,6 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Users;
-using MediaBrowser.Model.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -260,7 +259,6 @@ namespace MediaBrowser.ApiInteraction
             var queryString = new QueryStringDictionary();
 
             queryString.AddIfNotNullOrEmpty("ControllableByUserId", query.ControllableByUserId);
-            queryString.AddIfNotNull("SupportsRemoteControl", query.SupportsRemoteControl);
 
             var url = GetApiUrl("Sessions", queryString);
 
