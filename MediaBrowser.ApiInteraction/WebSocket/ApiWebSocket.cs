@@ -80,7 +80,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task{ApiWebSocket}.</returns>
         public static async Task<ApiWebSocket> Create(ILogger logger, IJsonSerializer jsonSerializer, ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
         {
-            var systemInfo = await client.GetSystemInfoAsync().ConfigureAwait(false);
+            var systemInfo = await client.GetSystemInfoAsync(cancellationToken).ConfigureAwait(false);
 
             var socket = new ApiWebSocket(client.ServerHostName, systemInfo.WebSocketPortNumber, client.DeviceId,
                                           client.ApplicationVersion, client.ClientName, client.DeviceName, webSocketFactory);

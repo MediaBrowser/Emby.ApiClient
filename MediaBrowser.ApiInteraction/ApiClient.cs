@@ -860,11 +860,11 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the system status async.
         /// </summary>
         /// <returns>Task{SystemInfo}.</returns>
-        public async Task<SystemInfo> GetSystemInfoAsync()
+        public async Task<SystemInfo> GetSystemInfoAsync(CancellationToken cancellationToken)
         {
             var url = GetApiUrl("System/Info");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<SystemInfo>(stream);
             }
@@ -2289,17 +2289,17 @@ namespace MediaBrowser.ApiInteraction
             return SendCommandAsync(sessionId, cmd);
         }
 
-        public async Task<BaseItemDto[]> GetAdditionalParts(string itemId)
+        public async Task<ItemsResult> GetAdditionalParts(string itemId, string userId)
         {
             var queryString = new QueryStringDictionary();
 
-            //queryString.AddIfNotNullOrEmpty("UserId", userId);
+            queryString.AddIfNotNullOrEmpty("UserId", userId);
 
             var url = GetApiUrl("Videos/" + itemId + "/AdditionalParts", queryString);
 
             using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
             {
-                return DeserializeFromStream<BaseItemDto[]>(stream);
+                return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
