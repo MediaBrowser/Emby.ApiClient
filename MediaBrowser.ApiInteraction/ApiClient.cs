@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.ApiInteraction.WebSocket;
 using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -1873,7 +1874,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(LiveTvChannelQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -2286,6 +2287,45 @@ namespace MediaBrowser.ApiInteraction
             cmd.Arguments["Volume"] = volume.ToString(CultureInfo.InvariantCulture);
 
             return SendCommandAsync(sessionId, cmd);
+        }
+
+        public async Task<BaseItemDto[]> GetAdditionalParts(string itemId)
+        {
+            var queryString = new QueryStringDictionary();
+
+            //queryString.AddIfNotNullOrEmpty("UserId", userId);
+
+            var url = GetApiUrl("Videos/" + itemId + "/AdditionalParts", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<BaseItemDto[]>(stream);
+            }
+        }
+
+        public async Task<ChannelFeatures> GetChannelFeatures(string channelId, CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("Channels/" + channelId + "/Features");
+
+            using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ChannelFeatures>(stream);
+            }
+        }
+
+        public Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
