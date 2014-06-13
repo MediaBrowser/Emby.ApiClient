@@ -87,11 +87,6 @@ ApiWebSocket has various events that can be used to receive notifications from t
             webSocket.UserUpdated += webSocket_UserUpdated;
 ```
 
-# Linking with ApiClient #
-
-ApiClient has a WebSocketConnection property. After creating ApiWebSocket, if you set the property onto ApiClient, some commands will then be sent over the socket as opposed to the http api, resuling in lower overhead. This is optional and omitting this will not result in any loss of functionality with the http-based ApiClient.
-
-
 # Logging and Interfaces #
 
 ApiClient and ApiWebSocket both have additional constructors available allowing you to pass in your own implementation of ILogger. The default implementation is NullLogger, which provides no logging. In addition you can also pass in your own implementation of IJsonSerializer, or use our NewtonsoftJsonSerializer. ClientWebSocketFactory also has an additional overload allowing you to pass in your own ILogger
