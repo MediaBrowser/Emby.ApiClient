@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace MediaBrowser.ApiInteraction.WebSocket

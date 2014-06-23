@@ -689,6 +689,22 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Gets the artists.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task{ItemsResult}.</returns>
+        /// <exception cref="System.ArgumentNullException">userId</exception>
+        public async Task<ItemsResult> GetAlbumArtistsAsync(ArtistsQuery query)
+        {
+            var url = GetItemByNameListUrl("Artists/AlbumArtists", query);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets a studio
         /// </summary>
         /// <param name="name">The name.</param>
