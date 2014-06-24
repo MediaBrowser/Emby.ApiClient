@@ -251,8 +251,20 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("options");
             }
+            if (string.IsNullOrEmpty(options.MediaSourceId))
+            {
+                throw new ArgumentNullException("options");
+            }
+            if (string.IsNullOrEmpty(options.ItemId))
+            {
+                throw new ArgumentNullException("options");
+            }
+            if (string.IsNullOrEmpty(options.Format))
+            {
+                throw new ArgumentNullException("options");
+            }
 
-            return GetApiUrl("Videos/" + options.ItemId + "/Subtitles/" + options.StreamIndex);
+            return GetApiUrl("Videos/" + options.ItemId + "/" + options.MediaSourceId + "/Subtitles/" + options.StreamIndex + "/Stream." + options.Format);
         }
 
         /// <summary>
