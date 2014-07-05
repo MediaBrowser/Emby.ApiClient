@@ -2339,9 +2339,29 @@ namespace MediaBrowser.ApiInteraction
             throw new NotImplementedException();
         }
 
-        public Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(ChannelQuery query, CancellationToken cancellationToken)
+        public async Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("DeviceId", DeviceId);
+            var url = GetApiUrl("Sessions", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                var sessions = DeserializeFromStream<SessionInfoDto[]>(stream);
+
+                return sessions.FirstOrDefault();
+            }
+        }
+
+        public Task StopTranscodingProcesses(string deviceId)
+        {
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("DeviceId", DeviceId);
+            var url = GetApiUrl("Videos/ActiveEncodings", queryString);
+
+            return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
     }
 }
