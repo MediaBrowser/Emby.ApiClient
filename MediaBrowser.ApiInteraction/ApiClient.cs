@@ -2363,5 +2363,10 @@ namespace MediaBrowser.ApiInteraction
 
             return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
+
+        public Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
