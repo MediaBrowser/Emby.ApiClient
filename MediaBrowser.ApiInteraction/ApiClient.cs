@@ -2368,5 +2368,10 @@ namespace MediaBrowser.ApiInteraction
         {
             throw new NotImplementedException();
         }
+
+        public Task Logout()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
