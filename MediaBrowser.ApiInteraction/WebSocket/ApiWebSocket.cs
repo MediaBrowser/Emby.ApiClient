@@ -70,15 +70,13 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Creates the specified logger.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="client">The client.</param>
         /// <param name="webSocketFactory">The web socket factory.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ApiWebSocket}.</returns>
-        public static async Task<ApiWebSocket> Create(ILogger logger, IJsonSerializer jsonSerializer, ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
+        public static async Task<ApiWebSocket> Create(ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
         {
-            var socket = new ApiWebSocket(client.ServerAddress, client.DeviceId,
+            var socket = new ApiWebSocket(client.Logger, client.JsonSerializer, client.ApiUrl, client.DeviceId,
                                           client.ApplicationVersion, client.ClientName, client.DeviceName, webSocketFactory);
 
             try

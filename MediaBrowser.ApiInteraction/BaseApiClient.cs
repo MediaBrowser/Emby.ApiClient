@@ -30,7 +30,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
+        internal ILogger Logger { get; private set; }
 
         /// <summary>
         /// Gets the json serializer.
@@ -149,11 +149,11 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the current api url based on hostname and port.
         /// </summary>
         /// <value>The API URL.</value>
-        protected string ApiUrl
+        public string ApiUrl
         {
             get
             {
-                return ServerAddress;
+                return ServerAddress + "/mediabrowser";
             }
         }
 

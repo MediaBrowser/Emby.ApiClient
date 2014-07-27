@@ -46,6 +46,16 @@ namespace MediaBrowser.ApiInteraction
         public ApiWebSocket WebSocketConnection { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// </summary>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="accessToken">The access token.</param>
+        public ApiClient(string serverAddress, string accessToken)
+            : this(new NullLogger(), serverAddress, accessToken)
+        {
+        }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -72,6 +82,19 @@ namespace MediaBrowser.ApiInteraction
             ResetHttpHeaders();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// </summary>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
+        {
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
@@ -2419,9 +2442,18 @@ namespace MediaBrowser.ApiInteraction
             throw new NotImplementedException();
         }
 
-        public Task Logout()
+        public async Task Logout()
         {
-            throw new NotImplementedException();
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                
+            }
+
+            ClearAuthenticationInfo();
         }
     }
 }
