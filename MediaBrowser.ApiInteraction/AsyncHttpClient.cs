@@ -276,7 +276,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 Logger.Debug("Removing Authorization http header");
 
-                HttpClient.DefaultRequestHeaders.Remove("Authorization");
+                ClearHttpRequestHeader("Authorization");
             }
             else
             {
@@ -286,14 +286,14 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        /// <summary>
-        /// Removes the authorization header.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void RemoveAuthorizationHeader()
+        public void SetHttpRequestHeader(string name, string value)
         {
-            HttpClient.DefaultRequestHeaders.Remove("Authorization");
+            HttpClient.DefaultRequestHeaders.Add(name, value);
         }
 
+        public void ClearHttpRequestHeader(string name)
+        {
+            HttpClient.DefaultRequestHeaders.Remove(name);
+        }
     }
 }

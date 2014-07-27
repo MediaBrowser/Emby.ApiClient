@@ -21,9 +21,17 @@ namespace MediaBrowser.ApiInteraction
         void SetAuthorizationHeader(string scheme, string paraneter);
 
         /// <summary>
-        /// Removes the authorization header.
+        /// Sets the HTTP request header.
         /// </summary>
-        void RemoveAuthorizationHeader();
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        void SetHttpRequestHeader(string name, string value);
+
+        /// <summary>
+        /// Clears the HTTP request header.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        void ClearHttpRequestHeader(string name);
 
         /// <summary>
         /// Gets the stream async.

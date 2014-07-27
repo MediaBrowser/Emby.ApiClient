@@ -1,13 +1,13 @@
-﻿using System.Net.Cache;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace MediaBrowser.ApiInteraction
     {
         public event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
-        private string _authorizationHeaderValue;
+        private Dictionary<string, string> _headers = new Dictionary<string, string>();
 
         /// <summary>
         /// Called when [response received].
@@ -34,7 +34,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var duration = DateTime.Now - requestTime;
 
-            Logger.Debug("Received {0} status code after {1} ms from {2}: {3}", statusCode, duration.TotalMilliseconds, verb, url);
+            Logger.Debug("Received {0} status code after {1} ms from {2}: {3}", (int)statusCode, duration.TotalMilliseconds, verb, url);
 
             if (HttpResponseReceived != null)
             {
@@ -68,38 +68,21 @@ namespace MediaBrowser.ApiInteraction
             Logger = logger;
         }
 
-        private string GetHostFromUrl(string url)
-        {
-            var start = url.IndexOf("://", StringComparison.OrdinalIgnoreCase) + 3;
-            var len = url.IndexOf('/', start) - start;
-            return url.Substring(start, len);
-        }
-
-        private PropertyInfo _httpBehaviorPropertyInfo;
         private HttpWebRequest GetRequest(string url, string method)
         {
             var request = HttpWebRequest.CreateHttp(url);
 
             request.AutomaticDecompression = DecompressionMethods.Deflate;
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
-            request.ConnectionGroupName = GetHostFromUrl(url);
             request.KeepAlive = true;
             request.Method = method;
             request.Pipelined = true;
             request.Timeout = 30000;
 
-            if (!string.IsNullOrEmpty(_authorizationHeaderValue))
+            foreach (var header in _headers)
             {
-                request.Headers.Add("Authorization", _authorizationHeaderValue);
+                request.Headers.Add(header.Key, header.Value);
             }
-
-            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
-            var sp = request.ServicePoint;
-            if (_httpBehaviorPropertyInfo == null)
-            {
-                _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
-            }
-            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
 
             return request;
         }
@@ -122,10 +105,10 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
             }
 
+            var requestTime = DateTime.Now;
+
             try
             {
-                var requestTime = DateTime.Now;
-
                 var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
                 var httpResponse = (HttpWebResponse)response;
 
@@ -139,9 +122,7 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (OperationCanceledException ex)
             {
-                var exception = GetCancellationException(url, cancellationToken, ex);
-
-                throw exception;
+                throw GetCancellationException(url, cancellationToken, ex);
             }
             catch (HttpRequestException ex)
             {
@@ -153,6 +134,12 @@ namespace MediaBrowser.ApiInteraction
             {
                 Logger.ErrorException("Error getting response from " + url, ex);
 
+                var response = ex.Response as HttpWebResponse;
+                if (response != null)
+                {
+                    OnResponseReceived(url, httpMethod, response.StatusCode, requestTime);
+                } 
+                
                 throw new HttpException(ex.Message, ex);
             }
             catch (Exception ex)
@@ -254,24 +241,38 @@ namespace MediaBrowser.ApiInteraction
             {
                 Logger.Debug("Removing Authorization http header");
 
-                _authorizationHeaderValue = null;
+                ClearHttpRequestHeader("Authorization");
             }
             else
             {
                 Logger.Debug("Applying Authorization http header: {0}", parameter);
 
-                _authorizationHeaderValue = new AuthenticationHeaderValue(scheme, parameter).ToString();
+                var val = new AuthenticationHeaderValue(scheme, parameter).ToString();
+
+                SetHttpRequestHeader("Authorization", val);
             }
         }
 
-        /// <summary>
-        /// Removes the authorization header.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void RemoveAuthorizationHeader()
+        public void SetHttpRequestHeader(string name, string value)
         {
-            _authorizationHeaderValue = null;
+            var dict = new Dictionary<string, string>(_headers);
+
+            if (!dict.ContainsKey(name))
+            {
+                dict[name] = value;
+                _headers = dict;
+            }
         }
 
+        public void ClearHttpRequestHeader(string name)
+        {
+            var dict = new Dictionary<string, string>(_headers);
+
+            if (dict.ContainsKey(name))
+            {
+                dict.Remove(name);
+                _headers = dict;
+            }
+        }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -9,7 +12,20 @@ namespace MediaBrowser.ApiInteraction
 {
     public class ServerLocator
     {
-        public Task<IPEndPoint> FindServer(CancellationToken cancellationToken)
+        private readonly IJsonSerializer _jsonSerializer = new NewtonsoftJsonSerializer();
+        private readonly ILogger _logger;
+
+        public ServerLocator()
+            : this(new NullLogger())
+        {
+        }
+
+        public ServerLocator(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public Task<ServerDiscoveryInfo> FindServer(CancellationToken cancellationToken)
         {
             return FindServer(2000, cancellationToken);
         }
@@ -17,9 +33,9 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
-        public Task<IPEndPoint> FindServer(int timeout, CancellationToken cancellationToken)
+        public Task<ServerDiscoveryInfo> FindServer(int timeout, CancellationToken cancellationToken)
         {
-            var taskCompletionSource = new TaskCompletionSource<IPEndPoint>();
+            var taskCompletionSource = new TaskCompletionSource<ServerDiscoveryInfo>();
 
             var timeoutToken = new CancellationTokenSource(timeout).Token;
 
@@ -32,7 +48,7 @@ namespace MediaBrowser.ApiInteraction
             return taskCompletionSource.Task;
         }
 
-        private async void FindServer(TaskCompletionSource<IPEndPoint> taskCompletionSource, int timeout)
+        private async void FindServer(TaskCompletionSource<ServerDiscoveryInfo> taskCompletionSource, int timeout)
         {
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
@@ -40,7 +56,7 @@ namespace MediaBrowser.ApiInteraction
                 client.Client.ReceiveTimeout = timeout;
 
                 // Construct the message the server is expecting
-                var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer?");
+                var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer_v2?");
 
                 // Send it - must be IPAddress.Broadcast, 7359
                 var targetEndPoint = new IPEndPoint(IPAddress.Broadcast, 7359);
@@ -56,20 +72,19 @@ namespace MediaBrowser.ApiInteraction
                     if (result.RemoteEndPoint.Port == targetEndPoint.Port)
                     {
                         // Convert bytes to text
-                        var text = Encoding.UTF8.GetString(result.Buffer);
+                        var json = Encoding.UTF8.GetString(result.Buffer);
 
-                        // Expected response : MediaBrowserServer|192.168.1.1:1234
-                        // If the response is what we're expecting, proceed
-                        if (text.StartsWith("mediabrowserserver", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(json))
                         {
-                            text = text.Split('|')[1];
-
-                            var vals = text.Split(':');
-
-                            var endpoint = new IPEndPoint(IPAddress.Parse(vals[0]), int.Parse(vals[1]));
-
-                            taskCompletionSource.SetResult(endpoint);
-                            return;
+                            try
+                            {
+                                var info = _jsonSerializer.DeserializeFromString<ServerDiscoveryInfo>(json);
+                                taskCompletionSource.SetResult(info);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.ErrorException("Error parsing server discovery info", ex);
+                            }
                         }
                     }
 

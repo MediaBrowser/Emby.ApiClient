@@ -60,16 +60,10 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         public event EventHandler<EventArgs> RestartRequired;
 
         /// <summary>
-        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// Gets or sets the server address.
         /// </summary>
-        /// <value>The name of the server host.</value>
-        public string ServerHostName { get; protected set; }
-
-        /// <summary>
-        /// Gets the server web socket port.
-        /// </summary>
-        /// <value>The server web socket port.</value>
-        public int ServerWebSocketPort { get; protected set; }
+        /// <value>The server address.</value>
+        public string ServerAddress { get; protected set; }
 
         /// <summary>
         /// Gets or sets the type of the client.
@@ -105,33 +99,30 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
         /// <param name="deviceName">Name of the device.</param>
-        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName)
+        protected BaseApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string deviceId, string applicationVersion, string applicationName, string deviceName)
         {
             Logger = logger;
             _jsonSerializer = jsonSerializer;
             ApplicationName = applicationName;
             ApplicationVersion = applicationVersion;
             DeviceId = deviceId;
-            ServerWebSocketPort = serverWebSocketPort;
-            ServerHostName = serverHostName;
+            ServerAddress = serverAddress;
             DeviceName = deviceName;
         }
 
         /// <summary>
         /// Gets the web socket URL.
         /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <returns>System.String.</returns>
-        protected string GetWebSocketUrl(string serverHostName, int serverWebSocketPort)
+        protected string GetWebSocketUrl(string serverAddress)
         {
-            return string.Format("ws://{0}:{1}/mediabrowser", serverHostName, serverWebSocketPort);
+            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:");
         }
 
         /// <summary>

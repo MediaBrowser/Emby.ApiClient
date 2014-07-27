@@ -43,19 +43,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public int? ImageQuality { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverApiPort">The server API port.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        /// <exception cref="System.ArgumentNullException">logger</exception>
-        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
         {
             if (logger == null)
             {
@@ -65,43 +53,58 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("jsonSerializer");
             }
-            if (string.IsNullOrEmpty(serverHostName))
+            if (string.IsNullOrEmpty(serverAddress))
             {
-                throw new ArgumentNullException("serverHostName");
+                throw new ArgumentNullException("serverAddress");
             }
 
             JsonSerializer = jsonSerializer;
             Logger = logger;
 
-            ServerHostName = serverHostName;
-            ServerApiPort = serverApiPort;
             ClientName = clientName;
             DeviceName = deviceName;
             DeviceId = deviceId;
             ApplicationVersion = applicationVersion;
+            ServerAddress = serverAddress;
+        }
+
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string accessToken)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+            if (string.IsNullOrEmpty(serverAddress))
+            {
+                throw new ArgumentNullException("serverAddress");
+            }
+
+            JsonSerializer = jsonSerializer;
+            Logger = logger;
+
+            AccessToken = accessToken;
+            ServerAddress = serverAddress;
         }
 
         /// <summary>
         /// Gets the name of the server host.
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerHostName { get; private set; }
-
-        /// <summary>
-        /// Gets the server API port.
-        /// </summary>
-        /// <value>The server API port.</value>
-        public int ServerApiPort { get; private set; }
+        public string ServerAddress { get; private set; }
 
         /// <summary>
         /// Changes the server location.
         /// </summary>
-        /// <param name="hostName">Name of the host.</param>
-        /// <param name="port">The port.</param>
-        public void ChangeServerLocation(string hostName, int port)
+        /// <param name="address">The address.</param>
+        public void ChangeServerLocation(string address)
         {
-            ServerHostName = hostName;
-            ServerApiPort = port;
+            ServerAddress = address;
+
+            SetAuthenticationInfo(null, null);
 
             OnServerLocationChanged();
         }
@@ -131,23 +134,16 @@ namespace MediaBrowser.ApiInteraction
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// The _current user id
+        /// Gets or sets the access token.
         /// </summary>
-        private string _currentUserId;
+        /// <value>The access token.</value>
+        public string AccessToken { get; private set; }
 
         /// <summary>
         /// Gets or sets the current user id.
         /// </summary>
         /// <value>The current user id.</value>
-        public virtual string CurrentUserId
-        {
-            get { return _currentUserId; }
-            set
-            {
-                _currentUserId = value;
-                OnAuthorizationInfoChanged();
-            }
-        }
+        public string CurrentUserId { get; private set; }
 
         /// <summary>
         /// Gets the current api url based on hostname and port.
@@ -157,7 +153,7 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                return string.Format("http://{0}:{1}/mediabrowser", ServerHostName, ServerApiPort);
+                return ServerAddress;
             }
         }
 
@@ -215,13 +211,53 @@ namespace MediaBrowser.ApiInteraction
             return GetApiUrl(handler, new QueryStringDictionary());
         }
 
-        /// <summary>
-        /// Called when [current user changed].
-        /// </summary>
-        protected virtual void OnAuthorizationInfoChanged()
+        public void SetAuthenticationInfo(string accessToken, string userId)
         {
-
+            CurrentUserId = userId;
+            AccessToken = accessToken;
+            ResetHttpHeaders();
         }
+
+        public void ClearAuthenticationInfo()
+        {
+            CurrentUserId = null;
+            AccessToken = null;
+            ResetHttpHeaders();
+        }
+
+        public void SetAuthenticationInfo(string accessToken)
+        {
+            CurrentUserId = null;
+            AccessToken = accessToken;
+            ResetHttpHeaders();
+        }
+
+        protected void ResetHttpHeaders()
+        {
+            if (string.IsNullOrEmpty(AccessToken))
+            {
+                ClearHttpRequestHeader("X-MediaBrowser-Token");
+            }
+            else
+            {
+                SetHttpRequestHeader("X-MediaBrowser-Token", AccessToken);
+            }
+
+            var authValue = AuthorizationParameter;
+
+            if (string.IsNullOrEmpty(authValue))
+            {
+                ClearHttpRequestHeader("Authorization");
+            }
+            else
+            {
+                SetAuthorizationHttpRequestHeader(AuthorizationScheme, authValue);
+            }
+        }
+
+        protected abstract void SetAuthorizationHttpRequestHeader(string scheme, string parameter);
+        protected abstract void SetHttpRequestHeader(string name, string value);
+        protected abstract void ClearHttpRequestHeader(string name);
 
         /// <summary>
         /// Gets the API URL.

@@ -48,43 +48,84 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverApiPort">The server API port.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        public ApiClient(string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new NullLogger(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <exception cref="System.ArgumentNullException">httpClient</exception>
+        public ApiClient(ILogger logger, string serverAddress, string accessToken)
+            : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverApiPort">The server API port.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="accessToken">The access token.</param>
+        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string accessToken)
+            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
+        {
+            HttpClient = httpClient;
+
+            ResetHttpHeaders();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new AsyncHttpClient(logger), logger, serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
+        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
         }
 
-        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverHostName, int serverApiPort, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : base(logger, new NewtonsoftJsonSerializer(), serverHostName, serverApiPort, clientName, deviceName, deviceId, applicationVersion)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
+            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
             HttpClient = httpClient;
 
-            var param = AuthorizationParameter;
+            ResetHttpHeaders();
+        }
 
-            if (!string.IsNullOrEmpty(param))
+        protected override void SetAuthorizationHttpRequestHeader(string scheme, string parameter)
+        {
+            if (HttpClient != null)
             {
-                HttpClient.SetAuthorizationHeader(AuthorizationScheme, param);
+                HttpClient.SetAuthorizationHeader(scheme, parameter);
+            }
+        }
+
+        protected override void SetHttpRequestHeader(string name, string value)
+        {
+            if (HttpClient != null)
+            {
+                HttpClient.SetHttpRequestHeader(name, value);
+            }
+        }
+
+        protected override void ClearHttpRequestHeader(string name)
+        {
+            if (HttpClient != null)
+            {
+                HttpClient.ClearHttpRequestHeader(name);
             }
         }
 
@@ -93,16 +134,6 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IAsyncHttpClient HttpClient { get; private set; }
-
-        /// <summary>
-        /// Called when [current user changed].
-        /// </summary>
-        protected override void OnAuthorizationInfoChanged()
-        {
-            base.OnAuthorizationInfoChanged();
-
-            HttpClient.SetAuthorizationHeader(AuthorizationScheme, AuthorizationParameter);
-        }
 
         /// <summary>
         /// Gets an image stream based on a url
@@ -887,6 +918,21 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// get public system information as an asynchronous operation.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;PublicSystemInfo&gt;.</returns>
+        public async Task<PublicSystemInfo> GetPublicSystemInfoAsync(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("System/Info/Public");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<PublicSystemInfo>(stream);
+            }
+        }
+
+        /// <summary>
         /// Gets a person
         /// </summary>
         /// <param name="name">The name.</param>
@@ -1429,7 +1475,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="sha1Hash">The sha1 hash.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash)
+        public async Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -1444,7 +1490,11 @@ namespace MediaBrowser.ApiInteraction
             args["username"] = Uri.EscapeDataString(username);
             args["password"] = password;
 
-            return PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
+            var result = await PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
+
+            SetAuthenticationInfo(result.AccessToken, result.User.Id);
+
+            return result;
         }
 
         /// <summary>

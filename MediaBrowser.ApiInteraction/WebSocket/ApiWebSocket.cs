@@ -40,15 +40,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="webSocketFactory">The web socket factory.</param>
-        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
-            : base(logger, jsonSerializer, serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName)
+        public ApiWebSocket(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
+            : base(logger, jsonSerializer, serverAddress, deviceId, applicationVersion, applicationName, deviceName)
         {
             _webSocketFactory = webSocketFactory;
         }
@@ -56,15 +55,14 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiWebSocket" /> class.
         /// </summary>
-        /// <param name="serverHostName">Name of the server host.</param>
-        /// <param name="serverWebSocketPort">The server web socket port.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="applicationName">Name of the application.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="webSocketFactory">The web socket factory.</param>
-        public ApiWebSocket(string serverHostName, int serverWebSocketPort, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
-            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverHostName, serverWebSocketPort, deviceId, applicationVersion, applicationName, deviceName, webSocketFactory)
+        public ApiWebSocket(string serverAddress, string deviceId, string applicationVersion, string applicationName, string deviceName, Func<IClientWebSocket> webSocketFactory)
+            : this(new NullLogger(), new NewtonsoftJsonSerializer(), serverAddress, deviceId, applicationVersion, applicationName, deviceName, webSocketFactory)
         {
             _webSocketFactory = webSocketFactory;
         }
@@ -80,9 +78,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task{ApiWebSocket}.</returns>
         public static async Task<ApiWebSocket> Create(ILogger logger, IJsonSerializer jsonSerializer, ApiClient client, Func<IClientWebSocket> webSocketFactory, CancellationToken cancellationToken)
         {
-            var systemInfo = await client.GetSystemInfoAsync(cancellationToken).ConfigureAwait(false);
-
-            var socket = new ApiWebSocket(client.ServerHostName, systemInfo.WebSocketPortNumber, client.DeviceId,
+            var socket = new ApiWebSocket(client.ServerAddress, client.DeviceId,
                                           client.ApplicationVersion, client.ClientName, client.DeviceName, webSocketFactory);
 
             try
@@ -123,7 +119,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task.</returns>
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
-            var url = GetWebSocketUrl(ServerHostName, ServerWebSocketPort);
+            var url = GetWebSocketUrl(ServerAddress);
 
             try
             {
@@ -161,18 +157,16 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <summary>
         /// Changes the server location.
         /// </summary>
-        /// <param name="host">The host.</param>
-        /// <param name="webSocketPort">The web socket port.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task ChangeServerLocation(string host, int webSocketPort, CancellationToken cancellationToken)
+        public Task ChangeServerLocation(string serverAddress, CancellationToken cancellationToken)
         {
             StopEnsureConnectionTimer();
 
             DisposeCurrentSocket();
 
-            ServerHostName = host;
-            ServerWebSocketPort = webSocketPort;
+            ServerAddress = serverAddress;
 
             return ConnectAsync(cancellationToken);
         }
