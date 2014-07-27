@@ -680,7 +680,7 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>Task{ItemsResult}.</returns>
         public async Task<ItemsResult> GetMusicGenresAsync(ItemsByNameQuery query)
         {
-            var url = GetItemByNameListUrl("Genres", query);
+            var url = GetItemByNameListUrl("MusicGenres", query);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
