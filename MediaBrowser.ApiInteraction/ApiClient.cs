@@ -54,7 +54,7 @@ namespace MediaBrowser.ApiInteraction
             : this(new NullLogger(), serverAddress, accessToken)
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
@@ -94,7 +94,7 @@ namespace MediaBrowser.ApiInteraction
             : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
@@ -2446,11 +2446,13 @@ namespace MediaBrowser.ApiInteraction
         {
             try
             {
+                var url = GetApiUrl("Sessions/Logout");
 
+                await PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
             }
             catch (Exception ex)
             {
-                
+                Logger.ErrorException("Error logging out", ex);
             }
 
             ClearAuthenticationInfo();

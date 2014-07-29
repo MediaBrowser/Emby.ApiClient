@@ -257,11 +257,8 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new Dictionary<string, string>(_headers);
 
-            if (!dict.ContainsKey(name))
-            {
-                dict[name] = value;
-                _headers = dict;
-            }
+            dict[name] = value;
+            _headers = dict;
         }
 
         public void ClearHttpRequestHeader(string name)
