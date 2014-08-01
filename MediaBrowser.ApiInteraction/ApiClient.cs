@@ -329,7 +329,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetItemsAsync(ItemQuery query)
+        public async Task<ItemsResult> GetItemsAsync(ItemQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -338,7 +338,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetItemListUrl(query);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -350,7 +350,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query)
+        public async Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -359,7 +359,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetNextUpUrl(query);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -404,7 +404,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query)
+        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -413,7 +413,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetSimilarItemListUrl(query, "Movies");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -425,7 +425,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query)
+        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -434,7 +434,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetSimilarItemListUrl(query, "Trailers");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -446,7 +446,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query)
+        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -455,13 +455,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetSimilarItemListUrl(query, "Shows");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
-        public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query)
+        public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -485,13 +485,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Shows/" + query.SeriesId + "/Episodes", dict);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
-        public async Task<ItemsResult> GetSeasonsAsync(SeasonQuery query)
+        public async Task<ItemsResult> GetSeasonsAsync(SeasonQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -513,7 +513,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Shows/" + query.SeriesId + "/Seasons", dict);
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -525,7 +525,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query)
+        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -534,7 +534,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetSimilarItemListUrl(query, "Games");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -546,7 +546,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query)
+        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -555,7 +555,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetSimilarItemListUrl(query, "Albums");
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -567,7 +567,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<ItemsResult> GetPeopleAsync(PersonsQuery query)
+        public async Task<ItemsResult> GetPeopleAsync(PersonsQuery query, CancellationToken cancellationToken)
         {
             var url = GetItemByNameListUrl("Persons", query);
 
@@ -576,7 +576,7 @@ namespace MediaBrowser.ApiInteraction
                 url += "&PersonTypes=" + string.Join(",", query.PersonTypes);
             }
 
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
@@ -2396,20 +2396,55 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = GetApiUrl("Channels/" + channelId + "/Features");
 
-            using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ChannelFeatures>(stream);
             }
         }
 
-        public Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNullOrEmpty("UserId", query.UserId);
+            queryString.AddIfNotNull("StartIndex", query.StartIndex);
+            queryString.AddIfNotNull("Limit", query.Limit);
+            queryString.AddIfNotNullOrEmpty("FolderId", query.FolderId);
+            if (query.Fields != null)
+            {
+                queryString.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+            if (query.Filters != null)
+            {
+                queryString.Add("Filters", query.Filters.Select(f => f.ToString()));
+            }
+            queryString.AddIfNotNull("SortBy", query.SortBy);
+            queryString.Add("SortOrder", query.SortOrder.ToString());
+
+            var url = GetApiUrl("Channels/" + query.ChannelId + "/Items", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
+            }
         }
 
-        public Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var queryString = new QueryStringDictionary();
+
+            queryString.AddIfNotNullOrEmpty("UserId", query.UserId);
+            queryString.AddIfNotNull("SupportsLatestItems", query.SupportsLatestItems);
+            queryString.AddIfNotNull("StartIndex", query.StartIndex);
+            queryString.AddIfNotNull("Limit", query.Limit);
+            queryString.AddIfNotNull("IsFavorite", query.IsFavorite);
+
+            var url = GetApiUrl("Channels", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
+            }
         }
 
         public async Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken)
@@ -2456,6 +2491,21 @@ namespace MediaBrowser.ApiInteraction
             }
 
             ClearAuthenticationInfo();
+        }
+
+        public async Task<ItemsResult> GetUserViews(string userId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var url = GetApiUrl("Users/" + userId + "/Views");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
         }
     }
 }
