@@ -38,9 +38,9 @@
     <AssemblyOriginatorKeyFile>MediaBrowser.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MediaBrowser.Model, Version=3.0.5325.35363, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Model, Version=3.0.5330.41793, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Model.Signed.3.0.422\lib\net45\MediaBrowser.Model.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Model.Signed.3.0.423\lib\net45\MediaBrowser.Model.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>

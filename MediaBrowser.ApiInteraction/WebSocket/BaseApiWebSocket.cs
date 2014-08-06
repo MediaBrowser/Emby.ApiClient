@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using System.IO;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -459,7 +460,28 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         {
             var msg = new WebSocketMessage<T> { MessageType = messageName, Data = data };
 
-            return _jsonSerializer.SerializeToBytes(msg);
+            return SerializeToBytes(_jsonSerializer, msg);
+        }
+
+        /// <summary>
+        /// Serializes to bytes.
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <param name="obj">The obj.</param>
+        /// <returns>System.Byte[][].</returns>
+        /// <exception cref="System.ArgumentNullException">obj</exception>
+        private static byte[] SerializeToBytes(IJsonSerializer json, object obj)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                json.SerializeToStream(obj, stream);
+                return stream.ToArray();
+            }
         }
 
         /// <summary>

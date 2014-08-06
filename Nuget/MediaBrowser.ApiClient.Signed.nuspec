@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient.Signed</id>
-        <version>3.0.0.331</version>
+        <version>3.0.0.332</version>
         <title>MediaBrowser.ApiClient - Signed Edition</title>
         <authors>Media Browser Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -13,7 +13,7 @@
         <copyright>Copyright © Media Browser 2013</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="MediaBrowser.Model.Signed" version="3.0.422" />
+                <dependency id="MediaBrowser.Model.Signed" version="3.0.423" />
                 <dependency id="Newtonsoft.Json" version="6.0.3" />
                 <dependency id="WebSocket4Net" version="0.10" />
             </group>
