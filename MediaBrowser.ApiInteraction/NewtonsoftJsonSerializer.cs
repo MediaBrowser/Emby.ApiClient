@@ -15,11 +15,15 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <param name="stream">The stream.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         /// <exception cref="System.ArgumentNullException">obj</exception>
         public void SerializeToStream(object obj, Stream stream)
         {
-            throw new NotImplementedException();
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            using (var jsonWriter = new JsonTextWriter(new StreamWriter(stream)))
+            {
+                JsonSerializer.Create(new JsonSerializerSettings()).Serialize(jsonWriter, obj);
+            }
         }
 
         /// <summary>
