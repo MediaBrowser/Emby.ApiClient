@@ -165,7 +165,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="System.ArgumentNullException">url</exception>
-        public Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken)
+        public Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -295,7 +295,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<UserDto[]> GetPublicUsersAsync(CancellationToken cancellationToken)
+        public async Task<UserDto[]> GetPublicUsersAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("Users/Public");
 
@@ -329,7 +329,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetItemsAsync(ItemQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetItemsAsync(ItemQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -350,7 +350,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -404,7 +404,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -425,7 +425,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -446,7 +446,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -461,7 +461,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -491,7 +491,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ItemsResult> GetSeasonsAsync(SeasonQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSeasonsAsync(SeasonQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -525,7 +525,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -546,7 +546,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -567,7 +567,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<ItemsResult> GetPeopleAsync(PersonsQuery query, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetPeopleAsync(PersonsQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetItemByNameListUrl("Persons", query);
 
@@ -930,7 +930,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the system status async.
         /// </summary>
         /// <returns>Task{SystemInfo}.</returns>
-        public async Task<SystemInfo> GetSystemInfoAsync(CancellationToken cancellationToken)
+        public async Task<SystemInfo> GetSystemInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("System/Info");
 
@@ -945,7 +945,7 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;PublicSystemInfo&gt;.</returns>
-        public async Task<PublicSystemInfo> GetPublicSystemInfoAsync(CancellationToken cancellationToken)
+        public async Task<PublicSystemInfo> GetPublicSystemInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("System/Info/Public");
 
@@ -1166,7 +1166,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the game system summaries async.
         /// </summary>
         /// <returns>Task{List{GameSystemSummary}}.</returns>
-        public async Task<List<GameSystemSummary>> GetGameSystemSummariesAsync(CancellationToken cancellationToken)
+        public async Task<List<GameSystemSummary>> GetGameSystemSummariesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("Games/SystemSummaries");
 
@@ -1569,7 +1569,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <returns>Task{BaseItemDto}.</returns>
-        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client, CancellationToken cancellationToken)
+        public async Task<DisplayPreferences> GetDisplayPreferencesAsync(string id, string userId, string client, CancellationToken cancellationToken = default(CancellationToken))
         {
             var dict = new QueryStringDictionary();
 
@@ -1590,7 +1590,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="displayPreferences">The display preferences.</param>
         /// <returns>Task{DisplayPreferences}.</returns>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
+        public Task UpdateDisplayPreferencesAsync(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (displayPreferences == null)
             {
@@ -1615,7 +1615,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="args">The args.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``0}.</returns>
-        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, CancellationToken cancellationToken)
+        public async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, CancellationToken cancellationToken = default(CancellationToken))
             where T : class
         {
             url = AddDataFormat(url);
@@ -1639,7 +1639,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``0}.</returns>
-        private async Task<T> DeleteAsync<T>(string url, CancellationToken cancellationToken)
+        private async Task<T> DeleteAsync<T>(string url, CancellationToken cancellationToken = default(CancellationToken))
             where T : class
         {
             url = AddDataFormat(url);
@@ -1659,7 +1659,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="obj">The obj.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{``1}.</returns>
-        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj, CancellationToken cancellationToken)
+        private async Task<TOutputType> PostAsync<TInputType, TOutputType>(string url, TInputType obj, CancellationToken cancellationToken = default(CancellationToken))
             where TOutputType : class
         {
             url = AddDataFormat(url);
@@ -1680,7 +1680,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken)
+        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
             url = AddDataFormat(url);
 
@@ -1736,7 +1736,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
+        public async Task<AllThemeMediaResult> GetAllThemeMediaAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -1779,7 +1779,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
+        public async Task<ThemeMediaResult> GetThemeSongsAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -1794,7 +1794,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken)
+        public async Task<ThemeMediaResult> GetThemeVideosAsync(string userId, string itemId, bool inheritFromParent, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -1821,7 +1821,7 @@ namespace MediaBrowser.ApiInteraction
         /// or
         /// userId
         /// </exception>
-        public async Task<QueryResult<ItemReview>> GetCriticReviews(string itemId, CancellationToken cancellationToken, int? startIndex = null, int? limit = null)
+        public async Task<QueryResult<ItemReview>> GetCriticReviews(string itemId, CancellationToken cancellationToken = default(CancellationToken), int? startIndex = null, int? limit = null)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -1841,7 +1841,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<T> GetAsync<T>(string url, CancellationToken cancellationToken)
+        public async Task<T> GetAsync<T>(string url, CancellationToken cancellationToken = default(CancellationToken))
             where T : class
         {
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
@@ -1856,7 +1856,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="userId">The user id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{ItemIndex}}.</returns>
-        public async Task<List<ItemIndex>> GetGamePlayerIndex(string userId, CancellationToken cancellationToken)
+        public async Task<List<ItemIndex>> GetGamePlayerIndex(string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -1877,7 +1877,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="includeItemTypes">The include item types.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{List{ItemIndex}}.</returns>
-        public async Task<List<ItemIndex>> GetYearIndex(string userId, string[] includeItemTypes, CancellationToken cancellationToken)
+        public async Task<List<ItemIndex>> GetYearIndex(string userId, string[] includeItemTypes, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -1892,7 +1892,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task ReportCapabilities(ClientCapabilities capabilities, CancellationToken cancellationToken)
+        public Task ReportCapabilities(ClientCapabilities capabilities, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (capabilities == null)
             {
@@ -1908,7 +1908,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
         }
 
-        public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken)
+        public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("LiveTv/Info");
 
@@ -1918,7 +1918,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<RecordingGroupDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<RecordingGroupDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -1937,7 +1937,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<RecordingInfoDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<RecordingInfoDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -1963,7 +1963,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(LiveTvChannelQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<ChannelInfoDto>> GetLiveTvChannelsAsync(LiveTvChannelQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -1989,7 +1989,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task CancelLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken)
+        public Task CancelLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2003,7 +2003,7 @@ namespace MediaBrowser.ApiInteraction
             return HttpClient.DeleteAsync(url, cancellationToken);
         }
 
-        public Task CancelLiveTvTimerAsync(string id, CancellationToken cancellationToken)
+        public Task CancelLiveTvTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2017,7 +2017,7 @@ namespace MediaBrowser.ApiInteraction
             return HttpClient.DeleteAsync(url, cancellationToken);
         }
 
-        public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken)
+        public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2031,7 +2031,7 @@ namespace MediaBrowser.ApiInteraction
             return HttpClient.DeleteAsync(url, cancellationToken);
         }
 
-        public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken)
+        public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2049,7 +2049,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<RecordingInfoDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken)
+        public async Task<RecordingInfoDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2067,7 +2067,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<RecordingGroupDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken)
+        public async Task<RecordingGroupDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2085,7 +2085,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SeriesTimerInfoDto> GetLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken)
+        public async Task<SeriesTimerInfoDto> GetLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2102,7 +2102,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<SeriesTimerInfoDto>> GetLiveTvSeriesTimersAsync(SeriesTimerQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<SeriesTimerInfoDto>> GetLiveTvSeriesTimersAsync(SeriesTimerQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2122,7 +2122,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<TimerInfoDto> GetLiveTvTimerAsync(string id, CancellationToken cancellationToken)
+        public async Task<TimerInfoDto> GetLiveTvTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2139,7 +2139,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<TimerInfoDto>> GetLiveTvTimersAsync(TimerQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<TimerInfoDto>> GetLiveTvTimersAsync(TimerQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2159,7 +2159,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2203,7 +2203,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2225,7 +2225,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task CreateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        public Task CreateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (timer == null)
             {
@@ -2237,7 +2237,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SeriesTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
 
-        public Task CreateLiveTvTimerAsync(BaseTimerInfoDto timer, CancellationToken cancellationToken)
+        public Task CreateLiveTvTimerAsync(BaseTimerInfoDto timer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (timer == null)
             {
@@ -2249,7 +2249,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<BaseTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
 
-        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken)
+        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(string programId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrWhiteSpace(programId))
             {
@@ -2268,7 +2268,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(CancellationToken cancellationToken)
+        public async Task<SeriesTimerInfoDto> GetDefaultLiveTvTimerInfo(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("LiveTv/Timers/Defaults");
 
@@ -2278,7 +2278,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<GuideInfo> GetLiveTvGuideInfo(CancellationToken cancellationToken)
+        public async Task<GuideInfo> GetLiveTvGuideInfo(CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("LiveTv/GuideInfo");
 
@@ -2288,7 +2288,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken)
+        public async Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2306,7 +2306,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task UpdateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
+        public Task UpdateLiveTvSeriesTimerAsync(SeriesTimerInfoDto timer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (timer == null)
             {
@@ -2318,7 +2318,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SeriesTimerInfoDto, EmptyRequestResult>(url, timer, cancellationToken);
         }
 
-        public Task UpdateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken)
+        public Task UpdateLiveTvTimerAsync(TimerInfoDto timer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (timer == null)
             {
@@ -2392,7 +2392,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ChannelFeatures> GetChannelFeatures(string channelId, CancellationToken cancellationToken)
+        public async Task<ChannelFeatures> GetChannelFeatures(string channelId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var url = GetApiUrl("Channels/" + channelId + "/Features");
 
@@ -2402,7 +2402,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -2429,7 +2429,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -2447,7 +2447,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken)
+        public async Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var queryString = new QueryStringDictionary();
 
@@ -2472,7 +2472,7 @@ namespace MediaBrowser.ApiInteraction
             return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
-        public Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        public Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
@@ -2493,7 +2493,7 @@ namespace MediaBrowser.ApiInteraction
             ClearAuthenticationInfo();
         }
 
-        public async Task<ItemsResult> GetUserViews(string userId, CancellationToken cancellationToken)
+        public async Task<ItemsResult> GetUserViews(string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(userId))
             {
