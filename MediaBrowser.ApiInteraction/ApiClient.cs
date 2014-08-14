@@ -1397,7 +1397,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (command.TimeoutMs.HasValue)
             {
-                cmd.Arguments["ItemName"] = command.TimeoutMs.Value.ToString(CultureInfo.InvariantCulture);
+                cmd.Arguments["Timeout"] = command.TimeoutMs.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             return SendCommandAsync(sessionId, cmd);
@@ -2506,6 +2506,11 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
+        }
+
+        public Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query)
+        {
+            throw new NotImplementedException();
         }
     }
 }

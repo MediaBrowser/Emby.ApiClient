@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
 {
-    public class ServerLocator
+    public class ServerLocator : IServerLocator
     {
         private readonly IJsonSerializer _jsonSerializer = new NewtonsoftJsonSerializer();
         private readonly ILogger _logger;
@@ -25,17 +26,17 @@ namespace MediaBrowser.ApiInteraction
             _logger = logger;
         }
 
-        public Task<ServerDiscoveryInfo> FindServer(CancellationToken cancellationToken)
+        public Task<List<ServerDiscoveryInfo>> FindServers(CancellationToken cancellationToken)
         {
-            return FindServer(2000, cancellationToken);
+            return FindServers(2000, cancellationToken);
         }
 
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
-        public Task<ServerDiscoveryInfo> FindServer(int timeout, CancellationToken cancellationToken)
+        public Task<List<ServerDiscoveryInfo>> FindServers(int timeout, CancellationToken cancellationToken)
         {
-            var taskCompletionSource = new TaskCompletionSource<ServerDiscoveryInfo>();
+            var taskCompletionSource = new TaskCompletionSource<List<ServerDiscoveryInfo>>();
 
             var timeoutToken = new CancellationTokenSource(timeout).Token;
 
@@ -48,7 +49,7 @@ namespace MediaBrowser.ApiInteraction
             return taskCompletionSource.Task;
         }
 
-        private async void FindServer(TaskCompletionSource<ServerDiscoveryInfo> taskCompletionSource, int timeout)
+        private async void FindServer(TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, int timeout)
         {
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
@@ -79,7 +80,7 @@ namespace MediaBrowser.ApiInteraction
                             try
                             {
                                 var info = _jsonSerializer.DeserializeFromString<ServerDiscoveryInfo>(json);
-                                taskCompletionSource.SetResult(info);
+                                taskCompletionSource.SetResult(new List<ServerDiscoveryInfo> { info });
                             }
                             catch (Exception ex)
                             {
