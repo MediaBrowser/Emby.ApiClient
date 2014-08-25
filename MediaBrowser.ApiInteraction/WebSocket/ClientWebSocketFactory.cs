@@ -18,7 +18,9 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             try
             {
                 // This is preferred but only supported on windows 8 or server 2012
-                return new NativeClientWebSocket(logger);
+                // Comment NativeClientWebSocket out for now due to message parsing errors
+                // return new NativeClientWebSocket(logger);
+                return new WebSocket4NetClientWebSocket(logger);
             }
             catch (NotSupportedException)
             {

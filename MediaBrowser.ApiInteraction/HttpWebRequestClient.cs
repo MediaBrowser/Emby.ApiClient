@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using System.Reflection;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -68,6 +69,7 @@ namespace MediaBrowser.ApiInteraction
             Logger = logger;
         }
 
+        private PropertyInfo _httpBehaviorPropertyInfo;
         private HttpWebRequest GetRequest(string url, string method)
         {
             var request = HttpWebRequest.CreateHttp(url);
@@ -83,6 +85,14 @@ namespace MediaBrowser.ApiInteraction
             {
                 request.Headers.Add(header.Key, header.Value);
             }
+
+            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
+            var sp = request.ServicePoint;
+            if (_httpBehaviorPropertyInfo == null)
+            {
+                _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
 
             return request;
         }
