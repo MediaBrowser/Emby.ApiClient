@@ -8,6 +8,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
@@ -2472,9 +2473,39 @@ namespace MediaBrowser.ApiInteraction
             return HttpClient.DeleteAsync(url, CancellationToken.None);
         }
 
-        public Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            if (string.IsNullOrEmpty(query.UserId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var queryString = new QueryStringDictionary();
+            queryString.Add("UserId", query.UserId);
+            queryString.AddIfNotNull("StartIndex", query.StartIndex);
+            queryString.AddIfNotNull("Limit", query.Limit);
+            if (query.Filters != null)
+            {
+                queryString.Add("Filters", query.Filters.Select(f => f.ToString()));
+            }
+            if (query.Fields != null)
+            {
+                queryString.Add("Fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            queryString.AddIfNotNull("ChannelIds", query.ChannelIds);
+
+            var url = GetApiUrl("Channels/Items/Latest");
+
+            using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
+            }
         }
 
         public async Task Logout()
@@ -2508,9 +2539,134 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query)
+        public async Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query)
         {
-            throw new NotImplementedException();
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            if (string.IsNullOrEmpty(query.UserId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            var queryString = new QueryStringDictionary();
+            queryString.AddIfNotNull("Group", query.GroupItems);
+            queryString.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
+            queryString.AddIfNotNullOrEmpty("ParentId", query.ParentId);
+            queryString.AddIfNotNull("IsPlayed", query.IsPlayed);
+            queryString.AddIfNotNull("StartIndex", query.StartIndex);
+            queryString.AddIfNotNull("Limit", query.Limit);
+
+            if (query.Fields != null)
+            {
+                queryString.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            var url = GetApiUrl("Users/" + query.UserId + "/Items/Latest", queryString);
+
+            using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                var items = DeserializeFromStream<List<BaseItemDto>>(stream);
+                return new QueryResult<BaseItemDto> { Items = items.ToArray(), TotalRecordCount = items.Count() };
+            }
+        }
+
+        public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)
+        {
+
+            if (playlistId == null)
+            {
+                throw new ArgumentNullException("playlistId");
+            }
+
+            if (itemIds == null)
+            {
+                throw new ArgumentNullException("itemIds");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("Ids", itemIds);
+            var url = GetApiUrl(string.Format("Playlists/{0}/Items", playlistId), dict);
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+        }
+
+        public async Task<PlaylistCreationResult> CreatePlaylist(Model.Playlists.PlaylistCreationRequest request)
+        {
+
+            if (string.IsNullOrEmpty(request.UserId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            if (string.IsNullOrEmpty(request.MediaType) && (request.ItemIdList == null || !request.ItemIdList.Any()))
+            {
+                throw new ArgumentNullException("must provide either MediaType or Ids");
+            }
+
+            var queryString = new QueryStringDictionary();
+
+            queryString.Add("UserId", request.UserId);
+            queryString.Add("Name", request.Name);
+
+            if (!string.IsNullOrEmpty(request.MediaType))
+                queryString.Add("MediaType", request.MediaType);
+
+            if (request.ItemIdList != null && request.ItemIdList.Any())
+                queryString.Add("Ids", request.ItemIdList);
+
+            var url = GetApiUrl("Playlists/", queryString);
+
+            return await PostAsync<PlaylistCreationResult>(url, new Dictionary<string, string>(), CancellationToken.None);
+
+        }
+
+        public async Task<QueryResult<BaseItemDto>> GetPlaylistItems(Model.Playlists.PlaylistItemQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.Add("UserId", query.UserId);
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            var url = GetApiUrl("Playlists/" + query.Id + "/Items", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
+            }
+        }
+
+        public Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
+        {
+            if (playlistId == null)
+            {
+                throw new ArgumentNullException("playlistId");
+            }
+
+            if (entryIds == null)
+            {
+                throw new ArgumentNullException("entryIds");
+            }
+
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("EntryIds", entryIds);
+            var url = GetApiUrl(string.Format("Playlists/{0}/Items", playlistId), dict);
+            return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
         }
     }
 }
