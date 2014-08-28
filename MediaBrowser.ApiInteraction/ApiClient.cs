@@ -2539,7 +2539,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query)
+        public async Task<BaseItemDto[]> GetLatestItems(LatestItemsQuery query)
         {
             if (query == null)
             {
@@ -2568,8 +2568,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
             {
-                var items = DeserializeFromStream<List<BaseItemDto>>(stream);
-                return new QueryResult<BaseItemDto> { Items = items.ToArray(), TotalRecordCount = items.Count() };
+                return DeserializeFromStream<BaseItemDto[]>(stream);
             }
         }
 
