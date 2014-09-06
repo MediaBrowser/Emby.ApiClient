@@ -135,7 +135,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 var requestTime = DateTime.Now;
 
-                var msg = await HttpClient.PostAsync(url, content).ConfigureAwait(false);
+                var msg = await HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
 
                 OnResponseReceived(url, "POST", msg.StatusCode, requestTime);
 
@@ -288,6 +288,11 @@ namespace MediaBrowser.ApiInteraction
 
         public void SetHttpRequestHeader(string name, string value)
         {
+            Logger.Debug("Setting http header: {0}", name);
+
+            // Need to remove first or it will end up appending values, comma delimited
+            HttpClient.DefaultRequestHeaders.Remove(name);
+
             HttpClient.DefaultRequestHeaders.Add(name, value);
         }
 

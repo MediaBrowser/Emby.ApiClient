@@ -19,7 +19,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 AutomaticDecompression = DecompressionMethods.Deflate,
                 CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate)
-
+                
             };
         }
     }
