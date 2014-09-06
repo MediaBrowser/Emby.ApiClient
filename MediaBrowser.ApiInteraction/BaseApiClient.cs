@@ -100,11 +100,15 @@ namespace MediaBrowser.ApiInteraction
         /// Changes the server location.
         /// </summary>
         /// <param name="address">The address.</param>
-        public void ChangeServerLocation(string address)
+        /// <param name="keepExistingAuth"></param>
+        public void ChangeServerLocation(string address, bool keepExistingAuth = false)
         {
             ServerAddress = address;
 
-            SetAuthenticationInfo(null, null);
+            if (!keepExistingAuth)
+            {
+                SetAuthenticationInfo(null, null);
+            }
 
             OnServerLocationChanged();
         }
