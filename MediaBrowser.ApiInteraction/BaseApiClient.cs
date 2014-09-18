@@ -18,7 +18,7 @@ namespace MediaBrowser.ApiInteraction
     public abstract class BaseApiClient : IDisposable
     {
         public event EventHandler ServerLocationChanged;
-        private void OnServerLocationChanged()
+        protected virtual void OnServerLocationChanged()
         {
             if (ServerLocationChanged != null)
             {

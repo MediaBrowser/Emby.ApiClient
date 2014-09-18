@@ -1,5 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.WebSocket;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -29,7 +28,7 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Provides api methods centered around an HttpClient
     /// </summary>
-    public class ApiClient : BaseApiClient, IApiClient
+    public partial class ApiClient : BaseApiClient, IApiClient
     {
         public event EventHandler<HttpResponseEventArgs> HttpResponseReceived
         {
@@ -40,19 +39,15 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        /// <summary>
-        /// Gets or sets the web socket connection.
-        /// </summary>
-        /// <value>The web socket connection.</value>
-        public ApiWebSocket WebSocketConnection { get; set; }
+        public ClientCapabilities Capabilities { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient"/> class.
         /// </summary>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
-        public ApiClient(string serverAddress, string accessToken)
-            : this(new NullLogger(), serverAddress, accessToken)
+        public ApiClient(string serverAddress, string accessToken, ClientCapabilities capabilities)
+            : this(new NullLogger(), serverAddress, accessToken, capabilities)
         {
         }
 
@@ -63,8 +58,8 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string accessToken)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken)
+        public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
+            : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken, capabilities)
         {
         }
 
@@ -75,10 +70,11 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
-        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string accessToken)
+        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
             HttpClient = httpClient;
+            Capabilities = capabilities;
 
             ResetHttpHeaders();
         }
@@ -91,8 +87,8 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="applicationVersion">The application version.</param>
-        public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
+        public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
+            : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
         {
         }
 
@@ -106,8 +102,8 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion)
+        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
+            : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
         {
         }
 
@@ -121,10 +117,11 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="applicationVersion">The application version.</param>
-        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
+        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
             HttpClient = httpClient;
+            Capabilities = capabilities;
 
             ResetHttpHeaders();
         }
@@ -158,6 +155,16 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IAsyncHttpClient HttpClient { get; private set; }
+
+        /// <summary>
+        /// Called when [server location changed].
+        /// </summary>
+        protected override void OnServerLocationChanged()
+        {
+            DisposeWebSocket();
+
+            base.OnServerLocationChanged();
+        }
 
         /// <summary>
         /// Gets an image stream based on a url
@@ -1271,11 +1278,6 @@ namespace MediaBrowser.ApiInteraction
 
             Logger.Debug("ReportPlaybackStart: Item {0}", info.ItemId);
 
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
-            {
-                return WebSocketConnection.SendAsync("ReportPlaybackStart", JsonSerializer.SerializeToString(info));
-            }
-
             var url = GetApiUrl("Sessions/Playing");
 
             return PostAsync<PlaybackStartInfo, EmptyRequestResult>(url, info, CancellationToken.None);
@@ -1294,9 +1296,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("info");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
+            if (IsWebSocketConnected)
             {
-                return WebSocketConnection.SendAsync("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
+                return SendWebSocketMessage("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
             }
 
             var url = GetApiUrl("Sessions/Playing/Progress");
@@ -1315,11 +1317,6 @@ namespace MediaBrowser.ApiInteraction
             if (info == null)
             {
                 throw new ArgumentNullException("info");
-            }
-
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
-            {
-                return WebSocketConnection.SendAsync("ReportPlaybackStopped", JsonSerializer.SerializeToString(info));
             }
 
             var url = GetApiUrl("Sessions/Playing/Stopped");

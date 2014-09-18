@@ -61,37 +61,21 @@ If your app is some kind of service or utility (e.g. Sickbeard), you should cons
 
 # Web Socket #
 
-In addition to http requests, you can also connect to the server's web socket to receive notifications of events from the server.
+Once you have an ApiClient instance, you can easily connect to the server's web socket using:
 
 ``` c#
 
-            var webSocket = ApiWebSocket.Create(apiClient, ClientWebSocketFactory.CreateWebSocket, CancellationToken.None);
+            ApiClient.OpenWebSocket();
 ```
 
-Once instantiated, simply call EnsureConnectionAsync. Even once connected, this method can be called at anytime to verify connection status and reconnect if needed.
-
-``` c#
-
-            await webSocket.EnsureConnectionAsync(CancellationToken.None);
-```
-
-There is a Closed event that will fire anytime the connection is lost. From there you can attempt to reconnect. ApiWebSocket also supports the use of a timer to periodically call EnsureConnectionAsync:
-
-``` c#
-
-            webSocket.StartEnsureConnectionTimer(int intervalMs);
-            
-            webSocket.StopEnsureConnectionTimer();
-```
-
-ApiWebSocket has various events that can be used to receive notifications from the server:
+This will open the connection in a background thread, and periodically check to ensure it's still connected. This will provide various events that can be used to receive notifications from the server:
 
 
 ``` c#
 
-            webSocket.UserUpdated += webSocket_UserUpdated;
+            ApiClient.UserUpdated += webSocket_UserUpdated;
 ```
 
 # Logging and Interfaces #
 
-ApiClient and ApiWebSocket both have additional constructors available allowing you to pass in your own implementation of ILogger. The default implementation is NullLogger, which provides no logging. In addition you can also pass in your own implementation of IJsonSerializer, or use our NewtonsoftJsonSerializer. ClientWebSocketFactory also has an additional overload allowing you to pass in your own ILogger
+ApiClient has additional constructors available allowing you to pass in your own implementation of ILogger. The default implementation is NullLogger, which provides no logging. In addition you can also pass in your own implementation of IJsonSerializer, or use our NewtonsoftJsonSerializer. ClientWebSocketFactory also has an additional overload allowing you to pass in your own ILogger

@@ -38,6 +38,10 @@
     <AssemblyOriginatorKeyFile>MediaBrowser.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MediaBrowser.Model, Version=3.0.5374.30118, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Model.Signed.3.0.434\lib\net45\MediaBrowser.Model.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -59,6 +63,9 @@
   <ItemGroup>
     <Compile Include="..\MediaBrowser.ApiInteraction\ApiClient.cs">
       <Link>ApiClient.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ApiWebSocket.cs">
+      <Link>ApiWebSocket.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\AsyncHttpClient.cs">
       <Link>AsyncHttpClient.cs</Link>
@@ -92,12 +99,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\ServerLocator.cs">
       <Link>ServerLocator.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\ApiWebSocket.cs">
-      <Link>WebSocket\ApiWebSocket.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\BaseApiWebSocket.cs">
-      <Link>WebSocket\BaseApiWebSocket.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\ClientWebSocketFactory.cs">
       <Link>WebSocket\ClientWebSocketFactory.cs</Link>
