@@ -42,10 +42,11 @@ namespace MediaBrowser.ApiInteraction
         public ClientCapabilities Capabilities { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="capabilities">The capabilities.</param>
         public ApiClient(string serverAddress, string accessToken, ClientCapabilities capabilities)
             : this(new NullLogger(), serverAddress, accessToken, capabilities)
         {
@@ -57,6 +58,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="capabilities">The capabilities.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
         public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
             : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken, capabilities)
@@ -70,6 +72,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="capabilities">The capabilities.</param>
         public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
@@ -80,13 +83,14 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="clientName">Name of the client.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="applicationVersion">The application version.</param>
+        /// <param name="capabilities">The capabilities.</param>
         public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
             : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
         {
@@ -101,6 +105,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="applicationVersion">The application version.</param>
+        /// <param name="capabilities">The capabilities.</param>
         /// <exception cref="System.ArgumentNullException">httpClient</exception>
         public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
             : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
@@ -108,7 +113,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client.</param>
         /// <param name="logger">The logger.</param>
@@ -117,6 +122,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="applicationVersion">The application version.</param>
+        /// <param name="capabilities">The capabilities.</param>
         public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
@@ -166,6 +172,11 @@ namespace MediaBrowser.ApiInteraction
             base.OnServerLocationChanged();
         }
 
+        private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return HttpClient.GetAsync(url, cancellationToken);
+        }
+
         /// <summary>
         /// Gets an image stream based on a url
         /// </summary>
@@ -180,7 +191,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("url");
             }
 
-            return HttpClient.GetAsync(url, cancellationToken);
+            return GetStream(url, cancellationToken);
         }
 
         /// <summary>
@@ -1682,7 +1693,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url);
 
-            return HttpClient.GetAsync(url, cancellationToken);
+            return GetStream(url, cancellationToken);
         }
 
         public Task<Stream> GetSerializedStreamAsync(string url)

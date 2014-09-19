@@ -98,17 +98,24 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>Task.</returns>
         private async Task EnsureConnectionAsync(CancellationToken cancellationToken)
         {
+            await EnsureConnectionInternal(cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task EnsureConnectionInternal(CancellationToken cancellationToken)
+        {
             if (!IsWebSocketConnected)
             {
                 _hasPerformedPostConnectionRequests = false;
 
-                var url = GetWebSocketUrl(ServerAddress);
+                var url = GetWebSocketUrl(ApiUrl);
 
                 try
                 {
                     var socket = _webSocketFactory();
 
                     Logger.Info("Created new web socket of type {0}", socket.GetType().Name);
+
+                    Logger.Info("Connecting to {0}", url);
 
                     await socket.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
 

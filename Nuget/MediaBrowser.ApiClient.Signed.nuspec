@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient.Signed</id>
-        <version>3.0.0.346</version>
+        <version>3.0.0.348</version>
         <title>MediaBrowser.ApiClient - Signed Edition</title>
         <authors>Media Browser Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
