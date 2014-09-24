@@ -252,6 +252,7 @@ namespace MediaBrowser.ApiInteraction
             if (string.IsNullOrEmpty(authValue))
             {
                 ClearHttpRequestHeader("Authorization");
+                SetAuthorizationHttpRequestHeader(null, null);
             }
             else
             {
@@ -259,9 +260,22 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        protected abstract void SetAuthorizationHttpRequestHeader(string scheme, string parameter);
-        protected abstract void SetHttpRequestHeader(string name, string value);
-        protected abstract void ClearHttpRequestHeader(string name);
+        protected readonly HttpHeaders HttpHeaders = new HttpHeaders();
+        private void SetAuthorizationHttpRequestHeader(string scheme, string parameter)
+        {
+            HttpHeaders.AuthorizationScheme = scheme;
+            HttpHeaders.AuthorizationParameter = parameter;
+        }
+
+        private void SetHttpRequestHeader(string name, string value)
+        {
+            HttpHeaders[name] = value;
+        }
+
+        private void ClearHttpRequestHeader(string name)
+        {
+            HttpHeaders.Remove(name);
+        }
 
         /// <summary>
         /// Gets the API URL.

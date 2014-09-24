@@ -71,14 +71,24 @@ namespace MediaBrowser.ApiInteraction
             HttpClient = new HttpClient(HttpMessageHandlerFactory.GetHandler());
         }
 
-        /// <summary>
-        /// Gets the stream async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> GetAsync(string url, CancellationToken cancellationToken)
+        private HttpRequestMessage GetRequest(HttpMethod method, string url, HttpHeaders headers)
+        {
+            var msg = new HttpRequestMessage(method, url);
+
+            foreach (var header in headers)
+            {
+                msg.Headers.Add(header.Key, header.Value);
+            }
+
+            if (!string.IsNullOrEmpty(headers.AuthorizationScheme))
+            {
+                msg.Headers.Authorization = new AuthenticationHeaderValue(headers.AuthorizationScheme, headers.AuthorizationParameter);
+            }
+            
+            return msg;
+        }
+
+        public async Task<Stream> GetAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -88,15 +98,18 @@ namespace MediaBrowser.ApiInteraction
             {
                 var requestTime = DateTime.Now;
 
-                var msg = await HttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                using (var request = GetRequest(HttpMethod.Get, url, headers))
+                {
+                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-                OnResponseReceived(url, "GET", msg.StatusCode, requestTime);
+                    OnResponseReceived(url, "GET", msg.StatusCode, requestTime);
 
-                EnsureSuccessStatusCode(msg);
+                    EnsureSuccessStatusCode(msg);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -125,7 +138,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
+        public async Task<Stream> PostAsync(string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken)
         {
             Logger.Info("POST {0}", url);
 
@@ -135,15 +148,20 @@ namespace MediaBrowser.ApiInteraction
             {
                 var requestTime = DateTime.Now;
 
-                var msg = await HttpClient.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+                using (var request = GetRequest(HttpMethod.Post, url, headers))
+                {
+                    request.Content = content;
 
-                OnResponseReceived(url, "POST", msg.StatusCode, requestTime);
+                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-                EnsureSuccessStatusCode(msg);
+                    OnResponseReceived(url, "POST", msg.StatusCode, requestTime);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    EnsureSuccessStatusCode(msg);
 
-                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -170,7 +188,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> DeleteAsync(string url, CancellationToken cancellationToken)
+        public async Task<Stream> DeleteAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -180,15 +198,18 @@ namespace MediaBrowser.ApiInteraction
             {
                 var requestTime = DateTime.Now;
 
-                var msg = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+                using (var request = GetRequest(HttpMethod.Delete, url, headers))
+                {
+                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-                OnResponseReceived(url, "DELETE", msg.StatusCode, requestTime);
+                    OnResponseReceived(url, "DELETE", msg.StatusCode, requestTime);
 
-                EnsureSuccessStatusCode(msg);
+                    EnsureSuccessStatusCode(msg);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -262,43 +283,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 HttpClient.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Sets the authorization header that should be supplied on every request
-        /// </summary>
-        /// <param name="scheme">The scheme.</param>
-        /// <param name="parameter">The parameter.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void SetAuthorizationHeader(string scheme, string parameter)
-        {
-            if (string.IsNullOrEmpty(parameter))
-            {
-                Logger.Debug("Removing Authorization http header");
-
-                ClearHttpRequestHeader("Authorization");
-            }
-            else
-            {
-                Logger.Debug("Applying Authorization http header: {0}", parameter);
-                
-                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, parameter);
-            }
-        }
-
-        public void SetHttpRequestHeader(string name, string value)
-        {
-            Logger.Debug("Setting http header: {0}", name);
-
-            // Need to remove first or it will end up appending values, comma delimited
-            HttpClient.DefaultRequestHeaders.Remove(name);
-
-            HttpClient.DefaultRequestHeaders.Add(name, value);
-        }
-
-        public void ClearHttpRequestHeader(string name)
-        {
-            HttpClient.DefaultRequestHeaders.Remove(name);
         }
     }
 }

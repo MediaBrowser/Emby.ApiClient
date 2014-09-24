@@ -132,30 +132,6 @@ namespace MediaBrowser.ApiInteraction
             ResetHttpHeaders();
         }
 
-        protected override void SetAuthorizationHttpRequestHeader(string scheme, string parameter)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.SetAuthorizationHeader(scheme, parameter);
-            }
-        }
-
-        protected override void SetHttpRequestHeader(string name, string value)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.SetHttpRequestHeader(name, value);
-            }
-        }
-
-        protected override void ClearHttpRequestHeader(string name)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.ClearHttpRequestHeader(name);
-            }
-        }
-
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -174,7 +150,7 @@ namespace MediaBrowser.ApiInteraction
 
         private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return HttpClient.GetAsync(url, cancellationToken);
+            return HttpClient.GetAsync(url, HttpHeaders, cancellationToken);
         }
 
         /// <summary>
@@ -1635,7 +1611,7 @@ namespace MediaBrowser.ApiInteraction
 
             const string contentType = "application/x-www-form-urlencoded";
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, HttpHeaders, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -1653,7 +1629,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url);
 
-            using (var stream = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.DeleteAsync(url, HttpHeaders, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -1677,7 +1653,7 @@ namespace MediaBrowser.ApiInteraction
 
             var postContent = SerializeToJson(obj);
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
+            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, HttpHeaders, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<TOutputType>(stream);
             }
@@ -2009,7 +1985,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/SeriesTimers/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return HttpClient.DeleteAsync(url, HttpHeaders, cancellationToken);
         }
 
         public Task CancelLiveTvTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
@@ -2023,7 +1999,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/Timers/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return HttpClient.DeleteAsync(url, HttpHeaders, cancellationToken);
         }
 
         public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
@@ -2037,7 +2013,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/Recordings/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return HttpClient.DeleteAsync(url, HttpHeaders, cancellationToken);
         }
 
         public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -2478,7 +2454,7 @@ namespace MediaBrowser.ApiInteraction
             queryString.Add("DeviceId", DeviceId);
             var url = GetApiUrl("Videos/ActiveEncodings", queryString);
 
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return HttpClient.DeleteAsync(url, HttpHeaders, CancellationToken.None);
         }
 
         public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken))

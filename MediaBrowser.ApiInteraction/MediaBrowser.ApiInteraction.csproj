@@ -74,11 +74,17 @@
     <Compile Include="AuthenticationExtensions.cs" />
     <Compile Include="BaseApiClient.cs" />
     <Compile Include="ApiClient.cs" />
+    <Compile Include="ConnectionManager.cs" />
+    <Compile Include="ConnectionResult.cs" />
+    <Compile Include="HttpHeaders.cs" />
     <Compile Include="HttpMessageHandlerFactory.cs" />
     <Compile Include="HttpWebRequestClient.cs" />
     <Compile Include="IAsyncHttpClient.cs" />
+    <Compile Include="ICredentialProvider.cs" />
+    <Compile Include="INetworkConnection.cs" />
     <Compile Include="IServerLocator.cs" />
     <Compile Include="QueryStringDictionary.cs" />
+    <Compile Include="ServerInfo.cs" />
     <Compile Include="WebSocket\ClientWebSocketFactory.cs" />
     <Compile Include="WebSocket\IClientWebSocket.cs" />
     <Compile Include="WebSocket\NativeClientWebSocket.cs" />

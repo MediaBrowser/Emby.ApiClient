@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -9,6 +8,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,8 +21,6 @@ namespace MediaBrowser.ApiInteraction
     public class HttpWebRequestClient : IAsyncHttpClient
     {
         public event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
-
-        private Dictionary<string, string> _headers = new Dictionary<string, string>();
 
         /// <summary>
         /// Called when [response received].
@@ -81,11 +79,6 @@ namespace MediaBrowser.ApiInteraction
             request.Pipelined = true;
             request.Timeout = 30000;
 
-            foreach (var header in _headers)
-            {
-                request.Headers.Add(header.Key, header.Value);
-            }
-
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
             var sp = request.ServicePoint;
             if (_httpBehaviorPropertyInfo == null)
@@ -97,13 +90,15 @@ namespace MediaBrowser.ApiInteraction
             return request;
         }
 
-        private async Task<Stream> SendAsync(string url, string httpMethod, CancellationToken cancellationToken, string content = null, string contentType = null)
+        private async Task<Stream> SendAsync(string url, string httpMethod, HttpHeaders headers, CancellationToken cancellationToken, string content = null, string contentType = null)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             Logger.Debug(httpMethod + " {0}", url);
 
             var httpWebRequest = GetRequest(url, httpMethod);
+
+            ApplyHeaders(headers, httpWebRequest);
 
             if (!string.IsNullOrEmpty(content) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
@@ -164,12 +159,13 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the stream async.
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="headers">The headers.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> GetAsync(string url, CancellationToken cancellationToken)
+        public Task<Stream> GetAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
         {
-            return SendAsync(url, "GET", cancellationToken);
+            return SendAsync(url, "GET", headers, cancellationToken);
         }
 
         /// <summary>
@@ -178,24 +174,41 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="postContent">Content of the post.</param>
+        /// <param name="headers">The headers.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> PostAsync(string url, string contentType, string postContent, CancellationToken cancellationToken)
+        public Task<Stream> PostAsync(string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken)
         {
-            return SendAsync(url, "POST", cancellationToken, postContent, contentType);
+            return SendAsync(url, "POST", headers, cancellationToken, postContent, contentType);
         }
 
         /// <summary>
         /// Deletes the async.
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="headers">The headers.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> DeleteAsync(string url, CancellationToken cancellationToken)
+        public Task<Stream> DeleteAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
         {
-            return SendAsync(url, "DELETE", cancellationToken);
+            return SendAsync(url, "DELETE", headers, cancellationToken);
+        }
+
+        private void ApplyHeaders(HttpHeaders headers, HttpWebRequest request)
+        {
+            foreach (var header in headers)
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+
+            if (!string.IsNullOrEmpty(headers.AuthorizationScheme))
+            {
+                var val = new AuthenticationHeaderValue(headers.AuthorizationScheme, headers.AuthorizationParameter).ToString();
+
+                request.Headers.Add("Authorization", val);
+            }
         }
 
         /// <summary>
@@ -237,49 +250,6 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public void Dispose()
         {
-        }
-
-        /// <summary>
-        /// Sets the authorization header that should be supplied on every request
-        /// </summary>
-        /// <param name="scheme">The scheme.</param>
-        /// <param name="parameter">The parameter.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void SetAuthorizationHeader(string scheme, string parameter)
-        {
-            if (string.IsNullOrEmpty(parameter))
-            {
-                Logger.Debug("Removing Authorization http header");
-
-                ClearHttpRequestHeader("Authorization");
-            }
-            else
-            {
-                Logger.Debug("Applying Authorization http header: {0}", parameter);
-
-                var val = new AuthenticationHeaderValue(scheme, parameter).ToString();
-
-                SetHttpRequestHeader("Authorization", val);
-            }
-        }
-
-        public void SetHttpRequestHeader(string name, string value)
-        {
-            var dict = new Dictionary<string, string>(_headers);
-
-            dict[name] = value;
-            _headers = dict;
-        }
-
-        public void ClearHttpRequestHeader(string name)
-        {
-            var dict = new Dictionary<string, string>(_headers);
-
-            if (dict.ContainsKey(name))
-            {
-                dict.Remove(name);
-                _headers = dict;
-            }
         }
     }
 }

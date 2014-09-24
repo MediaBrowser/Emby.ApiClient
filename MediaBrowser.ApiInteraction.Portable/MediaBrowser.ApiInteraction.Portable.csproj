@@ -46,6 +46,21 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\AsyncHttpClient.cs">
       <Link>AsyncHttpClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ConnectionManager.cs">
+      <Link>ConnectionManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ConnectionResult.cs">
+      <Link>ConnectionResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\HttpHeaders.cs">
+      <Link>HttpHeaders.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ICredentialProvider.cs">
+      <Link>ICredentialProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\INetworkConnection.cs">
+      <Link>INetworkConnection.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\IServerLocator.cs">
       <Link>IServerLocator.cs</Link>
     </Compile>
@@ -57,6 +72,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\QueryStringDictionary.cs">
       <Link>QueryStringDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ServerInfo.cs">
+      <Link>ServerInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\IClientWebSocket.cs">
       <Link>WebSocket\IClientWebSocket.cs</Link>

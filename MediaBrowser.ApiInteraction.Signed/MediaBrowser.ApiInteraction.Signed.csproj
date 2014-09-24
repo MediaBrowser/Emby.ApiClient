@@ -76,6 +76,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\BaseApiClient.cs">
       <Link>BaseApiClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\HttpHeaders.cs">
+      <Link>HttpHeaders.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\HttpMessageHandlerFactory.cs">
       <Link>HttpMessageHandlerFactory.cs</Link>
     </Compile>
@@ -84,6 +87,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\IAsyncHttpClient.cs">
       <Link>IAsyncHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ICredentialProvider.cs">
+      <Link>ICredentialProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\INetworkConnection.cs">
+      <Link>INetworkConnection.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\IServerLocator.cs">
       <Link>IServerLocator.cs</Link>
@@ -96,6 +105,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\QueryStringDictionary.cs">
       <Link>QueryStringDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\ServerInfo.cs">
+      <Link>ServerInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\ServerLocator.cs">
       <Link>ServerLocator.cs</Link>
