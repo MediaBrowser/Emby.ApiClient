@@ -48,20 +48,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="accessToken">The access token.</param>
         /// <param name="capabilities">The capabilities.</param>
         public ApiClient(string serverAddress, string accessToken, ClientCapabilities capabilities)
-            : this(new NullLogger(), serverAddress, accessToken, capabilities)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="capabilities">The capabilities.</param>
-        /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken, capabilities)
+            : this(new AsyncHttpClient(new NullLogger()), new NullLogger(), serverAddress, accessToken, capabilities)
         {
         }
 
@@ -92,23 +79,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="capabilities">The capabilities.</param>
         public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
-            : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        /// <param name="capabilities">The capabilities.</param>
-        /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
+            : this(new AsyncHttpClient(new NullLogger()), new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion, capabilities)
         {
         }
 
@@ -137,16 +108,6 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IAsyncHttpClient HttpClient { get; private set; }
-
-        /// <summary>
-        /// Called when [server location changed].
-        /// </summary>
-        protected override void OnServerLocationChanged()
-        {
-            DisposeWebSocket();
-
-            base.OnServerLocationChanged();
-        }
 
         private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
         {

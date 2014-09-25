@@ -140,6 +140,7 @@ namespace MediaBrowser.ApiInteraction
             var result = new ConnectionResult();
 
             PublicSystemInfo systemInfo = null;
+            var isLocalConnection = true;
 
             if (!string.IsNullOrEmpty(server.LocalAddress) && _networkConnectivity.IsConnectedToLocalNetwork)
             {
@@ -158,11 +159,17 @@ namespace MediaBrowser.ApiInteraction
             if (systemInfo == null && !string.IsNullOrEmpty(server.RemoteAddress))
             {
                 systemInfo = await TryConnect(server.RemoteAddress, cancellationToken).ConfigureAwait(false);
+                isLocalConnection = false;
             }
 
             if (systemInfo != null)
             {
-                server.Name = systemInfo.ServerName;
+                UpdateServerInfo(server, systemInfo);
+
+                if (!string.IsNullOrWhiteSpace(server.AccessToken))
+                {
+                    await ValidateAuthentication(server, isLocalConnection, cancellationToken).ConfigureAwait(false);
+                }
 
                 _credentialProvider.AddOrUpdateServer(server);
                 _credentialProvider.SetActiveServerId(server.Id);
@@ -174,13 +181,46 @@ namespace MediaBrowser.ApiInteraction
             return result;
         }
 
+        private async Task ValidateAuthentication(ServerInfo server, bool isLocalConnection, CancellationToken cancellationToken)
+        {
+            var url = isLocalConnection ? server.LocalAddress : server.RemoteAddress;
+
+            url += "/mediabrowser/system/info";
+
+            var headers = new HttpHeaders();
+            headers.SetAccessToken(server.AccessToken);
+
+            try
+            {
+                using (var stream = await _httpClient.GetAsync(url, headers, cancellationToken).ConfigureAwait(false))
+                {
+                    var systemInfo = _jsonSerializer.DeserializeFromStream<SystemInfo>(stream);
+
+                    UpdateServerInfo(server, systemInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting response from " + url, ex);
+
+                server.UserId = null;
+                server.AccessToken = null;
+            }
+        }
+
         private async Task<PublicSystemInfo> TryConnect(string url, CancellationToken cancellationToken)
         {
             url += "/mediabrowser/system/info/public";
 
             try
             {
-                using (var stream = await _httpClient.GetAsync(url, new HttpHeaders(), cancellationToken).ConfigureAwait(false))
+                using (var stream = await _httpClient.SendAsync(new HttpRequest
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    Timeout = 3000
+
+                }).ConfigureAwait(false))
                 {
                     return _jsonSerializer.DeserializeFromStream<PublicSystemInfo>(stream);
                 }
@@ -190,6 +230,32 @@ namespace MediaBrowser.ApiInteraction
                 _logger.ErrorException("Error getting response from " + url, ex);
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Updates the server information.
+        /// </summary>
+        /// <param name="server">The server.</param>
+        /// <param name="systemInfo">The system information.</param>
+        private void UpdateServerInfo(ServerInfo server, PublicSystemInfo systemInfo)
+        {
+            server.Name = systemInfo.ServerName;
+            server.Id = systemInfo.Id;
+
+            server.LocalAddress = systemInfo.LocalAddress;
+            server.RemoteAddress = systemInfo.WanAddress;
+
+            var fullSystemInfo = systemInfo as SystemInfo;
+
+            if (fullSystemInfo != null)
+            {
+                server.MacAddresses = new List<string>();
+
+                if (!string.IsNullOrEmpty(fullSystemInfo.MacAddress))
+                {
+                    server.MacAddresses.Add(fullSystemInfo.MacAddress);
+                }
             }
         }
 

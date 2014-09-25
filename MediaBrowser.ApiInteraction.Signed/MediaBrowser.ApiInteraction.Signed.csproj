@@ -38,12 +38,13 @@
     <AssemblyOriginatorKeyFile>MediaBrowser.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MediaBrowser.Model, Version=3.0.5374.30118, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Model, Version=3.0.5380.32198, Culture=neutral, PublicKeyToken=6cde51960597a7f9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Model.Signed.3.0.434\lib\net45\MediaBrowser.Model.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Model.Signed.3.0.436\lib\net45\MediaBrowser.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -81,6 +82,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\HttpMessageHandlerFactory.cs">
       <Link>HttpMessageHandlerFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\HttpRequest.cs">
+      <Link>HttpRequest.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\HttpWebRequestClient.cs">
       <Link>HttpWebRequestClient.cs</Link>

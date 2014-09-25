@@ -11,35 +11,55 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public interface IAsyncHttpClient : IDisposable
     {
+        /// <summary>
+        /// Occurs when [HTTP response received].
+        /// </summary>
         event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
 
         /// <summary>
-        /// Gets the stream async.
+        /// Sends the asynchronous.
         /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        Task<Stream> GetAsync(string url, HttpHeaders headers, CancellationToken cancellationToken);
+        /// <param name="options">The options.</param>
+        /// <returns>Task&lt;Stream&gt;.</returns>
+        Task<Stream> SendAsync(HttpRequest options);
+    }
 
-        /// <summary>
-        /// Deletes the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task<Stream> DeleteAsync(string url, HttpHeaders headers, CancellationToken cancellationToken);
+    public static class HttpClientExtensions
+    {
+        public static Task<Stream> GetAsync(this IAsyncHttpClient client, string url, HttpHeaders headers, CancellationToken cancellationToken)
+        {
+            return client.SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = headers,
+                Method = "GET"
+            });
+        }
 
-        /// <summary>
-        /// Posts the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="postContent">Content of the post.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        Task<Stream> PostAsync(string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken);
+        public static Task<Stream> DeleteAsync(this IAsyncHttpClient client, string url, HttpHeaders headers, CancellationToken cancellationToken)
+        {
+            return client.SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = headers,
+                Method = "DELETE"
+            });
+        }
+
+        public static Task<Stream> PostAsync(this IAsyncHttpClient client, string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken)
+        {
+            return client.SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = headers,
+                Method = "POST",
+                RequestContentType = contentType,
+                RequestContent = postContent
+            });
+        }
+
     }
 }

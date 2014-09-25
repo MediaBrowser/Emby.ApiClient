@@ -17,15 +17,6 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
-        public event EventHandler ServerLocationChanged;
-        protected virtual void OnServerLocationChanged()
-        {
-            if (ServerLocationChanged != null)
-            {
-                ServerLocationChanged(this, EventArgs.Empty);
-            }
-        }
-
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -109,8 +100,6 @@ namespace MediaBrowser.ApiInteraction
             {
                 SetAuthenticationInfo(null, null);
             }
-
-            OnServerLocationChanged();
         }
 
         /// <summary>
@@ -238,14 +227,7 @@ namespace MediaBrowser.ApiInteraction
 
         protected void ResetHttpHeaders()
         {
-            if (string.IsNullOrEmpty(AccessToken))
-            {
-                ClearHttpRequestHeader("X-MediaBrowser-Token");
-            }
-            else
-            {
-                SetHttpRequestHeader("X-MediaBrowser-Token", AccessToken);
-            }
+            HttpHeaders.SetAccessToken(AccessToken);
 
             var authValue = AuthorizationParameter;
 
@@ -265,11 +247,6 @@ namespace MediaBrowser.ApiInteraction
         {
             HttpHeaders.AuthorizationScheme = scheme;
             HttpHeaders.AuthorizationParameter = parameter;
-        }
-
-        private void SetHttpRequestHeader(string name, string value)
-        {
-            HttpHeaders[name] = value;
         }
 
         private void ClearHttpRequestHeader(string name)

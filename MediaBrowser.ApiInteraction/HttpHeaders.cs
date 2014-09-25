@@ -14,5 +14,21 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <value>The authorization parameter.</value>
         public string AuthorizationParameter { get; set; }
+
+        /// <summary>
+        /// Sets the access token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        public void SetAccessToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                Remove("X-MediaBrowser-Token");
+            }
+            else
+            {
+                this["X-MediaBrowser-Token"] = token;
+            }
+        }
     }
 }

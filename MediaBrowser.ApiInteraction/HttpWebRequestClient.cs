@@ -2,10 +2,8 @@
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -68,16 +66,16 @@ namespace MediaBrowser.ApiInteraction
         }
 
         private PropertyInfo _httpBehaviorPropertyInfo;
-        private HttpWebRequest GetRequest(string url, string method)
+        private HttpWebRequest GetRequest(string url, string method, int timeout)
         {
             var request = HttpWebRequest.CreateHttp(url);
 
             request.AutomaticDecompression = DecompressionMethods.Deflate;
-            request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.Revalidate);
+            request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.Revalidate);
             request.KeepAlive = true;
             request.Method = method;
             request.Pipelined = true;
-            request.Timeout = 30000;
+            request.Timeout = timeout;
 
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
             var sp = request.ServicePoint;
@@ -90,110 +88,99 @@ namespace MediaBrowser.ApiInteraction
             return request;
         }
 
-        private async Task<Stream> SendAsync(string url, string httpMethod, HttpHeaders headers, CancellationToken cancellationToken, string content = null, string contentType = null)
+        public async Task<Stream> SendAsync(HttpRequest options)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            options.CancellationToken.ThrowIfCancellationRequested();
 
-            Logger.Debug(httpMethod + " {0}", url);
+            var httpWebRequest = GetRequest(options.Url, options.Method, options.Timeout);
 
-            var httpWebRequest = GetRequest(url, httpMethod);
+            ApplyHeaders(options.RequestHeaders, httpWebRequest);
 
-            ApplyHeaders(headers, httpWebRequest);
-
-            if (!string.IsNullOrEmpty(content) || string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(options.RequestContent) ||
+                string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var bytes = Encoding.UTF8.GetBytes(content);
+                var bytes = Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
-                httpWebRequest.ContentType = contentType;
+                httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
                 httpWebRequest.SendChunked = false;
                 httpWebRequest.ContentLength = bytes.Length;
-                httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
+
+                var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
+                await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
             }
+
+            Logger.Debug(options.Method + " {0}", options.Url);
 
             var requestTime = DateTime.Now;
 
             try
             {
-                var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
-                var httpResponse = (HttpWebResponse)response;
+                options.CancellationToken.ThrowIfCancellationRequested();
 
-                OnResponseReceived(url, httpMethod, httpResponse.StatusCode, requestTime);
+                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
+                {
+                    var httpResponse = (HttpWebResponse)response;
 
-                EnsureSuccessStatusCode(httpResponse);
+                    OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, requestTime);
+                    
+                    EnsureSuccessStatusCode(httpResponse);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    options.CancellationToken.ThrowIfCancellationRequested();
 
-                return httpResponse.GetResponseStream();
+                    return httpResponse.GetResponseStream();
+                }
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex);
+                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+
+                throw exception;
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (WebException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 var response = ex.Response as HttpWebResponse;
                 if (response != null)
                 {
-                    OnResponseReceived(url, httpMethod, response.StatusCode, requestTime);
-                } 
-                
-                throw new HttpException(ex.Message, ex);
+                    OnResponseReceived(options.Url, options.Method, response.StatusCode, requestTime);
+                }
+
+                throw GetException(ex, options.Url);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 throw;
             }
         }
 
         /// <summary>
-        /// Gets the stream async.
+        /// Gets the exception.
         /// </summary>
+        /// <param name="ex">The ex.</param>
         /// <param name="url">The URL.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> GetAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
+        /// <returns>HttpException.</returns>
+        private HttpException GetException(WebException ex, string url)
         {
-            return SendAsync(url, "GET", headers, cancellationToken);
-        }
+            Logger.ErrorException("Error getting response from " + url, ex);
 
-        /// <summary>
-        /// Posts the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="postContent">Content of the post.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> PostAsync(string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken)
-        {
-            return SendAsync(url, "POST", headers, cancellationToken, postContent, contentType);
-        }
+            var exception = new HttpException(ex.Message, ex);
 
-        /// <summary>
-        /// Deletes the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="headers">The headers.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public Task<Stream> DeleteAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
-        {
-            return SendAsync(url, "DELETE", headers, cancellationToken);
+            var response = ex.Response as HttpWebResponse;
+            if (response != null)
+            {
+                exception.StatusCode = response.StatusCode;
+            }
+
+            return exception;
         }
 
         private void ApplyHeaders(HttpHeaders headers, HttpWebRequest request)
@@ -228,7 +215,10 @@ namespace MediaBrowser.ApiInteraction
                 Logger.Error(msg);
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
-                return new HttpException(msg, exception) { IsTimedOut = true };
+                return new HttpException(msg, exception)
+                {
+                    IsTimedOut = true
+                };
             }
 
             return exception;

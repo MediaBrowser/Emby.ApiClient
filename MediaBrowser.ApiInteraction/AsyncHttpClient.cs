@@ -71,9 +71,24 @@ namespace MediaBrowser.ApiInteraction
             HttpClient = new HttpClient(HttpMessageHandlerFactory.GetHandler());
         }
 
-        private HttpRequestMessage GetRequest(HttpMethod method, string url, HttpHeaders headers)
+        private HttpRequestMessage GetRequest(string method, string url, HttpHeaders headers)
         {
-            var msg = new HttpRequestMessage(method, url);
+            HttpMethod methodValue;
+
+            if (string.Equals(method, "post", StringComparison.OrdinalIgnoreCase))
+            {
+                methodValue = HttpMethod.Post;
+            }
+            else if (string.Equals(method, "delete", StringComparison.OrdinalIgnoreCase))
+            {
+                methodValue = HttpMethod.Delete;
+            }
+            else
+            {
+                methodValue = HttpMethod.Get;
+            }
+
+            var msg = new HttpRequestMessage(methodValue, url);
 
             foreach (var header in headers)
             {
@@ -84,146 +99,50 @@ namespace MediaBrowser.ApiInteraction
             {
                 msg.Headers.Authorization = new AuthenticationHeaderValue(headers.AuthorizationScheme, headers.AuthorizationParameter);
             }
-            
+
             return msg;
         }
 
-        public async Task<Stream> GetAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
+        public async Task<Stream> SendAsync(HttpRequest options)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            Logger.Debug("GET {0}", url);
+            Logger.Debug(options.Method + " {0}", options.Url);
 
             try
             {
                 var requestTime = DateTime.Now;
 
-                using (var request = GetRequest(HttpMethod.Get, url, headers))
+                using (var request = GetRequest(options.Method, options.Url, options.RequestHeaders))
                 {
-                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                    if (string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase) ||
+                        !string.IsNullOrEmpty(options.RequestContent))
+                    {
+                        request.Content = new StringContent(options.RequestContent, Encoding.UTF8, options.RequestContentType);
+                    }
 
-                    OnResponseReceived(url, "GET", msg.StatusCode, requestTime);
+                    var msg = await HttpClient.SendAsync(request, options.CancellationToken).ConfigureAwait(false);
+
+                    OnResponseReceived(options.Url, options.Method, msg.StatusCode, requestTime);
 
                     EnsureSuccessStatusCode(msg);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    options.CancellationToken.ThrowIfCancellationRequested();
 
                     return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 }
             }
             catch (HttpRequestException ex)
             {
-                Logger.ErrorException("Error getting response from " + url, ex);
+                Logger.ErrorException("Error getting response from " + options.Url, ex);
 
                 throw new HttpException(ex.Message, ex);
             }
             catch (OperationCanceledException ex)
             {
-                throw GetCancellationException(url, cancellationToken, ex);
+                throw GetCancellationException(options.Url, options.CancellationToken, ex);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error requesting {0}", ex, url);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Posts the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="postContent">Content of the post.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Stream}.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> PostAsync(string url, string contentType, string postContent, HttpHeaders headers, CancellationToken cancellationToken)
-        {
-            Logger.Info("POST {0}", url);
-
-            var content = new StringContent(postContent, Encoding.UTF8, contentType);
-
-            try
-            {
-                var requestTime = DateTime.Now;
-
-                using (var request = GetRequest(HttpMethod.Post, url, headers))
-                {
-                    request.Content = content;
-
-                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-                    OnResponseReceived(url, "POST", msg.StatusCode, requestTime);
-
-                    EnsureSuccessStatusCode(msg);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.ErrorException("Error getting response from " + url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (OperationCanceledException ex)
-            {
-                throw GetCancellationException(url, cancellationToken, ex);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error posting {0}", ex, url);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Deletes the async.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="MediaBrowser.Model.Net.HttpException"></exception>
-        public async Task<Stream> DeleteAsync(string url, HttpHeaders headers, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            Logger.Info("DELETE {0}", url);
-
-            try
-            {
-                var requestTime = DateTime.Now;
-
-                using (var request = GetRequest(HttpMethod.Delete, url, headers))
-                {
-                    var msg = await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-                    OnResponseReceived(url, "DELETE", msg.StatusCode, requestTime);
-
-                    EnsureSuccessStatusCode(msg);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    return await msg.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.ErrorException("Error getting response from " + url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (OperationCanceledException ex)
-            {
-                throw GetCancellationException(url, cancellationToken, ex);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error requesting {0}", ex, url);
+                Logger.ErrorException("Error posting {0}", ex, options.Url);
 
                 throw;
             }
@@ -246,7 +165,10 @@ namespace MediaBrowser.ApiInteraction
                 Logger.Error(msg);
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
-                return new HttpException(msg, exception) { IsTimedOut = true };
+                return new HttpException(msg, exception)
+                {
+                    IsTimedOut = true
+                };
             }
 
             return exception;
