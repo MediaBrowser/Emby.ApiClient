@@ -1,39 +1,74 @@
 ﻿using MediaBrowser.Model.ApiClient;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.ApiInteraction
 {
     public interface ICredentialProvider
     {
         /// <summary>
-        /// Gets the servers.
+        /// Gets the server credentials.
         /// </summary>
-        /// <returns>List&lt;ServerInfo&gt;.</returns>
-        List<ServerInfo> GetServers();
+        /// <returns>ServerCredentialConfiguration.</returns>
+        ServerCredentialConfiguration GetServerCredentials();
 
         /// <summary>
-        /// Adds the or update server.
+        /// Saves the server credentials.
         /// </summary>
-        /// <param name="server">The server.</param>
-        void AddOrUpdateServer(ServerInfo server);
+        /// <param name="configuration">The configuration.</param>
+        void SaveServerCredentials(ServerCredentialConfiguration configuration);
+    }
 
-        /// <summary>
-        /// Removes the server.
-        /// </summary>
-        /// <param name="server">The server.</param>
-        void RemoveServer(ServerInfo server);
+    public class ServerCredentialConfiguration
+    {
+        public string LastServerId { get; set; }
+        public List<ServerInfo> Servers { get; set; }
 
-        /// <summary>
-        /// Gets the active server identifier.
-        /// </summary>
-        /// <returns>String.</returns>
-        String GetActiveServerId();
+        public ServerCredentialConfiguration()
+        {
+            Servers = new List<ServerInfo>();
+        }
 
-        /// <summary>
-        /// Sets the active server identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        void SetActiveServerId(string id);
+        public void AddOrUpdateServer(ServerInfo server)
+        {
+            if (server == null)
+            {
+                throw new ArgumentNullException("server");
+            }
+
+            var list = Servers.ToList();
+
+            var index = FindIndex(list, server.Id);
+
+            if (index != -1)
+            {
+                list[index] = server;
+            }
+            else
+            {
+                list.Add(server);
+            }
+
+            Servers = list;
+        }
+
+        private int FindIndex(IEnumerable<ServerInfo> servers, string id)
+        {
+            var index = 0;
+
+            foreach (var server in servers)
+            {
+                if (string.Equals(id, server.Id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
+        }
+
     }
 }
