@@ -1,4 +1,8 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.ApiInteraction.WebSocket;
+using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
@@ -10,18 +14,19 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
 {
-    public class ConnectionManager
+    public class ConnectionManager : IConnectionManager
     {
+        public event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
+
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ICredentialProvider _credentialProvider;
         private readonly INetworkConnection _networkConnectivity;
         private readonly ILogger _logger;
         private readonly IServerLocator _serverDiscovery;
         private readonly IAsyncHttpClient _httpClient;
+        private readonly Func<IClientWebSocket> _webSocketFactory;
 
-        public Dictionary<string, ApiClient> ApiClients { get; private set; }
-
-        public string ActiveServerId { get; private set; }
+        public Dictionary<string, IApiClient> ApiClients { get; private set; }
 
         public string ApplicationName { get; private set; }
         public string ApplicationVersion { get; private set; }
@@ -39,7 +44,8 @@ namespace MediaBrowser.ApiInteraction
             string applicationVersion,
             string deviceId,
             string deviceName,
-            ClientCapabilities clientCapabilities)
+            ClientCapabilities clientCapabilities,
+            Func<IClientWebSocket> webSocketFactory)
         {
             _jsonSerializer = jsonSerializer;
             _credentialProvider = credentialProvider;
@@ -48,27 +54,36 @@ namespace MediaBrowser.ApiInteraction
             _serverDiscovery = serverDiscovery;
             _httpClient = httpClient;
             ClientCapabilities = clientCapabilities;
+            _webSocketFactory = webSocketFactory;
             DeviceName = deviceName;
             DeviceId = deviceId;
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
-            ApiClients = new Dictionary<string, ApiClient>(StringComparer.OrdinalIgnoreCase);
+            ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
         }
 
-        private ApiClient GetOrAddApiClient(ServerInfo server)
+        private IApiClient GetOrAddApiClient(ServerInfo server)
         {
-            ApiClient apiClient;
+            IApiClient apiClient;
 
             if (ApiClients.TryGetValue(server.Id, out apiClient))
             {
                 return apiClient;
             }
 
-            // TODO: Pass in both local + remote address
-
             apiClient = new ApiClient(_httpClient, _logger, server.LocalAddress, ApplicationName, DeviceName, DeviceId, ApplicationVersion, ClientCapabilities);
 
             ApiClients[server.Id] = apiClient;
+
+            if (string.IsNullOrEmpty(server.AccessToken) ||
+                string.IsNullOrEmpty(server.UserId))
+            {
+                apiClient.ClearAuthenticationInfo();
+            }
+            else
+            {
+                apiClient.SetAuthenticationInfo(server.AccessToken, server.UserId);
+            }
 
             return apiClient;
         }
@@ -140,9 +155,9 @@ namespace MediaBrowser.ApiInteraction
             var result = new ConnectionResult();
 
             PublicSystemInfo systemInfo = null;
-            var isLocalConnection = true;
+            var connectionMode = ConnectionMode.Local;
 
-            if (!string.IsNullOrEmpty(server.LocalAddress) && _networkConnectivity.IsConnectedToLocalNetwork)
+            if (!string.IsNullOrEmpty(server.LocalAddress) && _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable())
             {
                 // Try to connect to the local address
                 systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
@@ -159,7 +174,7 @@ namespace MediaBrowser.ApiInteraction
             if (systemInfo == null && !string.IsNullOrEmpty(server.RemoteAddress))
             {
                 systemInfo = await TryConnect(server.RemoteAddress, cancellationToken).ConfigureAwait(false);
-                isLocalConnection = false;
+                connectionMode = ConnectionMode.Remote;
             }
 
             if (systemInfo != null)
@@ -168,22 +183,26 @@ namespace MediaBrowser.ApiInteraction
 
                 if (!string.IsNullOrWhiteSpace(server.AccessToken))
                 {
-                    await ValidateAuthentication(server, isLocalConnection, cancellationToken).ConfigureAwait(false);
+                    await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
                 }
 
                 _credentialProvider.AddOrUpdateServer(server);
                 _credentialProvider.SetActiveServerId(server.Id);
 
                 result.ApiClient = GetOrAddApiClient(server);
-                result.State = ConnectionState.ServerSignIn;
+                result.State = string.IsNullOrEmpty(server.AccessToken) ?
+                    ConnectionState.ServerSignIn :
+                    ConnectionState.SignedIn;
+
+                ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
             }
 
             return result;
         }
 
-        private async Task ValidateAuthentication(ServerInfo server, bool isLocalConnection, CancellationToken cancellationToken)
+        private async Task ValidateAuthentication(ServerInfo server, ConnectionMode connectionMode, CancellationToken cancellationToken)
         {
-            var url = isLocalConnection ? server.LocalAddress : server.RemoteAddress;
+            var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
             url += "/mediabrowser/system/info";
 
@@ -192,7 +211,14 @@ namespace MediaBrowser.ApiInteraction
 
             try
             {
-                using (var stream = await _httpClient.GetAsync(url, headers, cancellationToken).ConfigureAwait(false))
+                using (var stream = await _httpClient.SendAsync(new HttpRequest
+                {
+                    CancellationToken = cancellationToken,
+                    Method = "GET",
+                    RequestHeaders = headers,
+                    Url = url
+
+                }).ConfigureAwait(false))
                 {
                     var systemInfo = _jsonSerializer.DeserializeFromStream<SystemInfo>(stream);
 
@@ -291,6 +317,59 @@ namespace MediaBrowser.ApiInteraction
             {
                 client.Dispose();
             }
+        }
+
+        public IApiClient GetApiClient(BaseItemDto item)
+        {
+            return GetApiClient("");
+        }
+
+        public IApiClient GetApiClient(string serverId)
+        {
+            return ApiClients.Values.FirstOrDefault();
+        }
+
+        public Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken)
+        {
+            return Connect(new ServerInfo
+            {
+                RemoteAddress = address
+
+            }, cancellationToken);
+        }
+
+        public async Task Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin)
+        {
+            var client = GetApiClient(server.Id);
+
+            await client.AuthenticateUserAsync(username, hash).ConfigureAwait(false);
+
+            if (rememberLogin)
+            {
+                _credentialProvider.AddOrUpdateServer(server);
+            }
+        }
+
+        public async Task<ConnectionResult> Logout()
+        {
+            foreach (var client in ApiClients.Values.ToList())
+            {
+                if (!string.IsNullOrEmpty(client.AccessToken))
+                {
+                    await client.Logout().ConfigureAwait(false);
+                }
+            }
+
+            var servers = _credentialProvider.GetServers().ToList();
+
+            foreach (var server in servers)
+            {
+                server.AccessToken = null;
+                server.UserId = null;
+                _credentialProvider.AddOrUpdateServer(server);
+            }
+
+            return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

@@ -14,9 +14,26 @@ namespace MediaBrowser.ApiInteraction
         Task SendWakeOnLan(string macAddress, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is connected to local network.
+        /// Gets the network status.
         /// </summary>
-        /// <value><c>true</c> if this instance is connected to local network; otherwise, <c>false</c>.</value>
-        bool IsConnectedToLocalNetwork { get; set; }
+        /// <returns>NetworkStatus.</returns>
+        NetworkStatus GetNetworkStatus();
+    }
+
+    public class NetworkStatus
+    {
+        public bool IsNetworkAvailable { get; set; }
+        public bool? IsLocalNetworkAvailable { get; set; }
+        public bool? IsRemoteNetworkAvailable { get; set; }
+
+        public bool GetIsLocalNetworkAvailable()
+        {
+            return IsLocalNetworkAvailable.HasValue ? IsLocalNetworkAvailable.Value : IsNetworkAvailable;
+        }
+
+        public bool GetIsRemoteNetworkAvailable()
+        {
+            return IsRemoteNetworkAvailable.HasValue ? IsRemoteNetworkAvailable.Value : IsNetworkAvailable;
+        }
     }
 }

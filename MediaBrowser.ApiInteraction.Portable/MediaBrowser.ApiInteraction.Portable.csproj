@@ -21,6 +21,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
+    <NuGetPackageImportStamp>39567647</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +36,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;PORTABLE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -43,20 +44,17 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\ApiWebSocket.cs">
       <Link>ApiWebSocket.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\AsyncHttpClient.cs">
-      <Link>AsyncHttpClient.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\ConnectionManager.cs">
       <Link>ConnectionManager.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\ConnectionResult.cs">
-      <Link>ConnectionResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\HttpHeaders.cs">
       <Link>HttpHeaders.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\HttpRequest.cs">
       <Link>HttpRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\HttpWebRequestClient.cs">
+      <Link>HttpWebRequestClient.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\ICredentialProvider.cs">
       <Link>ICredentialProvider.cs</Link>
@@ -73,11 +71,11 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\NullLogger.cs">
       <Link>NullLogger.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\PortableHttpWebRequestFactory.cs">
+      <Link>PortableHttpWebRequestFactory.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\QueryStringDictionary.cs">
       <Link>QueryStringDictionary.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\ServerInfo.cs">
-      <Link>ServerInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\IClientWebSocket.cs">
       <Link>WebSocket\IClientWebSocket.cs</Link>
@@ -85,7 +83,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="HttpMessageHandlerFactory.cs" />
+    <Compile Include="AsyncSemaphore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\MediaBrowser.ApiInteraction\BaseApiClient.cs">
       <Link>BaseApiClient.cs</Link>
@@ -99,7 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MediaBrowser.Model">
-      <HintPath>..\packages\MediaBrowser.Common.3.0.436\lib\portable-net4+sl4+wp71+win8\MediaBrowser.Model.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.457\lib\portable-net4+sl4+wp71+win8\MediaBrowser.Model.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Threading.Tasks">
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\portable-net40+sl4+win8+wp71+wpa81\Microsoft.Threading.Tasks.dll</HintPath>
@@ -112,15 +110,6 @@
     </Reference>
     <Reference Include="System.IO">
       <HintPath>..\packages\Microsoft.Bcl.1.1.9\lib\portable-net40+sl5+win8+wp8+wpa81\System.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.22\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.22\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives">
-      <HintPath>..\packages\Microsoft.Net.Http.2.2.22\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime">
       <HintPath>..\packages\Microsoft.Bcl.1.1.9\lib\portable-net40+sl5+win8+wp8+wpa81\System.Runtime.dll</HintPath>
@@ -140,10 +129,12 @@
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
-  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
-    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

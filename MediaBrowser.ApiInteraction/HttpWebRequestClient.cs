@@ -4,9 +4,6 @@ using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +16,7 @@ namespace MediaBrowser.ApiInteraction
     public class HttpWebRequestClient : IAsyncHttpClient
     {
         public event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
+        private readonly IHttpWebRequestFactory _requestFactory;
 
         /// <summary>
         /// Called when [response received].
@@ -60,39 +58,18 @@ namespace MediaBrowser.ApiInteraction
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public HttpWebRequestClient(ILogger logger)
+        /// <param name="requestFactory">The request factory.</param>
+        public HttpWebRequestClient(ILogger logger, IHttpWebRequestFactory requestFactory)
         {
             Logger = logger;
-        }
-
-        private PropertyInfo _httpBehaviorPropertyInfo;
-        private HttpWebRequest GetRequest(string url, string method, int timeout)
-        {
-            var request = HttpWebRequest.CreateHttp(url);
-
-            request.AutomaticDecompression = DecompressionMethods.Deflate;
-            request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.Revalidate);
-            request.KeepAlive = true;
-            request.Method = method;
-            request.Pipelined = true;
-            request.Timeout = timeout;
-
-            // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
-            var sp = request.ServicePoint;
-            if (_httpBehaviorPropertyInfo == null)
-            {
-                _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
-            }
-            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
-
-            return request;
+            _requestFactory = requestFactory;
         }
 
         public async Task<Stream> SendAsync(HttpRequest options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var httpWebRequest = GetRequest(options.Url, options.Method, options.Timeout);
+            var httpWebRequest = _requestFactory.Create(options);
 
             ApplyHeaders(options.RequestHeaders, httpWebRequest);
 
@@ -102,8 +79,6 @@ namespace MediaBrowser.ApiInteraction
                 var bytes = Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
-                httpWebRequest.SendChunked = false;
-                httpWebRequest.ContentLength = bytes.Length;
 
                 var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
                 await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
@@ -135,12 +110,6 @@ namespace MediaBrowser.ApiInteraction
                 var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
 
                 throw exception;
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
             }
             catch (WebException ex)
             {
@@ -187,14 +156,13 @@ namespace MediaBrowser.ApiInteraction
         {
             foreach (var header in headers)
             {
-                request.Headers.Add(header.Key, header.Value);
+                request.Headers[header.Key] = header.Value;
             }
 
             if (!string.IsNullOrEmpty(headers.AuthorizationScheme))
             {
-                var val = new AuthenticationHeaderValue(headers.AuthorizationScheme, headers.AuthorizationParameter).ToString();
-
-                request.Headers.Add("Authorization", val);
+                var val = string.Format("{0} {1}", headers.AuthorizationScheme, headers.AuthorizationParameter);
+                request.Headers["Authorization"] = val;
             }
         }
 
@@ -241,5 +209,10 @@ namespace MediaBrowser.ApiInteraction
         public void Dispose()
         {
         }
+    }
+
+    public interface IHttpWebRequestFactory
+    {
+        HttpWebRequest Create(HttpRequest options);
     }
 }

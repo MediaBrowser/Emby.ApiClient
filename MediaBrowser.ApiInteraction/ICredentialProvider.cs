@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.ApiClient;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.ApiInteraction

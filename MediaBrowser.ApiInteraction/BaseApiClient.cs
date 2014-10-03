@@ -85,7 +85,7 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the name of the server host.
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerAddress { get; private set; }
+        public string ServerAddress { get; protected set; }
 
         /// <summary>
         /// Changes the server location.
