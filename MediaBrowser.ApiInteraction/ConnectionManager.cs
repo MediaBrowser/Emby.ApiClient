@@ -300,8 +300,14 @@ namespace MediaBrowser.ApiInteraction
             server.Name = systemInfo.ServerName;
             server.Id = systemInfo.Id;
 
-            server.LocalAddress = systemInfo.LocalAddress;
-            server.RemoteAddress = systemInfo.WanAddress;
+            if (!string.IsNullOrEmpty(systemInfo.LocalAddress))
+            {
+                server.LocalAddress = systemInfo.LocalAddress;
+            }
+            if (!string.IsNullOrEmpty(systemInfo.WanAddress))
+            {
+                server.RemoteAddress = systemInfo.WanAddress;
+            }
 
             var fullSystemInfo = systemInfo as SystemInfo;
 
