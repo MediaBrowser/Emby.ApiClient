@@ -5,7 +5,7 @@ This portable class library makes it very easy to harness the power of the Media
 
 [MediaBrowser.ApiClient](https://www.nuget.org/packages/MediaBrowser.ApiClient/)
 
-Single server usage is very simple:
+# Single Server Usage Example #
 
 ``` c#
 
