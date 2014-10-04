@@ -214,4 +214,16 @@ namespace MediaBrowser.ApiInteraction
     {
         HttpWebRequest Create(HttpRequest options);
     }
+
+    public static class AsyncHttpClientFactory
+    {
+        public static IAsyncHttpClient Create(ILogger logger)
+        {
+            #if PORTABLE
+            return new HttpWebRequestClient(logger, new PortableHttpWebRequestFactory());
+            #else
+            return new HttpWebRequestClient(logger, new HttpWebRequestFactory());
+            #endif
+        }
+    }
 }

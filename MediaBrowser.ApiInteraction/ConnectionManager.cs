@@ -49,7 +49,7 @@ namespace MediaBrowser.ApiInteraction
             _networkConnectivity = networkConnectivity;
             _logger = logger;
             _serverDiscovery = serverDiscovery;
-            _httpClient = new HttpWebRequestClient(_logger, httpRequestFactory);
+            _httpClient = AsyncHttpClientFactory.Create(logger);
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
             Device = device;
@@ -74,7 +74,7 @@ namespace MediaBrowser.ApiInteraction
                 return apiClient;
             }
 
-            apiClient = new ApiClient(_httpClient, _logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
+            apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
 
             ApiClients[server.Id] = apiClient;
 
