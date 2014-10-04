@@ -114,7 +114,24 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<List<ServerInfo>> FindServers(CancellationToken cancellationToken)
         {
-            var servers = await _serverDiscovery.FindServers(2000, cancellationToken).ConfigureAwait(false);
+            List<ServerDiscoveryInfo> servers;
+
+            try
+            {
+                servers = await _serverDiscovery.FindServers(2000, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Debug("No servers found via local discovery.");
+
+                servers = new List<ServerDiscoveryInfo>();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error discovering servers.", ex);
+
+                servers = new List<ServerDiscoveryInfo>();
+            }
 
             return servers.Select(i => new ServerInfo
             {
@@ -174,7 +191,10 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         public async Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken)
         {
-            var result = new ConnectionResult();
+            var result = new ConnectionResult
+            {
+                State = ConnectionState.Unavailable
+            };
 
             PublicSystemInfo systemInfo = null;
             var connectionMode = ConnectionMode.Local;

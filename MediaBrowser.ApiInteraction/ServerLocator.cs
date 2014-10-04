@@ -51,6 +51,8 @@ namespace MediaBrowser.ApiInteraction
 
         private async void FindServer(TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, int timeoutMs)
         {
+            _logger.Debug("Searching for servers with timeout of {0} ms", timeoutMs);
+
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
             {
