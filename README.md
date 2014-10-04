@@ -5,7 +5,9 @@ This portable class library makes it very easy to harness the power of the Media
 
 [MediaBrowser.ApiClient](https://www.nuget.org/packages/MediaBrowser.ApiClient/)
 
-# Single Server Usage Example #
+# Single Server Example #
+
+This is an example of connecting to a single server using a fixed, predictable address, from an app that has user-specific features.
 
 ``` c#
 
