@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using System.Net;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -31,14 +33,8 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public partial class ApiClient : BaseApiClient, IApiClient
     {
-        public event EventHandler<HttpResponseEventArgs> HttpResponseReceived
-        {
-            add { HttpClient.HttpResponseReceived += value; }
-            remove
-            {
-                HttpClient.HttpResponseReceived -= value;
-            }
-        }
+        public event EventHandler<EventArgs> RemoteLoggedOut;
+        public event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
 
         /// <summary>
         /// Gets the HTTP client.
@@ -58,7 +54,7 @@ namespace MediaBrowser.ApiInteraction
         public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
-            HttpClient = AsyncHttpClientFactory.Create(logger);
+            CreateHttpClient(logger);
             Capabilities = capabilities;
 
             ResetHttpHeaders();
@@ -77,10 +73,27 @@ namespace MediaBrowser.ApiInteraction
         public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
         {
-            HttpClient = AsyncHttpClientFactory.Create(logger);
+            CreateHttpClient(logger);
             Capabilities = capabilities;
 
             ResetHttpHeaders();
+        }
+
+        private void CreateHttpClient(ILogger logger)
+        {
+            HttpClient = AsyncHttpClientFactory.Create(logger);
+            HttpClient.HttpResponseReceived += HttpClient_HttpResponseReceived;
+        }
+
+        void HttpClient_HttpResponseReceived(object sender, HttpResponseEventArgs e)
+        {
+            if (e.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                if (RemoteLoggedOut != null)
+                {
+                    RemoteLoggedOut(this, EventArgs.Empty);
+                }
+            }
         }
 
         private ConnectionMode ConnectionMode { get; set; }
@@ -140,11 +153,11 @@ namespace MediaBrowser.ApiInteraction
             return await HttpClient.SendAsync(request).ConfigureAwait(false);
         }
 
-        #if PORTABLE
+#if PORTABLE
         private readonly AsyncSemaphore _validateConnectionSemaphore = new AsyncSemaphore(1, 1);
-        #else
+#else
         private readonly SemaphoreSlim _validateConnectionSemaphore = new SemaphoreSlim(1, 1);
-        #endif
+#endif
 
         private DateTime _lastConnectionValidationTime = DateTime.MinValue;
 
@@ -164,7 +177,7 @@ namespace MediaBrowser.ApiInteraction
                 _validateConnectionSemaphore.Release();
             }
         }
-        
+
         private async Task ValidateConnectionInternal(ConnectionMode initialConnectionMode, CancellationToken cancellationToken)
         {
             Logger.Debug("Connection to server dropped. Attempting to reconnect.");
@@ -181,11 +194,11 @@ namespace MediaBrowser.ApiInteraction
                     throw new Exception("Network unavailable.");
                 }
 
-                 #if PORTABLE
+#if PORTABLE
                         await TaskEx.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
-                #else
-                        await Task.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
-                #endif
+#else
+                await Task.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
+#endif
 
                 totalWaitMs += waitIntervalMs;
                 networkStatus = NetworkConnection.GetNetworkStatus();
@@ -221,7 +234,7 @@ namespace MediaBrowser.ApiInteraction
             var fullUrl = baseUrl + "/mediabrowser/system/info/public";
 
             fullUrl = AddDataFormat(fullUrl);
-            
+
             var request = new HttpRequest
             {
                 Url = fullUrl,
@@ -1618,6 +1631,11 @@ namespace MediaBrowser.ApiInteraction
             var result = await PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
 
             SetAuthenticationInfo(result.AccessToken, result.User.Id);
+
+            if (Authenticated != null)
+            {
+                Authenticated(this, new GenericEventArgs<AuthenticationResult>(result));
+            }
 
             return result;
         }

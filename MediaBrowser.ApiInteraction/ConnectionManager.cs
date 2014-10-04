@@ -18,6 +18,7 @@ namespace MediaBrowser.ApiInteraction
     public class ConnectionManager : IConnectionManager
     {
         public event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
+        public event EventHandler<EventArgs> RemoteLoggedOut;
 
         private readonly ICredentialProvider _credentialProvider;
         private readonly INetworkConnection _networkConnectivity;
@@ -38,7 +39,6 @@ namespace MediaBrowser.ApiInteraction
             ICredentialProvider credentialProvider,
             INetworkConnection networkConnectivity,
             IServerLocator serverDiscovery,
-            IHttpWebRequestFactory httpRequestFactory,
             string applicationName,
             string applicationVersion,
             IDevice device,
@@ -78,6 +78,8 @@ namespace MediaBrowser.ApiInteraction
 
             ApiClients[server.Id] = apiClient;
 
+            apiClient.Authenticated += apiClient_Authenticated;
+
             if (string.IsNullOrEmpty(server.AccessToken))
             {
                 apiClient.ClearAuthenticationInfo();
@@ -90,6 +92,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return apiClient;
+        }
+
+        void apiClient_Authenticated(object sender, GenericEventArgs<AuthenticationResult> e)
+        {
+            OnAuthenticated(sender as IApiClient, e.Argument);
         }
 
         private void EnsureWebSocketIfConfigured(IApiClient apiClient)
@@ -393,42 +400,23 @@ namespace MediaBrowser.ApiInteraction
             return address;
         }
 
-        public Task<AuthenticationResult> Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin)
+        private async void OnAuthenticated(IApiClient apiClient, AuthenticationResult result)
         {
-            var client = GetApiClient(server.Id);
-
-            return Authenticate(server, client, username, hash, rememberLogin);
-        }
-
-        public Task<AuthenticationResult> Authenticate(IApiClient apiClient, string username, byte[] hash, bool rememberLogin)
-        {
-            var server = ((ApiClient)apiClient).ServerInfo;
-
-            return Authenticate(server, apiClient, username, hash, rememberLogin);
-        }
-
-        private async Task<AuthenticationResult> Authenticate(ServerInfo server, IApiClient apiClient, string username, byte[] hash, bool rememberLogin)
-        {
-            var result = await apiClient.AuthenticateUserAsync(username, hash).ConfigureAwait(false);
             var systeminfo = await apiClient.GetSystemInfoAsync().ConfigureAwait(false);
 
+            var server = ((ApiClient)apiClient).ServerInfo;
             UpdateServerInfo(server, systeminfo);
 
             var credentials = _credentialProvider.GetServerCredentials();
             credentials.LastServerId = server.Id;
 
-            if (rememberLogin)
-            {
-                server.UserId = result.User.Id;
-                server.AccessToken = result.AccessToken;
-            }
+            server.UserId = result.User.Id;
+            server.AccessToken = result.AccessToken;
 
             credentials.AddOrUpdateServer(server);
             _credentialProvider.SaveServerCredentials(credentials);
 
             EnsureWebSocketIfConfigured(apiClient);
-
-            return result;
         }
 
         public async Task<ConnectionResult> Logout()
