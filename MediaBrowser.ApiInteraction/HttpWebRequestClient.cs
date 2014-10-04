@@ -92,18 +92,17 @@ namespace MediaBrowser.ApiInteraction
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
-                {
-                    var httpResponse = (HttpWebResponse)response;
+                var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
 
-                    OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, requestTime);
-                    
-                    EnsureSuccessStatusCode(httpResponse);
+                var httpResponse = (HttpWebResponse)response;
 
-                    options.CancellationToken.ThrowIfCancellationRequested();
+                OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, requestTime);
 
-                    return httpResponse.GetResponseStream();
-                }
+                EnsureSuccessStatusCode(httpResponse);
+
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                return httpResponse.GetResponseStream();
             }
             catch (OperationCanceledException ex)
             {

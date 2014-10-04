@@ -82,8 +82,11 @@ namespace MediaBrowser.ApiInteraction
             _webSocketFactory = webSocketFactory;
             _keepAliveTimerMs = keepAliveTimerMs;
 
-            CloseWebSocket();
-            Task.Factory.StartNew(() => StartEnsureConnectionTimer(_keepAliveTimerMs));
+            if (!IsWebSocketConnected)
+            {
+                CloseWebSocket();
+                Task.Factory.StartNew(() => StartEnsureConnectionTimer(_keepAliveTimerMs));
+            }
         }
 
         public void CloseWebSocket()

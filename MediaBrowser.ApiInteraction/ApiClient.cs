@@ -111,7 +111,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         private ConnectionMode ConnectionMode { get; set; }
-        private ServerInfo ServerInfo { get; set; }
+        internal ServerInfo ServerInfo { get; set; }
         private INetworkConnection NetworkConnection { get; set; }
 
         public void EnableAutomaticNetworking(ServerInfo info, ConnectionMode initialMode, INetworkConnection networkConnection)
@@ -247,11 +247,14 @@ namespace MediaBrowser.ApiInteraction
         {
             var fullUrl = baseUrl + "/mediabrowser/system/info/public";
 
+            fullUrl = AddDataFormat(fullUrl);
+            
             var request = new HttpRequest
             {
                 Url = fullUrl,
                 RequestHeaders = HttpHeaders,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                Method = "GET"
             };
 
             try

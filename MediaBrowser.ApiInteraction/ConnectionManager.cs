@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,6 @@ namespace MediaBrowser.ApiInteraction
     {
         public event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
 
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly ICredentialProvider _credentialProvider;
         private readonly INetworkConnection _networkConnectivity;
         private readonly ILogger _logger;
@@ -27,39 +27,42 @@ namespace MediaBrowser.ApiInteraction
         private readonly Func<IClientWebSocket> _webSocketFactory;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
+        public IJsonSerializer JsonSerializer { get; set; }
 
         public string ApplicationName { get; private set; }
         public string ApplicationVersion { get; private set; }
-        public string DeviceId { get; private set; }
-        public string DeviceName { get; private set; }
+        public IDevice Device { get; private set; }
         public ClientCapabilities ClientCapabilities { get; private set; }
 
         public ConnectionManager(ILogger logger,
-            IJsonSerializer jsonSerializer,
             ICredentialProvider credentialProvider,
             INetworkConnection networkConnectivity,
             IServerLocator serverDiscovery,
-            IAsyncHttpClient httpClient,
+            IHttpWebRequestFactory httpRequestFactory,
             string applicationName,
             string applicationVersion,
-            string deviceId,
-            string deviceName,
+            IDevice device,
             ClientCapabilities clientCapabilities,
-            Func<IClientWebSocket> webSocketFactory)
+            Func<IClientWebSocket> webSocketFactory = null)
         {
-            _jsonSerializer = jsonSerializer;
             _credentialProvider = credentialProvider;
             _networkConnectivity = networkConnectivity;
             _logger = logger;
             _serverDiscovery = serverDiscovery;
-            _httpClient = httpClient;
+            _httpClient = new HttpWebRequestClient(_logger, httpRequestFactory);
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
-            DeviceName = deviceName;
-            DeviceId = deviceId;
+            Device = device;
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
             ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
+
+            Device.ResumeFromSleep += Device_ResumeFromSleep;
+        }
+
+        async void Device_ResumeFromSleep(object sender, EventArgs e)
+        {
+            await WakeAllServers(CancellationToken.None).ConfigureAwait(false);
         }
 
         private IApiClient GetOrAddApiClient(ServerInfo server)
@@ -71,21 +74,30 @@ namespace MediaBrowser.ApiInteraction
                 return apiClient;
             }
 
-            apiClient = new ApiClient(_httpClient, _logger, server.LocalAddress, ApplicationName, DeviceName, DeviceId, ApplicationVersion, ClientCapabilities);
+            apiClient = new ApiClient(_httpClient, _logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
 
             ApiClients[server.Id] = apiClient;
 
-            if (string.IsNullOrEmpty(server.AccessToken) ||
-                string.IsNullOrEmpty(server.UserId))
+            if (string.IsNullOrEmpty(server.AccessToken))
             {
                 apiClient.ClearAuthenticationInfo();
             }
             else
             {
                 apiClient.SetAuthenticationInfo(server.AccessToken, server.UserId);
+
+                EnsureWebSocketIfConfigured(apiClient);
             }
 
             return apiClient;
+        }
+
+        private void EnsureWebSocketIfConfigured(IApiClient apiClient)
+        {
+            if (_webSocketFactory != null)
+            {
+                ((ApiClient)apiClient).OpenWebSocket(_webSocketFactory);
+            }
         }
 
         private async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
@@ -144,7 +156,10 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            return new ConnectionResult();
+            return new ConnectionResult
+            {
+                State = ConnectionState.Unavailable
+            };
         }
 
         /// <summary>
@@ -163,7 +178,7 @@ namespace MediaBrowser.ApiInteraction
                 systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
 
                 // If that failed, wake the device and retry
-                if (systemInfo == null && server.MacAddresses.Count > 0)
+                if (systemInfo == null && server.WakeOnLanInfos.Count > 0)
                 {
                     await WakeServer(server, cancellationToken).ConfigureAwait(false);
                     systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
@@ -197,6 +212,11 @@ namespace MediaBrowser.ApiInteraction
                     ConnectionState.ServerSignIn :
                     ConnectionState.SignedIn;
 
+                if (result.State == ConnectionState.SignedIn)
+                {
+                    EnsureWebSocketIfConfigured(result.ApiClient);
+                }
+
                 ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
             }
 
@@ -207,7 +227,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-            url += "/mediabrowser/system/info";
+            url += "/mediabrowser/system/info?format=json";
 
             var headers = new HttpHeaders();
             headers.SetAccessToken(server.AccessToken);
@@ -223,7 +243,7 @@ namespace MediaBrowser.ApiInteraction
 
                 }).ConfigureAwait(false))
                 {
-                    var systemInfo = _jsonSerializer.DeserializeFromStream<SystemInfo>(stream);
+                    var systemInfo = JsonSerializer.DeserializeFromStream<SystemInfo>(stream);
 
                     UpdateServerInfo(server, systemInfo);
                 }
@@ -239,7 +259,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<PublicSystemInfo> TryConnect(string url, CancellationToken cancellationToken)
         {
-            url += "/mediabrowser/system/info/public";
+            url += "/mediabrowser/system/info/public?format=json";
 
             try
             {
@@ -247,11 +267,12 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 3000
+                    Timeout = 3000,
+                    Method = "GET"
 
                 }).ConfigureAwait(false))
                 {
-                    return _jsonSerializer.DeserializeFromStream<PublicSystemInfo>(stream);
+                    return JsonSerializer.DeserializeFromStream<PublicSystemInfo>(stream);
                 }
             }
             catch (Exception ex)
@@ -279,12 +300,28 @@ namespace MediaBrowser.ApiInteraction
 
             if (fullSystemInfo != null)
             {
-                server.MacAddresses = new List<string>();
+                server.WakeOnLanInfos = new List<WakeOnLanInfo>();
 
                 if (!string.IsNullOrEmpty(fullSystemInfo.MacAddress))
                 {
-                    server.MacAddresses.Add(fullSystemInfo.MacAddress);
+                    server.WakeOnLanInfos.Add(new WakeOnLanInfo
+                    {
+                        MacAddress = fullSystemInfo.MacAddress
+                    });
                 }
+            }
+        }
+
+        /// <summary>
+        /// Wakes all servers.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task WakeAllServers(CancellationToken cancellationToken)
+        {
+            foreach (var server in _credentialProvider.GetServerCredentials().Servers.ToList())
+            {
+                await WakeServer(server, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -293,20 +330,20 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         private async Task WakeServer(ServerInfo server, CancellationToken cancellationToken)
         {
-            foreach (var address in server.MacAddresses)
+            foreach (var info in server.WakeOnLanInfos)
             {
-                await WakeServer(address, cancellationToken).ConfigureAwait(false);
+                await WakeServer(info, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <summary>
         /// Wakes a device based on mac address
         /// </summary>
-        private async Task WakeServer(string macAddress, CancellationToken cancellationToken)
+        private async Task WakeServer(WakeOnLanInfo info, CancellationToken cancellationToken)
         {
             try
             {
-                await _networkConnectivity.SendWakeOnLan(macAddress, cancellationToken).ConfigureAwait(false);
+                await _networkConnectivity.SendWakeOnLan(info.MacAddress, info.Port, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -336,24 +373,62 @@ namespace MediaBrowser.ApiInteraction
         {
             return Connect(new ServerInfo
             {
-                RemoteAddress = address
+                RemoteAddress = NormalizeAddress(address)
 
             }, cancellationToken);
         }
 
-        public async Task Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin)
+        private string NormalizeAddress(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentNullException("address");
+            }
+
+            if (!address.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                address = "http://" + address;
+            }
+
+            return address;
+        }
+
+        public Task<AuthenticationResult> Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin)
         {
             var client = GetApiClient(server.Id);
 
-            await client.AuthenticateUserAsync(username, hash).ConfigureAwait(false);
+            return Authenticate(server, client, username, hash, rememberLogin);
+        }
+
+        public Task<AuthenticationResult> Authenticate(IApiClient apiClient, string username, byte[] hash, bool rememberLogin)
+        {
+            var server = ((ApiClient)apiClient).ServerInfo;
+
+            return Authenticate(server, apiClient, username, hash, rememberLogin);
+        }
+
+        private async Task<AuthenticationResult> Authenticate(ServerInfo server, IApiClient apiClient, string username, byte[] hash, bool rememberLogin)
+        {
+            var result = await apiClient.AuthenticateUserAsync(username, hash).ConfigureAwait(false);
+            var systeminfo = await apiClient.GetSystemInfoAsync().ConfigureAwait(false);
+
+            UpdateServerInfo(server, systeminfo);
+
+            var credentials = _credentialProvider.GetServerCredentials();
+            credentials.LastServerId = server.Id;
 
             if (rememberLogin)
             {
-                var credentials = _credentialProvider.GetServerCredentials();
-
-                credentials.AddOrUpdateServer(server);
-                credentials.LastServerId = server.Id;
+                server.UserId = result.User.Id;
+                server.AccessToken = result.AccessToken;
             }
+
+            credentials.AddOrUpdateServer(server);
+            _credentialProvider.SaveServerCredentials(credentials);
+
+            EnsureWebSocketIfConfigured(apiClient);
+
+            return result;
         }
 
         public async Task<ConnectionResult> Logout()
