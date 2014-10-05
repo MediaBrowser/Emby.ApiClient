@@ -56,6 +56,7 @@ namespace MediaBrowser.ApiInteraction
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
             ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
+            JsonSerializer = new NewtonsoftJsonSerializer();
 
             Device.ResumeFromSleep += Device_ResumeFromSleep;
         }
