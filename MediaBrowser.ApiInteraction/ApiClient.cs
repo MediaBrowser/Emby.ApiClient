@@ -194,11 +194,7 @@ namespace MediaBrowser.ApiInteraction
                     throw new Exception("Network unavailable.");
                 }
 
-#if PORTABLE
-                        await TaskEx.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
-#else
-                await Task.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
-#endif
+                await TaskHelper.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
 
                 totalWaitMs += waitIntervalMs;
                 networkStatus = NetworkConnection.GetNetworkStatus();

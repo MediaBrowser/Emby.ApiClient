@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -11,13 +12,13 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the server credentials.
         /// </summary>
         /// <returns>ServerCredentialConfiguration.</returns>
-        ServerCredentialConfiguration GetServerCredentials();
+        Task<ServerCredentialConfiguration> GetServerCredentials();
 
         /// <summary>
         /// Saves the server credentials.
         /// </summary>
         /// <param name="configuration">The configuration.</param>
-        void SaveServerCredentials(ServerCredentialConfiguration configuration);
+        Task SaveServerCredentials(ServerCredentialConfiguration configuration);
     }
 
     public class ServerCredentialConfiguration

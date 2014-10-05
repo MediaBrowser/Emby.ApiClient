@@ -80,6 +80,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\QueryStringDictionary.cs">
       <Link>QueryStringDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\TaskHelper.cs">
+      <Link>TaskHelper.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\WebSocket\IClientWebSocket.cs">
       <Link>WebSocket\IClientWebSocket.cs</Link>
     </Compile>

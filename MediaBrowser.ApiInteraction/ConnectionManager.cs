@@ -109,7 +109,9 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
         {
-            return _credentialProvider.GetServerCredentials().Servers;
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            return credentials.Servers;
         }
 
         private async Task<List<ServerInfo>> FindServers(CancellationToken cancellationToken)
@@ -146,7 +148,9 @@ namespace MediaBrowser.ApiInteraction
         {
             var servers = await GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
-            var lastServerId = _credentialProvider.GetServerCredentials().LastServerId;
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            var lastServerId = credentials.LastServerId;
 
             // Try to connect to a server based on the list of saved servers
             var result = await Connect(servers, lastServerId, cancellationToken).ConfigureAwait(false);
@@ -228,11 +232,11 @@ namespace MediaBrowser.ApiInteraction
                     await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
                 }
 
-                var credentials = _credentialProvider.GetServerCredentials();
+                var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
                 credentials.AddOrUpdateServer(server);
                 credentials.LastServerId = server.Id;
-                _credentialProvider.SaveServerCredentials(credentials);
+                await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
                 result.ApiClient = GetOrAddApiClient(server);
                 result.State = string.IsNullOrEmpty(server.AccessToken) ?
@@ -352,7 +356,9 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>Task.</returns>
         private async Task WakeAllServers(CancellationToken cancellationToken)
         {
-            foreach (var server in _credentialProvider.GetServerCredentials().Servers.ToList())
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            foreach (var server in credentials.Servers.ToList())
             {
                 await WakeServer(server, cancellationToken).ConfigureAwait(false);
             }
@@ -433,14 +439,14 @@ namespace MediaBrowser.ApiInteraction
             var server = ((ApiClient)apiClient).ServerInfo;
             UpdateServerInfo(server, systeminfo);
 
-            var credentials = _credentialProvider.GetServerCredentials();
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
             credentials.LastServerId = server.Id;
 
             server.UserId = result.User.Id;
             server.AccessToken = result.AccessToken;
 
             credentials.AddOrUpdateServer(server);
-            _credentialProvider.SaveServerCredentials(credentials);
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             EnsureWebSocketIfConfigured(apiClient);
         }
@@ -455,14 +461,14 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            var credentials = _credentialProvider.GetServerCredentials();
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
             foreach (var server in credentials.Servers)
             {
                 server.AccessToken = null;
                 server.UserId = null;
             }
-            _credentialProvider.SaveServerCredentials(credentials);
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return await Connect(CancellationToken.None).ConfigureAwait(false);
         }

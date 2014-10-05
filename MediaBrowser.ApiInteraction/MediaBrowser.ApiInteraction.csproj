@@ -87,6 +87,7 @@
     <Compile Include="Network\NetworkConnection.cs" />
     <Compile Include="PortableHttpWebRequestFactory.cs" />
     <Compile Include="QueryStringDictionary.cs" />
+    <Compile Include="TaskHelper.cs" />
     <Compile Include="WebSocket\ClientWebSocketFactory.cs" />
     <Compile Include="WebSocket\IClientWebSocket.cs" />
     <Compile Include="WebSocket\NativeClientWebSocket.cs" />
