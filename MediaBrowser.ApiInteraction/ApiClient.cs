@@ -1,12 +1,14 @@
-﻿using MediaBrowser.ApiInteraction.WebSocket;
+﻿using System.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Plugins;
@@ -29,135 +31,253 @@ namespace MediaBrowser.ApiInteraction
     /// <summary>
     /// Provides api methods centered around an HttpClient
     /// </summary>
-    public class ApiClient : BaseApiClient, IApiClient
+    public partial class ApiClient : BaseApiClient, IApiClient
     {
-        public event EventHandler<HttpResponseEventArgs> HttpResponseReceived
-        {
-            add { HttpClient.HttpResponseReceived += value; }
-            remove
-            {
-                HttpClient.HttpResponseReceived -= value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the web socket connection.
-        /// </summary>
-        /// <value>The web socket connection.</value>
-        public ApiWebSocket WebSocketConnection { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
-        /// </summary>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="accessToken">The access token.</param>
-        public ApiClient(string serverAddress, string accessToken)
-            : this(new NullLogger(), serverAddress, accessToken)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="accessToken">The access token.</param>
-        /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string accessToken)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, accessToken)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="accessToken">The access token.</param>
-        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string accessToken)
-            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
-        {
-            HttpClient = httpClient;
-
-            ResetHttpHeaders();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
-        /// </summary>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        public ApiClient(string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new NullLogger(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device id.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        /// <exception cref="System.ArgumentNullException">httpClient</exception>
-        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : this(new AsyncHttpClient(logger), logger, serverAddress, clientName, deviceName, deviceId, applicationVersion)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ApiClient"/> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        public ApiClient(IAsyncHttpClient httpClient, ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
-            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
-        {
-            HttpClient = httpClient;
-
-            ResetHttpHeaders();
-        }
-
-        protected override void SetAuthorizationHttpRequestHeader(string scheme, string parameter)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.SetAuthorizationHeader(scheme, parameter);
-            }
-        }
-
-        protected override void SetHttpRequestHeader(string name, string value)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.SetHttpRequestHeader(name, value);
-            }
-        }
-
-        protected override void ClearHttpRequestHeader(string name)
-        {
-            if (HttpClient != null)
-            {
-                HttpClient.ClearHttpRequestHeader(name);
-            }
-        }
+        public event EventHandler<EventArgs> RemoteLoggedOut;
+        public event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
 
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
         /// <value>The HTTP client.</value>
         protected IAsyncHttpClient HttpClient { get; private set; }
+
+        public ClientCapabilities Capabilities { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
+            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
+        {
+            CreateHttpClient(logger);
+            Capabilities = capabilities;
+
+            ResetHttpHeaders();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
+            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
+        {
+            CreateHttpClient(logger);
+            Capabilities = capabilities;
+
+            ResetHttpHeaders();
+        }
+
+        private void CreateHttpClient(ILogger logger)
+        {
+            HttpClient = AsyncHttpClientFactory.Create(logger);
+            HttpClient.HttpResponseReceived += HttpClient_HttpResponseReceived;
+        }
+
+        void HttpClient_HttpResponseReceived(object sender, HttpResponseEventArgs e)
+        {
+            if (e.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                if (RemoteLoggedOut != null)
+                {
+                    RemoteLoggedOut(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        private ConnectionMode ConnectionMode { get; set; }
+        internal ServerInfo ServerInfo { get; set; }
+        private INetworkConnection NetworkConnection { get; set; }
+
+        public void EnableAutomaticNetworking(ServerInfo info, ConnectionMode initialMode, INetworkConnection networkConnection)
+        {
+            NetworkConnection = networkConnection;
+            ConnectionMode = initialMode;
+            ServerInfo = info;
+            ServerAddress = initialMode == ConnectionMode.Local ?
+                info.LocalAddress :
+                info.RemoteAddress;
+
+        }
+
+        private async Task<Stream> SendAsync(HttpRequest request)
+        {
+            // If not using automatic connection, execute the request directly
+            if (NetworkConnection == null)
+            {
+                return await HttpClient.SendAsync(request).ConfigureAwait(false);
+            }
+
+            var initialConnectionMode = ConnectionMode;
+            var originalRequestTime = DateTime.UtcNow;
+            Exception timeoutException;
+
+            try
+            {
+                return await HttpClient.SendAsync(request).ConfigureAwait(false);
+            }
+            catch (HttpException ex)
+            {
+                if (!ex.IsTimedOut)
+                {
+                    throw;
+                }
+
+                timeoutException = ex;
+            }
+
+            try
+            {
+                await ValidateConnection(originalRequestTime, initialConnectionMode, request.CancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Unable to re-establish connection with the server. 
+                // Throw the original exception
+                throw timeoutException;
+            }
+
+            request.Url = ReplaceServerAddress(request.Url);
+
+            return await HttpClient.SendAsync(request).ConfigureAwait(false);
+        }
+
+#if PORTABLE
+        private readonly AsyncSemaphore _validateConnectionSemaphore = new AsyncSemaphore(1, 1);
+#else
+        private readonly SemaphoreSlim _validateConnectionSemaphore = new SemaphoreSlim(1, 1);
+#endif
+
+        private DateTime _lastConnectionValidationTime = DateTime.MinValue;
+
+        private async Task ValidateConnection(DateTime originalRequestTime, ConnectionMode initialConnectionMode, CancellationToken cancellationToken)
+        {
+            await _validateConnectionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (originalRequestTime > _lastConnectionValidationTime)
+                {
+                    await ValidateConnectionInternal(initialConnectionMode, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _validateConnectionSemaphore.Release();
+            }
+        }
+
+        private async Task ValidateConnectionInternal(ConnectionMode initialConnectionMode, CancellationToken cancellationToken)
+        {
+            Logger.Debug("Connection to server dropped. Attempting to reconnect.");
+
+            const int maxWaitMs = 10000;
+            const int waitIntervalMs = 100;
+            var totalWaitMs = 0;
+            var networkStatus = NetworkConnection.GetNetworkStatus();
+
+            while (!networkStatus.IsNetworkAvailable)
+            {
+                if (totalWaitMs >= maxWaitMs)
+                {
+                    throw new Exception("Network unavailable.");
+                }
+
+                await TaskHelper.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
+
+                totalWaitMs += waitIntervalMs;
+                networkStatus = NetworkConnection.GetNetworkStatus();
+            }
+
+            var urlList = new List<Tuple<string, ConnectionMode>>
+			{
+				new Tuple<string,ConnectionMode>(ServerInfo.LocalAddress, ConnectionMode.Local),
+				new Tuple<string,ConnectionMode>(ServerInfo.RemoteAddress, ConnectionMode.Remote)
+			};
+
+            if (!networkStatus.GetIsLocalNetworkAvailable())
+            {
+                urlList.Reverse();
+            }
+
+            foreach (var url in urlList)
+            {
+                var connected = await TryConnect(url.Item1, cancellationToken).ConfigureAwait(false);
+
+                if (connected)
+                {
+                    ConnectionMode = url.Item2;
+                    break;
+                }
+            }
+
+            _lastConnectionValidationTime = DateTime.UtcNow;
+        }
+
+        private async Task<bool> TryConnect(string baseUrl, CancellationToken cancellationToken)
+        {
+            var fullUrl = baseUrl + "/mediabrowser/system/info/public";
+
+            fullUrl = AddDataFormat(fullUrl);
+
+            var request = new HttpRequest
+            {
+                Url = fullUrl,
+                RequestHeaders = HttpHeaders,
+                CancellationToken = cancellationToken,
+                Method = "GET"
+            };
+
+            try
+            {
+                using (var stream = await HttpClient.SendAsync(request).ConfigureAwait(false))
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        private string ReplaceServerAddress(string url)
+        {
+            var baseUrl = ConnectionMode == ConnectionMode.Local ?
+                (ServerInfo.LocalAddress) :
+                (ServerInfo.RemoteAddress);
+
+            var index = url.IndexOf("/mediabrowser", StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                return baseUrl.TrimEnd('/') + url.Substring(index);
+            }
+
+            return url;
+        }
+
+        private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return SendAsync(new HttpRequest
+            {
+                CancellationToken = cancellationToken,
+                Method = "GET",
+                RequestHeaders = HttpHeaders,
+                Url = url
+            });
+        }
 
         /// <summary>
         /// Gets an image stream based on a url
@@ -173,7 +293,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("url");
             }
 
-            return HttpClient.GetAsync(url, cancellationToken);
+            return GetStream(url, cancellationToken);
         }
 
         /// <summary>
@@ -1271,11 +1391,6 @@ namespace MediaBrowser.ApiInteraction
 
             Logger.Debug("ReportPlaybackStart: Item {0}", info.ItemId);
 
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
-            {
-                return WebSocketConnection.SendAsync("ReportPlaybackStart", JsonSerializer.SerializeToString(info));
-            }
-
             var url = GetApiUrl("Sessions/Playing");
 
             return PostAsync<PlaybackStartInfo, EmptyRequestResult>(url, info, CancellationToken.None);
@@ -1294,9 +1409,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("info");
             }
 
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
+            if (IsWebSocketConnected)
             {
-                return WebSocketConnection.SendAsync("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
+                return SendWebSocketMessage("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
             }
 
             var url = GetApiUrl("Sessions/Playing/Progress");
@@ -1315,11 +1430,6 @@ namespace MediaBrowser.ApiInteraction
             if (info == null)
             {
                 throw new ArgumentNullException("info");
-            }
-
-            if (WebSocketConnection != null && WebSocketConnection.IsConnected)
-            {
-                return WebSocketConnection.SendAsync("ReportPlaybackStopped", JsonSerializer.SerializeToString(info));
             }
 
             var url = GetApiUrl("Sessions/Playing/Stopped");
@@ -1518,6 +1628,11 @@ namespace MediaBrowser.ApiInteraction
 
             SetAuthenticationInfo(result.AccessToken, result.User.Id);
 
+            if (Authenticated != null)
+            {
+                Authenticated(this, new GenericEventArgs<AuthenticationResult>(result));
+            }
+
             return result;
         }
 
@@ -1627,7 +1742,15 @@ namespace MediaBrowser.ApiInteraction
 
             const string contentType = "application/x-www-form-urlencoded";
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
+            using (var stream = await SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "POST",
+                RequestContentType = contentType,
+                RequestContent = postContent
+            }).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -1645,7 +1768,14 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url);
 
-            using (var stream = await HttpClient.DeleteAsync(url, cancellationToken).ConfigureAwait(false))
+            using (var stream = await SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "DELETE"
+
+            }).ConfigureAwait(false))
             {
                 return DeserializeFromStream<T>(stream);
             }
@@ -1669,7 +1799,15 @@ namespace MediaBrowser.ApiInteraction
 
             var postContent = SerializeToJson(obj);
 
-            using (var stream = await HttpClient.PostAsync(url, contentType, postContent, cancellationToken).ConfigureAwait(false))
+            using (var stream = await SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "POST",
+                RequestContentType = contentType,
+                RequestContent = postContent
+            }).ConfigureAwait(false))
             {
                 return DeserializeFromStream<TOutputType>(stream);
             }
@@ -1685,7 +1823,7 @@ namespace MediaBrowser.ApiInteraction
         {
             url = AddDataFormat(url);
 
-            return HttpClient.GetAsync(url, cancellationToken);
+            return GetStream(url, cancellationToken);
         }
 
         public Task<Stream> GetSerializedStreamAsync(string url)
@@ -2001,7 +2139,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/SeriesTimers/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "DELETE"
+            });
         }
 
         public Task CancelLiveTvTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
@@ -2015,7 +2159,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/Timers/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "DELETE"
+            });
         }
 
         public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
@@ -2029,7 +2179,13 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("LiveTv/Recordings/" + id, dict);
 
-            return HttpClient.DeleteAsync(url, cancellationToken);
+            return SendAsync(new HttpRequest
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestHeaders = HttpHeaders,
+                Method = "DELETE"
+            });
         }
 
         public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
@@ -2470,7 +2626,12 @@ namespace MediaBrowser.ApiInteraction
             queryString.Add("DeviceId", DeviceId);
             var url = GetApiUrl("Videos/ActiveEncodings", queryString);
 
-            return HttpClient.DeleteAsync(url, CancellationToken.None);
+            return SendAsync(new HttpRequest
+            {
+                Url = url,
+                RequestHeaders = HttpHeaders,
+                Method = "DELETE"
+            });
         }
 
         public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken))
@@ -2539,7 +2700,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query)
+        public async Task<BaseItemDto[]> GetLatestItems(LatestItemsQuery query)
         {
             if (query == null)
             {
@@ -2568,8 +2729,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, CancellationToken.None).ConfigureAwait(false))
             {
-                var items = DeserializeFromStream<List<BaseItemDto>>(stream);
-                return new QueryResult<BaseItemDto> { Items = items.ToArray(), TotalRecordCount = items.Count() };
+                return DeserializeFromStream<BaseItemDto[]>(stream);
             }
         }
 

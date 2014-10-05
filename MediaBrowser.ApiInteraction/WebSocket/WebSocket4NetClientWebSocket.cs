@@ -82,7 +82,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         }
 
         /// <summary>
-        /// Handles the Closed event of the _socket control.
+        /// Handles the WebSocketClosed event of the _socket control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

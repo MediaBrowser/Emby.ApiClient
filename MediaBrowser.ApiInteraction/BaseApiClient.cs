@@ -17,15 +17,6 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public abstract class BaseApiClient : IDisposable
     {
-        public event EventHandler ServerLocationChanged;
-        private void OnServerLocationChanged()
-        {
-            if (ServerLocationChanged != null)
-            {
-                ServerLocationChanged(this, EventArgs.Empty);
-            }
-        }
-
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -94,19 +85,21 @@ namespace MediaBrowser.ApiInteraction
         /// Gets the name of the server host.
         /// </summary>
         /// <value>The name of the server host.</value>
-        public string ServerAddress { get; private set; }
+        public string ServerAddress { get; protected set; }
 
         /// <summary>
         /// Changes the server location.
         /// </summary>
         /// <param name="address">The address.</param>
-        public void ChangeServerLocation(string address)
+        /// <param name="keepExistingAuth"></param>
+        public void ChangeServerLocation(string address, bool keepExistingAuth = false)
         {
             ServerAddress = address;
 
-            SetAuthenticationInfo(null, null);
-
-            OnServerLocationChanged();
+            if (!keepExistingAuth)
+            {
+                SetAuthenticationInfo(null, null);
+            }
         }
 
         /// <summary>
@@ -234,20 +227,14 @@ namespace MediaBrowser.ApiInteraction
 
         protected void ResetHttpHeaders()
         {
-            if (string.IsNullOrEmpty(AccessToken))
-            {
-                ClearHttpRequestHeader("X-MediaBrowser-Token");
-            }
-            else
-            {
-                SetHttpRequestHeader("X-MediaBrowser-Token", AccessToken);
-            }
+            HttpHeaders.SetAccessToken(AccessToken);
 
             var authValue = AuthorizationParameter;
 
             if (string.IsNullOrEmpty(authValue))
             {
                 ClearHttpRequestHeader("Authorization");
+                SetAuthorizationHttpRequestHeader(null, null);
             }
             else
             {
@@ -255,9 +242,17 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        protected abstract void SetAuthorizationHttpRequestHeader(string scheme, string parameter);
-        protected abstract void SetHttpRequestHeader(string name, string value);
-        protected abstract void ClearHttpRequestHeader(string name);
+        protected readonly HttpHeaders HttpHeaders = new HttpHeaders();
+        private void SetAuthorizationHttpRequestHeader(string scheme, string parameter)
+        {
+            HttpHeaders.AuthorizationScheme = scheme;
+            HttpHeaders.AuthorizationParameter = parameter;
+        }
+
+        private void ClearHttpRequestHeader(string name)
+        {
+            HttpHeaders.Remove(name);
+        }
 
         /// <summary>
         /// Gets the API URL.
@@ -1132,6 +1127,61 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
+        /// Deserializes from stream.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="stream">The stream.</param>
+        /// <returns>``0.</returns>
+        protected T DeserializeFromStream<T>(Stream stream)
+            where T : class
+        {
+            return (T)DeserializeFromStream(stream, typeof(T));
+        }
+
+        /// <summary>
+        /// Deserializes from stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected object DeserializeFromStream(Stream stream, Type type)
+        {
+            return JsonSerializer.DeserializeFromStream(stream, type);
+        }
+
+        /// <summary>
+        /// Serializers to json.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <returns>System.String.</returns>
+        protected string SerializeToJson(object obj)
+        {
+            return JsonSerializer.SerializeToString(obj);
+        }
+
+        /// <summary>
+        /// Adds the data format.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>System.String.</returns>
+        protected string AddDataFormat(string url)
+        {
+            const string format = "json";
+
+            if (url.IndexOf('?') == -1)
+            {
+                url += "?format=" + format;
+            }
+            else
+            {
+                url += "&format=" + format;
+            }
+
+            return url;
+        }
+
+        /// <summary>
         /// Gets the url needed to stream an audio file
         /// </summary>
         /// <param name="options">The options.</param>
@@ -1257,61 +1307,6 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("Static", options.Static);
 
             return GetApiUrl(handler, queryParams);
-        }
-
-        /// <summary>
-        /// Deserializes from stream.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="stream">The stream.</param>
-        /// <returns>``0.</returns>
-        protected T DeserializeFromStream<T>(Stream stream)
-            where T : class
-        {
-            return (T)DeserializeFromStream(stream, typeof(T));
-        }
-
-        /// <summary>
-        /// Deserializes from stream.
-        /// </summary>
-        /// <param name="stream">The stream.</param>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected object DeserializeFromStream(Stream stream, Type type)
-        {
-            return JsonSerializer.DeserializeFromStream(stream, type);
-        }
-
-        /// <summary>
-        /// Serializers to json.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns>System.String.</returns>
-        protected string SerializeToJson(object obj)
-        {
-            return JsonSerializer.SerializeToString(obj);
-        }
-
-        /// <summary>
-        /// Adds the data format.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <returns>System.String.</returns>
-        protected string AddDataFormat(string url)
-        {
-            const string format = "json";
-
-            if (url.IndexOf('?') == -1)
-            {
-                url += "?format=" + format;
-            }
-            else
-            {
-                url += "&format=" + format;
-            }
-
-            return url;
         }
 
         /// <summary>

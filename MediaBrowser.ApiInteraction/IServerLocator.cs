@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.ApiClient;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.ApiClient;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -10,11 +10,6 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
-        Task<List<ServerDiscoveryInfo>> FindServers(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Attemps to discover the server within a local network
-        /// </summary>
-        Task<List<ServerDiscoveryInfo>> FindServers(int timeout, CancellationToken cancellationToken);
+        Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken);
     }
 }

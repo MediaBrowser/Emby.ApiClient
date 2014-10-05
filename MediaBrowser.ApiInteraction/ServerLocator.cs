@@ -34,27 +34,29 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
-        public Task<List<ServerDiscoveryInfo>> FindServers(int timeout, CancellationToken cancellationToken)
+        public Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken)
         {
             var taskCompletionSource = new TaskCompletionSource<List<ServerDiscoveryInfo>>();
 
-            var timeoutToken = new CancellationTokenSource(timeout).Token;
+            var timeoutToken = new CancellationTokenSource(timeoutMs).Token;
 
             var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken);
 
             linkedTokenSource.Token.Register(() => taskCompletionSource.TrySetCanceled());
 
-            FindServer(taskCompletionSource, timeout);
+            FindServer(taskCompletionSource, timeoutMs);
 
             return taskCompletionSource.Task;
         }
 
-        private async void FindServer(TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, int timeout)
+        private async void FindServer(TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, int timeoutMs)
         {
+            _logger.Debug("Searching for servers with timeout of {0} ms", timeoutMs);
+
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
             {
-                client.Client.ReceiveTimeout = timeout;
+                client.Client.ReceiveTimeout = timeoutMs;
 
                 // Construct the message the server is expecting
                 var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer_v2?");
