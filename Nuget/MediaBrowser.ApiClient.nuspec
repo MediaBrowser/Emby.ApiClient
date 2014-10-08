@@ -17,7 +17,7 @@
                 <dependency id="Newtonsoft.Json" version="6.0.5" />
                 <dependency id="WebSocket4Net" version="0.10" />
             </group>
-            <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8">
+            <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8+wpa81">
                 <dependency id="MediaBrowser.Common" version="3.0.463" />
                 <dependency id="Newtonsoft.Json" version="6.0.5" />
                 <dependency id="Microsoft.Bcl.Async" version="1.0.168" />
