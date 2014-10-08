@@ -252,6 +252,8 @@ namespace MediaBrowser.ApiInteraction
                 ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
             }
 
+            result.ServerInfo = server;
+
             return result;
         }
 

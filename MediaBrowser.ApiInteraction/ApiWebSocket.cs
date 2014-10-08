@@ -82,7 +82,7 @@ namespace MediaBrowser.ApiInteraction
             _webSocketFactory = webSocketFactory;
             _keepAliveTimerMs = keepAliveTimerMs;
 
-            if (!IsWebSocketConnected)
+            if (!IsWebSocketOpenOrConnecting)
             {
                 CloseWebSocket();
                 Task.Factory.StartNew(() => StartEnsureConnectionTimer(_keepAliveTimerMs));
@@ -106,7 +106,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task EnsureConnectionInternal(CancellationToken cancellationToken)
         {
-            if (!IsWebSocketConnected)
+            if (!IsWebSocketOpenOrConnecting)
             {
                 _hasPerformedPostConnectionRequests = false;
 
@@ -634,6 +634,12 @@ namespace MediaBrowser.ApiInteraction
         public bool IsWebSocketConnected
         {
             get { return _currentWebSocket != null && _currentWebSocket.State == WebSocketState.Open; }
+        }
+
+        private bool IsWebSocketOpenOrConnecting
+        {
+            get { return _currentWebSocket != null && 
+                (_currentWebSocket.State == WebSocketState.Open || _currentWebSocket.State == WebSocketState.Connecting); }
         }
 
         /// <summary>
