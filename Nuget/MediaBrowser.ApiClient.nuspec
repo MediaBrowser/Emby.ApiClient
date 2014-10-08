@@ -26,6 +26,6 @@
     </metadata>
     <files>
         <file src="dlls\MediaBrowser.ApiInteraction.dll" target="lib\net45\MediaBrowser.ApiInteraction.dll" />
-        <file src="dlls\MediaBrowser.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8\MediaBrowser.ApiInteraction.Portable.dll" />
+        <file src="dlls\MediaBrowser.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.ApiInteraction.Portable.dll" />
     </files>
 </package>
