@@ -37,4 +37,12 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             return CreateWebSocket(new NullLogger());
         }
     }
+
+    public static class SocketExtensions
+    {
+        public static void OpenWebSocket(this ApiClient client)
+        {
+            client.OpenWebSocket(() => ClientWebSocketFactory.CreateWebSocket(new NullLogger()));
+        }
+    }
 }
