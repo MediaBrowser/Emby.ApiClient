@@ -70,16 +70,14 @@ namespace MediaBrowser.ApiInteraction
         {
             IApiClient apiClient;
 
-            if (ApiClients.TryGetValue(server.Id, out apiClient))
+            if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                return apiClient;
+                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
+
+                ApiClients[server.Id] = apiClient;
+
+                apiClient.Authenticated += apiClient_Authenticated;
             }
-
-            apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
-
-            ApiClients[server.Id] = apiClient;
-
-            apiClient.Authenticated += apiClient_Authenticated;
 
             if (string.IsNullOrEmpty(server.AccessToken))
             {
