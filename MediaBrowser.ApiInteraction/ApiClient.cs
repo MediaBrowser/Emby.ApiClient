@@ -1,7 +1,7 @@
-﻿using System.Net;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,12 +67,11 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="clientName">Name of the client.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="device">The device.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="capabilities">The capabilities.</param>
-        public ApiClient(ILogger logger, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion, ClientCapabilities capabilities)
-            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, deviceName, deviceId, applicationVersion)
+        public ApiClient(ILogger logger, string serverAddress, string clientName, IDevice device, string applicationVersion, ClientCapabilities capabilities)
+            : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, device, applicationVersion)
         {
             CreateHttpClient(logger);
             Capabilities = capabilities;
@@ -111,10 +111,10 @@ namespace MediaBrowser.ApiInteraction
 
         }
 
-        private async Task<Stream> SendAsync(HttpRequest request)
+        private async Task<Stream> SendAsync(HttpRequest request, bool enableFailover = true)
         {
             // If not using automatic connection, execute the request directly
-            if (NetworkConnection == null)
+            if (NetworkConnection == null || !enableFailover)
             {
                 return await HttpClient.SendAsync(request).ConfigureAwait(false);
             }
@@ -2042,6 +2042,9 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("PlayableMediaTypes", capabilities.PlayableMediaTypes);
             dict.AddIfNotNull("SupportedCommands", capabilities.SupportedCommands);
 
+            dict.Add("SupportsContentUploading", capabilities.SupportsContentUploading);
+            dict.Add("SupportsMediaControl", capabilities.SupportsMediaControl);
+
             var url = GetApiUrl("Sessions/Capabilities", dict);
 
             return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
@@ -2827,6 +2830,58 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("EntryIds", entryIds);
             var url = GetApiUrl(string.Format("Playlists/{0}/Items", playlistId), dict);
             return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
+        }
+
+        public async Task<ContentUploadHistory> GetContentUploadHistory(string deviceId)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("deviceId", deviceId);
+
+            var url = GetApiUrl("Devices/CameraUploads", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ContentUploadHistory>(stream);
+            }
+        }
+
+        public async Task UploadFile(Stream stream, LocalFileInfo file, CancellationToken cancellationToken)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("Id", DeviceId);
+            dict.Add("Name", file.Name);
+            dict.Add("FullPath", file.FullPath);
+            dict.AddIfNotNullOrEmpty("Album", file.Album);
+
+            var url = GetApiUrl("Devices/CameraUploads", dict);
+
+            using (stream)
+            {
+                await SendAsync(new HttpRequest
+                {
+                    CancellationToken = cancellationToken,
+                    Method = "POST",
+                    RequestHeaders = HttpHeaders,
+                    Url = url,
+                    RequestContentType = file.MimeType,
+                    RequestStream = stream
+
+                }, false).ConfigureAwait(false);
+            }
+        }
+
+        public async Task<DevicesOptions> GetDevicesOptions()
+        {
+            var dict = new QueryStringDictionary { };
+
+            var url = GetApiUrl("System/Configuration/devices", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<DevicesOptions>(stream);
+            }
         }
     }
 }

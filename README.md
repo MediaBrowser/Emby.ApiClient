@@ -83,7 +83,7 @@ Once you have an ApiClient instance, you can easily connect to the server's web 
             ApiClient.OpenWebSocket();
 ```
 
-This will open the connection in a background thread, and periodically check to ensure it's still connected. The web socket provides various events that can be used to receive notifications from the server:
+This will open a connection in a background thread, and periodically check to ensure it's still connected. The web socket provides various events that can be used to receive notifications from the server:
 
 
 ``` c#

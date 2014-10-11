@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -11,6 +12,11 @@ namespace MediaBrowser.ApiInteraction
             request.Method = options.Method;
             
             return request;
+        }
+
+        public void SetContentLength(HttpWebRequest request, long length)
+        {
+            request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -10,6 +11,7 @@ namespace MediaBrowser.ApiInteraction
         public string RequestContentType { get; set; }
         public HttpHeaders RequestHeaders { get; set; }
         public string Url { get; set; }
+        public Stream RequestStream { get; set; }
 
         public int Timeout { get; set; }
 

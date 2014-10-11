@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Drawing;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -29,12 +30,14 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The json serializer.</value>
         public IJsonSerializer JsonSerializer { get; set; }
 
+        public IDevice Device { get; private set; }
+
         /// <summary>
         ///  If specified this will be used as a default when an explicit value is not specified.
         /// </summary>
         public int? ImageQuality { get; set; }
 
-        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string clientName, string deviceName, string deviceId, string applicationVersion)
+        protected BaseApiClient(ILogger logger, IJsonSerializer jsonSerializer, string serverAddress, string clientName, IDevice device, string applicationVersion)
         {
             if (logger == null)
             {
@@ -53,8 +56,7 @@ namespace MediaBrowser.ApiInteraction
             Logger = logger;
 
             ClientName = clientName;
-            DeviceName = deviceName;
-            DeviceId = deviceId;
+            Device = device;
             ApplicationVersion = applicationVersion;
             ServerAddress = serverAddress;
         }
@@ -112,7 +114,11 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        public string DeviceName { get; set; }
+        public string DeviceName
+        {
+            get { return Device.DeviceName; }
+        }
+
 
         /// <summary>
         /// Gets or sets the application version.
@@ -124,7 +130,10 @@ namespace MediaBrowser.ApiInteraction
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        public string DeviceId { get; set; }
+        public string DeviceId
+        {
+            get { return Device.DeviceId; }
+        }
 
         /// <summary>
         /// Gets or sets the access token.

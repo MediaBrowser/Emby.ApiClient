@@ -73,12 +73,21 @@ namespace MediaBrowser.ApiInteraction
 
             ApplyHeaders(options.RequestHeaders, httpWebRequest);
 
-            if (!string.IsNullOrEmpty(options.RequestContent) ||
+            if (options.RequestStream != null)
+            {
+                httpWebRequest.ContentType = options.RequestContentType;
+                _requestFactory.SetContentLength(httpWebRequest, options.RequestStream.Length);
+
+                var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
+                await options.RequestStream.CopyToAsync(requestStream).ConfigureAwait(false);
+            }
+            else if (!string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase))
             {
                 var bytes = Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                _requestFactory.SetContentLength(httpWebRequest, bytes.Length);
 
                 var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
                 await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
@@ -213,17 +222,19 @@ namespace MediaBrowser.ApiInteraction
     public interface IHttpWebRequestFactory
     {
         HttpWebRequest Create(HttpRequest options);
+
+        void SetContentLength(HttpWebRequest request, long length);
     }
 
     public static class AsyncHttpClientFactory
     {
         public static IAsyncHttpClient Create(ILogger logger)
         {
-            #if PORTABLE
+#if PORTABLE
             return new HttpWebRequestClient(logger, new PortableHttpWebRequestFactory());
-            #else
+#else
             return new HttpWebRequestClient(logger, new HttpWebRequestFactory());
-            #endif
+#endif
         }
     }
 }

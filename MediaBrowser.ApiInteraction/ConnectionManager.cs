@@ -72,7 +72,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
+                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities);
 
                 ApiClients[server.Id] = apiClient;
 

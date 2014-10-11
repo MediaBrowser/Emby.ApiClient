@@ -38,5 +38,10 @@ namespace MediaBrowser.ApiInteraction
 
             return request;
         }
+
+        public void SetContentLength(HttpWebRequest request, long length)
+        {
+            request.ContentLength = length;
+        }
     }
 }
