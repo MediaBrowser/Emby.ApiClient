@@ -101,7 +101,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+                var response = await _requestFactory.GetResponseAsync(httpWebRequest).ConfigureAwait(false);
 
                 var httpResponse = (HttpWebResponse)response;
 
@@ -224,6 +224,8 @@ namespace MediaBrowser.ApiInteraction
         HttpWebRequest Create(HttpRequest options);
 
         void SetContentLength(HttpWebRequest request, long length);
+
+        Task<WebResponse> GetResponseAsync(HttpWebRequest request);
     }
 
     public static class AsyncHttpClientFactory

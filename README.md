@@ -149,10 +149,10 @@ The above examples are designed for cases when your app always connects to a sin
 After you've created your instance of IConnectionManager, simply call the Connect method. It will return a result object with three properties:
 
 - State
-- ServerInfo
+- Servers
 - ApiClient
 
-ServerInfo and ApiClient will be null if State == Unavailable. Let's look at an example.
+ServerInfo and ApiClient will be null if State == Unavailable. If State==SignedIn or State==ServerSignIn, the Servers list will always have one single entry. Let's look at an example.
 
 
 ``` c#
@@ -168,6 +168,10 @@ ServerInfo and ApiClient will be null if State == Unavailable. Let's look at an 
 					// A server was found and the user needs to login.
 					// Display a login screen and authenticate with the server using result.ApiClient
 
+				case ConnectionState.ServerSelection:
+					// Multiple servers available
+					// Display a selection screen
+
 				case ConnectionState.SignedIn:
 					// A server was found and the user has been signed in using previously saved credentials.
 					// Ready to browse using result.ApiClient
@@ -175,9 +179,7 @@ ServerInfo and ApiClient will be null if State == Unavailable. Let's look at an 
 
 ```
 
-When the user wishes to logout of the individual server, simply call apiClient.Logout as normal.
-
-If the user wishes to connect to a new server, simply use the Connect overload that accepts an address. 
+If the user wishes to connect to a new server, simply use the Connect overload that accepts an address.
 
 
 ``` c#
@@ -189,6 +191,8 @@ If the user wishes to connect to a new server, simply use the Connect overload t
 			// Proceed with same switch statement as above example
 
 ```
+
+Similarly, if the user selects a server from the selection screen, use the overload that accepts a ServerInfo instance. When the user wishes to logout of the individual server, simply call apiClient.Logout as normal.
 
 If at anytime the RemoteLoggedOut event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
 
