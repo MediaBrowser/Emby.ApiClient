@@ -2836,7 +2836,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new QueryStringDictionary { };
 
-            dict.Add("deviceId", deviceId);
+            dict.Add("DeviceId", deviceId);
 
             var url = GetApiUrl("Devices/CameraUploads", dict);
 
@@ -2850,7 +2850,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new QueryStringDictionary { };
 
-            dict.Add("Id", DeviceId);
+            dict.Add("DeviceId", DeviceId);
             dict.Add("Name", file.Name);
             dict.Add("FullPath", file.FullPath);
             dict.AddIfNotNullOrEmpty("Album", file.Album);
