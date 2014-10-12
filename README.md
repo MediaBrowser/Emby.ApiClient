@@ -17,7 +17,14 @@ This is an example of connecting to a single server using a fixed, predictable a
 			// This describes the device capabilities
 			var capabilities = new ClientCapabilities();
 
-			var client = new ApiClient(logger, "http://localhost:8096", "My client name", "My device", "My device id", capabilities);
+			// If using the portable class library you'll need to supply your own IDevice implementation.
+			var device = new Device
+            {
+                DeviceName = "My Device Name",
+                DeviceId = "My Device Id"
+            };
+			
+			var client = new ApiClient(logger, "http://localhost:8096", "My client name", device, capabilities);
 
 			var authResult = await AuthenticateUserAsync("username", passwordHash);
 

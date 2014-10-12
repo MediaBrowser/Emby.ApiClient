@@ -16,7 +16,7 @@ namespace MediaBrowser.ApiInteraction
 
         public void SetContentLength(HttpWebRequest request, long length)
         {
-            request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
+            //request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
         }
     }
 }
