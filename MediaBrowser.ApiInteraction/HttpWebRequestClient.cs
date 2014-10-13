@@ -89,8 +89,10 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
                 _requestFactory.SetContentLength(httpWebRequest, bytes.Length);
 
-                var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
-                await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                {
+                    await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                }
             }
 
             Logger.Debug(options.Method + " {0}", options.Url);
