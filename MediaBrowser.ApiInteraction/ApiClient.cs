@@ -2039,8 +2039,16 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var dict = new QueryStringDictionary();
-            dict.AddIfNotNull("PlayableMediaTypes", capabilities.PlayableMediaTypes);
-            dict.AddIfNotNull("SupportedCommands", capabilities.SupportedCommands);
+
+            if (capabilities.PlayableMediaTypes != null && capabilities.PlayableMediaTypes.Count > 0)
+            {
+                dict.Add("PlayableMediaTypes", capabilities.PlayableMediaTypes);
+            }
+
+            if (capabilities.SupportedCommands != null && capabilities.SupportedCommands.Count > 0)
+            {
+                dict.Add("SupportedCommands", capabilities.SupportedCommands);
+            }
 
             dict.Add("SupportsContentUploading", capabilities.SupportsContentUploading);
             dict.Add("SupportsMediaControl", capabilities.SupportsMediaControl);

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.WebSocket;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -34,6 +33,8 @@ namespace MediaBrowser.ApiInteraction
         public string ApplicationVersion { get; private set; }
         public IDevice Device { get; private set; }
         public ClientCapabilities ClientCapabilities { get; private set; }
+
+        public IApiClient CurrentApiClient { get; private set; }
 
         public ConnectionManager(ILogger logger,
             ICredentialProvider credentialProvider,
@@ -265,9 +266,16 @@ namespace MediaBrowser.ApiInteraction
                 }
 
                 ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
-            }
 
-            result.Servers.Add(server);
+                CurrentApiClient = result.ApiClient;
+
+                result.Servers.Add(server);
+
+                if (Connected != null)
+                {
+                    Connected(this, new GenericEventArgs<ConnectionResult>(result));
+                }
+            }
 
             return result;
         }

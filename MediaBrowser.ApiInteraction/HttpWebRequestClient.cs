@@ -78,8 +78,10 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.ContentType = options.RequestContentType;
                 _requestFactory.SetContentLength(httpWebRequest, options.RequestStream.Length);
 
-                var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
-                await options.RequestStream.CopyToAsync(requestStream).ConfigureAwait(false);
+                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                {
+                    await options.RequestStream.CopyToAsync(requestStream).ConfigureAwait(false);
+                }
             }
             else if (!string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase))
