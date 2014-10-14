@@ -2,6 +2,7 @@
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -38,5 +39,15 @@ namespace MediaBrowser.ApiInteraction
 
             return request;
         }
+
+        public void SetContentLength(HttpWebRequest request, long length)
+        {
+            request.ContentLength = length;
+        }
+
+        public Task<WebResponse> GetResponseAsync(HttpWebRequest request)
+        {
+            return request.GetResponseAsync();
+        } 
     }
 }

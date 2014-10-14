@@ -1,5 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.WebSocket;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -34,6 +33,8 @@ namespace MediaBrowser.ApiInteraction
         public string ApplicationVersion { get; private set; }
         public IDevice Device { get; private set; }
         public ClientCapabilities ClientCapabilities { get; private set; }
+
+        public IApiClient CurrentApiClient { get; private set; }
 
         public ConnectionManager(ILogger logger,
             ICredentialProvider credentialProvider,
@@ -70,16 +71,14 @@ namespace MediaBrowser.ApiInteraction
         {
             IApiClient apiClient;
 
-            if (ApiClients.TryGetValue(server.Id, out apiClient))
+            if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                return apiClient;
+                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities);
+
+                ApiClients[server.Id] = apiClient;
+
+                apiClient.Authenticated += apiClient_Authenticated;
             }
-
-            apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device.DeviceName, Device.DeviceId, ApplicationVersion, ClientCapabilities);
-
-            ApiClients[server.Id] = apiClient;
-
-            apiClient.Authenticated += apiClient_Authenticated;
 
             if (string.IsNullOrEmpty(server.AccessToken))
             {
@@ -110,9 +109,29 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
         {
+            var networkInfo = _networkConnectivity.GetNetworkStatus();
+
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            return credentials.Servers;
+            var servers = credentials.Servers.ToList();
+
+            if (networkInfo.GetIsLocalNetworkAvailable())
+            {
+                foreach (var server in await FindServers(cancellationToken).ConfigureAwait(false))
+                {
+                    if (!servers.Any(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        servers.Add(server);
+                    }
+                }
+            }
+
+            if (networkInfo.GetIsRemoteNetworkAvailable())
+            {
+                // TODO: Add connect servers here
+            }
+
+            return servers;
         }
 
         private async Task<List<ServerInfo>> FindServers(CancellationToken cancellationToken)
@@ -149,45 +168,41 @@ namespace MediaBrowser.ApiInteraction
         {
             var servers = await GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
-            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
-
-            var lastServerId = credentials.LastServerId;
-
-            // Try to connect to a server based on the list of saved servers
-            var result = await Connect(servers, lastServerId, cancellationToken).ConfigureAwait(false);
-
-            if (result.State != ConnectionState.Unavailable)
-            {
-                return result;
-            }
-
-            servers = await FindServers(cancellationToken).ConfigureAwait(false);
-
-            return await Connect(servers, lastServerId, cancellationToken).ConfigureAwait(false);
+            return await Connect(servers, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Loops through a list of servers and returns the first that is available for connection
         /// </summary>
-        private async Task<ConnectionResult> Connect(List<ServerInfo> servers, string lastServerId, CancellationToken cancellationToken)
+        private async Task<ConnectionResult> Connect(List<ServerInfo> servers, CancellationToken cancellationToken)
         {
             servers = servers
-                .OrderBy(i => (string.Equals(i.Id, lastServerId, StringComparison.OrdinalIgnoreCase) ? 0 : 1))
+                .OrderByDescending(i => i.DateLastAccessed)
                 .ToList();
+
+            if (servers.Count == 1)
+            {
+                return await Connect(servers[0], cancellationToken).ConfigureAwait(false);
+            }
 
             foreach (var server in servers)
             {
-                var result = await Connect(server, cancellationToken).ConfigureAwait(false);
-
-                if (result.State != ConnectionState.Unavailable)
+                // If it has saved credential info, try to use that
+                if (!string.IsNullOrEmpty(server.AccessToken))
                 {
-                    return result;
+                    var result = await Connect(server, cancellationToken).ConfigureAwait(false);
+
+                    if (result.State == ConnectionState.SignedIn)
+                    {
+                        return result;
+                    }
                 }
             }
 
             return new ConnectionResult
             {
-                State = ConnectionState.Unavailable
+                Servers = servers,
+                State = servers.Count == 0 ? ConnectionState.Unavailable : ConnectionState.ServerSelection
             };
         }
 
@@ -236,7 +251,8 @@ namespace MediaBrowser.ApiInteraction
                 var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
                 credentials.AddOrUpdateServer(server);
-                credentials.LastServerId = server.Id;
+                server.DateLastAccessed = DateTime.UtcNow;
+
                 await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
                 result.ApiClient = GetOrAddApiClient(server);
@@ -250,9 +266,16 @@ namespace MediaBrowser.ApiInteraction
                 }
 
                 ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
-            }
 
-            result.ServerInfo = server;
+                CurrentApiClient = result.ApiClient;
+
+                result.Servers.Add(server);
+
+                if (Connected != null)
+                {
+                    Connected(this, new GenericEventArgs<ConnectionResult>(result));
+                }
+            }
 
             return result;
         }
@@ -443,8 +466,8 @@ namespace MediaBrowser.ApiInteraction
             UpdateServerInfo(server, systeminfo);
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
-            credentials.LastServerId = server.Id;
 
+            server.DateLastAccessed = DateTime.UtcNow;
             server.UserId = result.User.Id;
             server.AccessToken = result.AccessToken;
 
@@ -474,6 +497,11 @@ namespace MediaBrowser.ApiInteraction
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return await Connect(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public Task LoginToConnect(string username, string password)
+        {
+            throw new NotImplementedException();
         }
     }
 }

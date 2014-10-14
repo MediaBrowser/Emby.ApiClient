@@ -1,5 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Devices;
+using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -24,6 +30,21 @@ namespace MediaBrowser.ApiInteraction
                     ResumeFromSleep(this, EventArgs.Empty);
                 }
             }
+        }
+
+        public virtual IEnumerable<LocalFileInfo> GetLocalPhotos()
+        {
+            return new List<LocalFileInfo>();
+        }
+
+        public virtual IEnumerable<LocalFileInfo> GetLocalVideos()
+        {
+            return new List<LocalFileInfo>();
+        }
+
+        public Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken)
+        {
+            return apiClient.UploadFile(File.OpenRead(file.FullPath), file, cancellationToken);
         }
     }
 }

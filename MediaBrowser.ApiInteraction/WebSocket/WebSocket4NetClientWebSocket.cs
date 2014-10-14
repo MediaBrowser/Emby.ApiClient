@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

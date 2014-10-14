@@ -23,7 +23,6 @@ namespace MediaBrowser.ApiInteraction
 
     public class ServerCredentialConfiguration
     {
-        public string LastServerId { get; set; }
         public List<ServerInfo> Servers { get; set; }
 
         public ServerCredentialConfiguration()

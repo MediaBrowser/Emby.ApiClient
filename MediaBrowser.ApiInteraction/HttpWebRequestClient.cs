@@ -73,15 +73,28 @@ namespace MediaBrowser.ApiInteraction
 
             ApplyHeaders(options.RequestHeaders, httpWebRequest);
 
-            if (!string.IsNullOrEmpty(options.RequestContent) ||
+            if (options.RequestStream != null)
+            {
+                httpWebRequest.ContentType = options.RequestContentType;
+                _requestFactory.SetContentLength(httpWebRequest, options.RequestStream.Length);
+
+                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                {
+                    await options.RequestStream.CopyToAsync(requestStream).ConfigureAwait(false);
+                }
+            }
+            else if (!string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase))
             {
                 var bytes = Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
+                _requestFactory.SetContentLength(httpWebRequest, bytes.Length);
 
-                var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false);
-                await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                {
+                    await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                }
             }
 
             Logger.Debug(options.Method + " {0}", options.Url);
@@ -92,7 +105,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+                var response = await _requestFactory.GetResponseAsync(httpWebRequest).ConfigureAwait(false);
 
                 var httpResponse = (HttpWebResponse)response;
 
@@ -213,17 +226,21 @@ namespace MediaBrowser.ApiInteraction
     public interface IHttpWebRequestFactory
     {
         HttpWebRequest Create(HttpRequest options);
+
+        void SetContentLength(HttpWebRequest request, long length);
+
+        Task<WebResponse> GetResponseAsync(HttpWebRequest request);
     }
 
     public static class AsyncHttpClientFactory
     {
         public static IAsyncHttpClient Create(ILogger logger)
         {
-            #if PORTABLE
+#if PORTABLE
             return new HttpWebRequestClient(logger, new PortableHttpWebRequestFactory());
-            #else
+#else
             return new HttpWebRequestClient(logger, new HttpWebRequestFactory());
-            #endif
+#endif
         }
     }
 }

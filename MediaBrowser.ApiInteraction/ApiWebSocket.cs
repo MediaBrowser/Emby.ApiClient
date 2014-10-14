@@ -1,5 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.WebSocket;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -25,7 +24,7 @@ namespace MediaBrowser.ApiInteraction
         /// Occurs when [closed].
         /// </summary>
         public event EventHandler WebSocketClosed;
-        public event EventHandler<GeneralCommandEventArgs> GeneralCommand;
+        public event EventHandler<GenericEventArgs<GeneralCommandEventArgs>> GeneralCommand;
         public event EventHandler<GenericEventArgs<BrowseRequest>> BrowseCommand;
         public event EventHandler<GenericEventArgs<LibraryUpdateInfo>> LibraryChanged;
         public event EventHandler<GenericEventArgs<MessageCommand>> MessageCommand;
@@ -50,8 +49,11 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<EventArgs> ServerRestarting;
         public event EventHandler<EventArgs> ServerShuttingDown;
         public event EventHandler<EventArgs> WebSocketConnected;
-        public event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
+        public event EventHandler<GenericEventArgs<SessionUpdatesEventArgs>> SessionsUpdated;
         public event EventHandler<EventArgs> RestartRequired;
+        public event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStart;
+        public event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStopped;
+        public event EventHandler<GenericEventArgs<SessionInfoDto>> SessionEnded;
 
         /// <summary>
         /// The _web socket
@@ -498,16 +500,37 @@ namespace MediaBrowser.ApiInteraction
             }
             else if (string.Equals(messageType, "Sessions"))
             {
-                FireEvent(SessionsUpdated, this, new SessionUpdatesEventArgs
+                FireEvent(SessionsUpdated, this, new GenericEventArgs<SessionUpdatesEventArgs>(new SessionUpdatesEventArgs
                 {
                     Sessions = JsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto[]>>(json).Data
-                });
+                }));
             }
             else if (string.Equals(messageType, "UserDataChanged"))
             {
                 FireEvent(UserDataChanged, this, new GenericEventArgs<UserDataChangeInfo>
                 {
                     Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<UserDataChangeInfo>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "SessionEnded"))
+            {
+                FireEvent(SessionEnded, this, new GenericEventArgs<SessionInfoDto>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "PlaybackStart"))
+            {
+                FireEvent(PlaybackStart, this, new GenericEventArgs<SessionInfoDto>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "PlaybackStopped"))
+            {
+                FireEvent(PlaybackStopped, this, new GenericEventArgs<SessionInfoDto>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto>>(json).Data
                 });
             }
         }
@@ -624,7 +647,7 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            FireEvent(GeneralCommand, this, args);
+            FireEvent(GeneralCommand, this, new GenericEventArgs<GeneralCommandEventArgs>(args));
         }
 
         /// <summary>
