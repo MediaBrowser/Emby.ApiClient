@@ -23,8 +23,11 @@ This is an example of connecting to a single server using a fixed, predictable a
                 DeviceName = "My Device Name",
                 DeviceId = "My Device Id"
             };
+
+			// If using the portable class library you'll need to supply your own ICryptographyProvider implementation.
+			var cryptoProvider = new CryptographyProvider();
 			
-			var client = new ApiClient(logger, "http://localhost:8096", "My client name", device, capabilities);
+			var client = new ApiClient(logger, "http://localhost:8096", "My client name", device, capabilities, cryptoProvider);
 
 			var authResult = await AuthenticateUserAsync("username", passwordHash);
 
@@ -60,7 +63,13 @@ If your app is some kind of service or utility (e.g. Sickbeard), you should cons
             // Developers are encouraged to create their own ILogger implementation
 			var logger = new NullLogger();
 
-			var client = new ApiClient(logger, "http://localhost:8096", "0123456789");
+			// If using the portable class library you'll need to supply your own ICryptographyProvider implementation.
+			var cryptoProvider = new CryptographyProvider();
+			
+			// This describes the device capabilities
+			var capabilities = new ClientCapabilities();
+
+			var client = new ApiClient(logger, "http://localhost:8096", "0123456789", capabilities, cryptoProvider);
 
 			// RemoteLoggedOut indicates the access token was revoked remotely by the server
 			ApiClient.RemoteLoggedOut += ApiClient_RemoteLoggedOut;
@@ -125,7 +134,10 @@ The above examples are designed for cases when your app always connects to a sin
 			// If using the portable class library you'll need to supply your own INetworkConnection implementation.
 			var networkConnection = new NetworkConnection(logger);
 
-            // If using the portable class library you'll need to supply your own IServerLocator implementation.
+            // If using the portable class library you'll need to supply your own ICryptographyProvider implementation.
+			var cryptoProvider = new CryptographyProvider();
+			
+			// If using the portable class library you'll need to supply your own IServerLocator implementation.
 			var serverLocator = new ServerLocator(logger);
 
             var connectionManager = new ConnectionManager(logger,
@@ -137,6 +149,7 @@ The above examples are designed for cases when your app always connects to a sin
                 "1.0.0.0",
                 device,
                 capabilities,
+				cryptoProvider,
                 ClientWebSocketFactory.CreateWebSocket);
 
 			// RemoteLoggedOut indicates the user was logged out remotely by the server
@@ -192,7 +205,7 @@ If the user wishes to connect to a new server, simply use the Connect overload t
 
 ```
 
-Similarly, if the user selects a server from the selection screen, use the overload that accepts a ServerInfo instance. When the user wishes to logout of the individual server, simply call apiClient.Logout as normal.
+Similarly, if the user selects a server from the selection screen, use the overload that accepts a ServerInfo instance. When the user wishes to logout, use connectionManager.Logout instead of the individual apiClient.Logout.
 
 If at anytime the RemoteLoggedOut event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
 

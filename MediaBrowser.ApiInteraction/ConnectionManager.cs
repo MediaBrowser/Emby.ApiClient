@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -25,6 +27,7 @@ namespace MediaBrowser.ApiInteraction
         private readonly IServerLocator _serverDiscovery;
         private readonly IAsyncHttpClient _httpClient;
         private readonly Func<IClientWebSocket> _webSocketFactory;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
         public IJsonSerializer JsonSerializer { get; set; }
@@ -36,6 +39,8 @@ namespace MediaBrowser.ApiInteraction
 
         public IApiClient CurrentApiClient { get; private set; }
 
+        private readonly ConnectService _connectService;
+
         public ConnectionManager(ILogger logger,
             ICredentialProvider credentialProvider,
             INetworkConnection networkConnectivity,
@@ -44,6 +49,7 @@ namespace MediaBrowser.ApiInteraction
             string applicationVersion,
             IDevice device,
             ClientCapabilities clientCapabilities,
+            ICryptographyProvider cryptographyProvider,
             Func<IClientWebSocket> webSocketFactory = null)
         {
             _credentialProvider = credentialProvider;
@@ -53,6 +59,7 @@ namespace MediaBrowser.ApiInteraction
             _httpClient = AsyncHttpClientFactory.Create(logger);
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
+            _cryptographyProvider = cryptographyProvider;
             Device = device;
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
@@ -60,6 +67,8 @@ namespace MediaBrowser.ApiInteraction
             JsonSerializer = new NewtonsoftJsonSerializer();
 
             Device.ResumeFromSleep += Device_ResumeFromSleep;
+
+            _connectService = new ConnectService(JsonSerializer, _logger, _httpClient, _credentialProvider, _cryptographyProvider);
         }
 
         async void Device_ResumeFromSleep(object sender, EventArgs e)
@@ -73,7 +82,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities);
+                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities, _cryptographyProvider);
 
                 ApiClients[server.Id] = apiClient;
 
@@ -501,7 +510,22 @@ namespace MediaBrowser.ApiInteraction
 
         public Task LoginToConnect(string username, string password)
         {
-            throw new NotImplementedException();
+            return _connectService.Authenticate(username, password);
+        }
+
+        public Task<PinCreationResult> CreatePin()
+        {
+            return _connectService.CreatePin(Device.DeviceId);
+        }
+
+        public Task<PinStatusResult> GetPinStatus(PinCreationResult pin)
+        {
+            return _connectService.GetPinStatus(pin);
+        }
+
+        public async Task ExchangePin(PinCreationResult pin)
+        {
+            await _connectService.ExchangePin(pin);
         }
     }
 }

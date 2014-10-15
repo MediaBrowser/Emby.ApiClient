@@ -25,6 +25,9 @@ namespace MediaBrowser.ApiInteraction
     {
         public List<ServerInfo> Servers { get; set; }
 
+        public string ConnectUserId { get; set; }
+        public string ConnectAccessToken { get; set; }
+
         public ServerCredentialConfiguration()
         {
             Servers = new List<ServerInfo>();
