@@ -1,4 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
+﻿using System.IO;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -13,7 +14,7 @@ namespace MediaBrowser.ApiInteraction
 {
     public class ConnectService
     {
-        private readonly IJsonSerializer _jsonSerializer;
+        internal IJsonSerializer JsonSerializer { get; set; }
         private readonly ILogger _logger;
         private readonly IAsyncHttpClient _httpClient;
         private readonly ICredentialProvider _credentialProvider;
@@ -21,7 +22,7 @@ namespace MediaBrowser.ApiInteraction
 
         public ConnectService(IJsonSerializer jsonSerializer, ILogger logger, IAsyncHttpClient httpClient, ICredentialProvider credentialProvider, ICryptographyProvider cryptographyProvider)
         {
-            _jsonSerializer = jsonSerializer;
+            JsonSerializer = jsonSerializer;
             _logger = logger;
             _httpClient = httpClient;
             _credentialProvider = credentialProvider;
@@ -77,7 +78,7 @@ namespace MediaBrowser.ApiInteraction
 
             }).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<PinStatusResult>(stream);
+                return JsonSerializer.DeserializeFromStream<PinStatusResult>(stream);
             }
         }
 
@@ -116,7 +117,17 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<T>(stream);
+                using (var ms = new MemoryStream())
+                {
+                    await stream.CopyToAsync(ms).ConfigureAwait(false);
+                    ms.Position = 0;
+
+                    var json = Encoding.UTF8.GetString(ms.ToArray(), 0, Convert.ToInt32(ms.Length));
+
+                    _logger.Debug(json);
+
+                    return JsonSerializer.DeserializeFromString<T>(json);
+                }
             }
         }
 
@@ -149,13 +160,40 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<ConnectUser>(stream);
+                return JsonSerializer.DeserializeFromStream<ConnectUser>(stream);
             }
         }
 
-        public async Task GetServers(string userId)
+        public async Task<ConnectUserServer[]> GetServers(string userId)
         {
+            var dict = new QueryStringDictionary();
 
+            dict.Add("userId", userId);
+
+            var url = GetConnectUrl("servers") + "?" + dict.GetQueryString();
+
+            var request = new HttpRequest
+            {
+                Method = "GET",
+                Url = url
+            };
+
+            await AddUserAccessToken(request).ConfigureAwait(false);
+
+            using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await stream.CopyToAsync(ms).ConfigureAwait(false);
+                    ms.Position = 0;
+
+                    var json = Encoding.UTF8.GetString(ms.ToArray(), 0, Convert.ToInt32(ms.Length));
+
+                    _logger.Debug(json);
+
+                    return JsonSerializer.DeserializeFromString<ConnectUserServer[]>(json);
+                }
+            }
         }
 
         private async Task AddUserAccessToken(HttpRequest request)

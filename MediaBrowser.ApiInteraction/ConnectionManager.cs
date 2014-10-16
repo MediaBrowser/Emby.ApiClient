@@ -30,7 +30,6 @@ namespace MediaBrowser.ApiInteraction
         private readonly ICryptographyProvider _cryptographyProvider;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
-        public IJsonSerializer JsonSerializer { get; set; }
 
         public string ApplicationName { get; private set; }
         public string ApplicationVersion { get; private set; }
@@ -64,11 +63,17 @@ namespace MediaBrowser.ApiInteraction
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
             ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
-            JsonSerializer = new NewtonsoftJsonSerializer();
 
             Device.ResumeFromSleep += Device_ResumeFromSleep;
 
-            _connectService = new ConnectService(JsonSerializer, _logger, _httpClient, _credentialProvider, _cryptographyProvider);
+            var jsonSerializer = new NewtonsoftJsonSerializer();
+            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _credentialProvider, _cryptographyProvider);
+        }
+
+        public IJsonSerializer JsonSerializer
+        {
+            get { return _connectService.JsonSerializer; }
+            set { _connectService.JsonSerializer = value; }
         }
 
         async void Device_ResumeFromSleep(object sender, EventArgs e)
@@ -508,9 +513,16 @@ namespace MediaBrowser.ApiInteraction
             return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
 
-        public Task LoginToConnect(string username, string password)
+        public async Task LoginToConnect(string username, string password)
         {
-            return _connectService.Authenticate(username, password);
+            var result = await _connectService.Authenticate(username, password).ConfigureAwait(false);
+
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            credentials.ConnectAccessToken = result.AccessToken;
+            credentials.ConnectUserId = result.User.Id;
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
         }
 
         public Task<PinCreationResult> CreatePin()
