@@ -87,7 +87,13 @@ namespace MediaBrowser.ApiInteraction
 
             if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities, _cryptographyProvider);
+                var address = server.LocalAddress;
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    address = server.RemoteAddress;
+                }
+
+                apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion, ClientCapabilities, _cryptographyProvider);
 
                 ApiClients[server.Id] = apiClient;
 
@@ -121,31 +127,66 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
+        public async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
         {
             var networkInfo = _networkConnectivity.GetNetworkStatus();
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
             var servers = credentials.Servers.ToList();
+            _logger.Debug("{0} servers in saved credentials", servers.Count);
 
             if (networkInfo.GetIsLocalNetworkAvailable())
             {
                 foreach (var server in await FindServers(cancellationToken).ConfigureAwait(false))
                 {
-                    if (!servers.Any(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase)))
+                    var existing = servers.FirstOrDefault(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase));
+
+                    if (existing == null)
                     {
+                        _logger.Debug("Adding discovered server {0}. Id: {1}", server.Name, server.Id);
                         servers.Add(server);
                     }
                 }
             }
 
-            if (networkInfo.GetIsRemoteNetworkAvailable())
+            if (networkInfo.GetIsRemoteNetworkAvailable() &&
+                !string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
             {
-                // TODO: Add connect servers here
+                foreach (var server in await GetConnectServers(credentials.ConnectUserId, cancellationToken).ConfigureAwait(false))
+                {
+                    var existing = servers.FirstOrDefault(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase));
+
+                    if (existing == null)
+                    {
+                        _logger.Debug("Adding connect server {0}. Id: {1}", server.Name, server.Id);
+                        servers.Add(server);
+                    }
+                }
             }
 
             return servers;
+        }
+
+        private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var servers = await _connectService.GetServers(userId, cancellationToken).ConfigureAwait(false);
+
+                return servers.Select(i => new ServerInfo
+                {
+                    AccessToken = i.AccessKey,
+                    Id = i.SystemId,
+                    Name = i.Name,
+                    RemoteAddress = i.Url,
+                    LocalAddress = null
+                });
+            }
+            catch
+            {
+                return new List<ServerInfo>();
+            }
         }
 
         private async Task<List<ServerInfo>> FindServers(CancellationToken cancellationToken)
@@ -154,7 +195,7 @@ namespace MediaBrowser.ApiInteraction
 
             try
             {
-                servers = await _serverDiscovery.FindServers(2000, cancellationToken).ConfigureAwait(false);
+                servers = await _serverDiscovery.FindServers(1000, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -321,7 +362,7 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + url, ex);
+                // Already logged at a lower level
 
                 server.UserId = null;
                 server.AccessToken = null;
@@ -338,7 +379,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 3000,
+                    Timeout = 2000,
                     Method = "GET"
 
                 }).ConfigureAwait(false))
@@ -348,7 +389,7 @@ namespace MediaBrowser.ApiInteraction
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + url, ex);
+                // Already logged at a lower level
 
                 return null;
             }
@@ -537,7 +578,14 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task ExchangePin(PinCreationResult pin)
         {
-            await _connectService.ExchangePin(pin);
+            var result = await _connectService.ExchangePin(pin);
+
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            credentials.ConnectAccessToken = result.AccessToken;
+            credentials.ConnectUserId = result.UserId;
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
         }
     }
 }

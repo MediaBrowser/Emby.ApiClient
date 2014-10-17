@@ -1,14 +1,15 @@
-﻿using System.IO;
-using MediaBrowser.ApiInteraction.Cryptography;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -33,8 +34,8 @@ namespace MediaBrowser.ApiInteraction
         {
             var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
 
-            var hash = BitConverter.ToString(_cryptographyProvider.CreateMD5(bytes))
-                .Replace("-", string.Empty);
+            var hash = new Guid(_cryptographyProvider.CreateMD5(bytes))
+                .ToString("N");
 
             var args = new Dictionary<string, string>
             {
@@ -47,7 +48,9 @@ namespace MediaBrowser.ApiInteraction
 
         public Task Logout()
         {
-            var args = new Dictionary<string, string>();
+            var args = new Dictionary<string, string>
+            {
+            };
 
             return PostAsync<EmptyRequestResult>(GetConnectUrl("user/logout"), args, true);
         }
@@ -90,25 +93,19 @@ namespace MediaBrowser.ApiInteraction
                 {"pin",pin.Pin}
             };
 
-            return PostAsync<PinExchangeResult>(GetConnectUrl("pin/authentiate"), args);
+            return PostAsync<PinExchangeResult>(GetConnectUrl("pin/authenticate"), args);
         }
 
         private async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, bool addUserAccessToken = false)
             where T : class
         {
-            // Create the post body
-            var strings = args.Keys.Select(key => string.Format("{0}={1}", key, args[key]));
-            var postContent = string.Join("&", strings.ToArray());
-
-            const string contentType = "application/x-www-form-urlencoded";
-
             var request = new HttpRequest
             {
                 Url = url,
-                Method = "POST",
-                RequestContentType = contentType,
-                RequestContent = postContent
+                Method = "POST"
             };
+
+            request.SetPostData(args);
 
             if (addUserAccessToken)
             {
@@ -117,17 +114,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
-                using (var ms = new MemoryStream())
-                {
-                    await stream.CopyToAsync(ms).ConfigureAwait(false);
-                    ms.Position = 0;
-
-                    var json = Encoding.UTF8.GetString(ms.ToArray(), 0, Convert.ToInt32(ms.Length));
-
-                    _logger.Debug(json);
-
-                    return JsonSerializer.DeserializeFromString<T>(json);
-                }
+                return JsonSerializer.DeserializeFromStream<T>(stream);
             }
         }
 
@@ -164,7 +151,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUserServer[]> GetServers(string userId)
+        public async Task<ConnectUserServer[]> GetServers(string userId, CancellationToken cancellationToken)
         {
             var dict = new QueryStringDictionary();
 
@@ -175,24 +162,15 @@ namespace MediaBrowser.ApiInteraction
             var request = new HttpRequest
             {
                 Method = "GET",
-                Url = url
+                Url = url,
+                CancellationToken = cancellationToken
             };
 
             await AddUserAccessToken(request).ConfigureAwait(false);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
-                using (var ms = new MemoryStream())
-                {
-                    await stream.CopyToAsync(ms).ConfigureAwait(false);
-                    ms.Position = 0;
-
-                    var json = Encoding.UTF8.GetString(ms.ToArray(), 0, Convert.ToInt32(ms.Length));
-
-                    _logger.Debug(json);
-
-                    return JsonSerializer.DeserializeFromString<ConnectUserServer[]>(json);
-                }
+                return JsonSerializer.DeserializeFromStream<ConnectUserServer[]>(stream);
             }
         }
 

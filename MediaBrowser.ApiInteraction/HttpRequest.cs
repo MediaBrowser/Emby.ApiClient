@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace MediaBrowser.ApiInteraction
@@ -19,6 +21,15 @@ namespace MediaBrowser.ApiInteraction
         {
             RequestHeaders = new HttpHeaders();
             Timeout = 30000;
+        }
+
+        public void SetPostData(IDictionary<string, string> values)
+        {
+            var strings = values.Keys.Select(key => string.Format("{0}={1}", key, values[key]));
+            var postContent = string.Join("&", strings.ToArray());
+
+            RequestContent = postContent;
+            RequestContentType = "application/x-www-form-urlencoded";
         }
     }
 }

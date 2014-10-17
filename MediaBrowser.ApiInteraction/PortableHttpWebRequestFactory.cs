@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -18,7 +17,7 @@ namespace MediaBrowser.ApiInteraction
 
         public void SetContentLength(HttpWebRequest request, long length)
         {
-            request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
+            //request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
         }
 
         public Task<WebResponse> GetResponseAsync(HttpWebRequest request)
