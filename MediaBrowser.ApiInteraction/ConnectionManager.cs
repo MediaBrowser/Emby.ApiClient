@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -25,9 +27,9 @@ namespace MediaBrowser.ApiInteraction
         private readonly IServerLocator _serverDiscovery;
         private readonly IAsyncHttpClient _httpClient;
         private readonly Func<IClientWebSocket> _webSocketFactory;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
-        public IJsonSerializer JsonSerializer { get; set; }
 
         public string ApplicationName { get; private set; }
         public string ApplicationVersion { get; private set; }
@@ -35,6 +37,8 @@ namespace MediaBrowser.ApiInteraction
         public ClientCapabilities ClientCapabilities { get; private set; }
 
         public IApiClient CurrentApiClient { get; private set; }
+
+        private readonly ConnectService _connectService;
 
         public ConnectionManager(ILogger logger,
             ICredentialProvider credentialProvider,
@@ -44,6 +48,7 @@ namespace MediaBrowser.ApiInteraction
             string applicationVersion,
             IDevice device,
             ClientCapabilities clientCapabilities,
+            ICryptographyProvider cryptographyProvider,
             Func<IClientWebSocket> webSocketFactory = null)
         {
             _credentialProvider = credentialProvider;
@@ -53,13 +58,22 @@ namespace MediaBrowser.ApiInteraction
             _httpClient = AsyncHttpClientFactory.Create(logger);
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
+            _cryptographyProvider = cryptographyProvider;
             Device = device;
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
             ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
-            JsonSerializer = new NewtonsoftJsonSerializer();
 
             Device.ResumeFromSleep += Device_ResumeFromSleep;
+
+            var jsonSerializer = new NewtonsoftJsonSerializer();
+            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _credentialProvider, _cryptographyProvider);
+        }
+
+        public IJsonSerializer JsonSerializer
+        {
+            get { return _connectService.JsonSerializer; }
+            set { _connectService.JsonSerializer = value; }
         }
 
         async void Device_ResumeFromSleep(object sender, EventArgs e)
@@ -73,7 +87,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities);
+                apiClient = new ApiClient(_logger, server.LocalAddress, ApplicationName, Device, ApplicationVersion, ClientCapabilities, _cryptographyProvider);
 
                 ApiClients[server.Id] = apiClient;
 
@@ -499,9 +513,31 @@ namespace MediaBrowser.ApiInteraction
             return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
 
-        public Task LoginToConnect(string username, string password)
+        public async Task LoginToConnect(string username, string password)
         {
-            throw new NotImplementedException();
+            var result = await _connectService.Authenticate(username, password).ConfigureAwait(false);
+
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            credentials.ConnectAccessToken = result.AccessToken;
+            credentials.ConnectUserId = result.User.Id;
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+        }
+
+        public Task<PinCreationResult> CreatePin()
+        {
+            return _connectService.CreatePin(Device.DeviceId);
+        }
+
+        public Task<PinStatusResult> GetPinStatus(PinCreationResult pin)
+        {
+            return _connectService.GetPinStatus(pin);
+        }
+
+        public async Task ExchangePin(PinCreationResult pin)
+        {
+            await _connectService.ExchangePin(pin);
         }
     }
 }

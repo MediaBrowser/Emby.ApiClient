@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Devices;
@@ -24,6 +25,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,6 +46,7 @@ namespace MediaBrowser.ApiInteraction
         protected IAsyncHttpClient HttpClient { get; private set; }
 
         public ClientCapabilities Capabilities { get; private set; }
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
@@ -52,11 +55,17 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
         /// <param name="capabilities">The capabilities.</param>
-        public ApiClient(ILogger logger, string serverAddress, string accessToken, ClientCapabilities capabilities)
+        /// <param name="cryptographyProvider">The cryptography provider.</param>
+        public ApiClient(ILogger logger, 
+            string serverAddress, 
+            string accessToken, 
+            ClientCapabilities capabilities, 
+            ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
             CreateHttpClient(logger);
             Capabilities = capabilities;
+            _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
         }
@@ -70,11 +79,19 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="device">The device.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="capabilities">The capabilities.</param>
-        public ApiClient(ILogger logger, string serverAddress, string clientName, IDevice device, string applicationVersion, ClientCapabilities capabilities)
+        /// <param name="cryptographyProvider">The cryptography provider.</param>
+        public ApiClient(ILogger logger, 
+            string serverAddress, 
+            string clientName, 
+            IDevice device, 
+            string applicationVersion, 
+            ClientCapabilities capabilities, 
+            ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, device, applicationVersion)
         {
             CreateHttpClient(logger);
             Capabilities = capabilities;
+            _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
         }
@@ -1606,23 +1623,26 @@ namespace MediaBrowser.ApiInteraction
         /// Authenticates a user and returns the result
         /// </summary>
         /// <param name="username">The username.</param>
-        /// <param name="sha1Hash">The sha1 hash.</param>
+        /// <param name="password">The password.</param>
         /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">username</exception>
         /// <exception cref="System.ArgumentNullException">userId</exception>
-        public async Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash)
+        public async Task<AuthenticationResult> AuthenticateUserAsync(string username, string password)
         {
             if (string.IsNullOrEmpty(username))
             {
                 throw new ArgumentNullException("username");
             }
 
-            var password = BitConverter.ToString(sha1Hash).Replace("-", string.Empty);
+            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
+
             var url = GetApiUrl("Users/AuthenticateByName");
 
             var args = new Dictionary<string, string>();
 
             args["username"] = Uri.EscapeDataString(username);
-            args["password"] = password;
+            args["password"] = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
+            args["passwordMD5"] = BitConverter.ToString(_cryptographyProvider.CreateMD5(bytes)).Replace("-", string.Empty);
 
             var result = await PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
 
