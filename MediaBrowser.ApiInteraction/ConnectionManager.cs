@@ -107,8 +107,6 @@ namespace MediaBrowser.ApiInteraction
             else
             {
                 apiClient.SetAuthenticationInfo(server.AccessToken, server.UserId);
-
-                EnsureWebSocketIfConfigured(apiClient);
             }
 
             return apiClient;
@@ -140,13 +138,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 foreach (var server in await FindServers(cancellationToken).ConfigureAwait(false))
                 {
-                    var existing = servers.FirstOrDefault(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase));
-
-                    if (existing == null)
-                    {
-                        _logger.Debug("Adding discovered server {0}. Id: {1}", server.Name, server.Id);
-                        servers.Add(server);
-                    }
+                    credentials.AddOrUpdateServer(server);
                 }
             }
 
@@ -155,15 +147,11 @@ namespace MediaBrowser.ApiInteraction
             {
                 foreach (var server in await GetConnectServers(credentials.ConnectUserId, cancellationToken).ConfigureAwait(false))
                 {
-                    var existing = servers.FirstOrDefault(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase));
-
-                    if (existing == null)
-                    {
-                        _logger.Debug("Adding connect server {0}. Id: {1}", server.Name, server.Id);
-                        servers.Add(server);
-                    }
+                    credentials.AddOrUpdateServer(server);
                 }
             }
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return servers;
         }
@@ -176,7 +164,7 @@ namespace MediaBrowser.ApiInteraction
 
                 return servers.Select(i => new ServerInfo
                 {
-                    AccessToken = i.AccessKey,
+                    ExchangeToken = i.AccessKey,
                     Id = i.SystemId,
                     Name = i.Name,
                     RemoteAddress = i.Url,
@@ -298,12 +286,17 @@ namespace MediaBrowser.ApiInteraction
             {
                 UpdateServerInfo(server, systemInfo);
 
+                var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+                if (!string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
+                {
+                    await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
+                }
+                
                 if (!string.IsNullOrWhiteSpace(server.AccessToken))
                 {
                     await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
                 }
-
-                var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
                 credentials.AddOrUpdateServer(server);
                 server.DateLastAccessed = DateTime.UtcNow;
@@ -333,6 +326,44 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return result;
+        }
+
+        private async Task AddAuthenticationInfoFromConnect(ServerInfo server, 
+            ConnectionMode connectionMode, 
+            ServerCredentials credentials,
+            CancellationToken cancellationToken)
+        {
+            var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+
+            url += "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
+
+            var headers = new HttpHeaders();
+            headers.SetAccessToken(server.ExchangeToken);
+
+            try
+            {
+                using (var stream = await _httpClient.SendAsync(new HttpRequest
+                {
+                    CancellationToken = cancellationToken,
+                    Method = "GET",
+                    RequestHeaders = headers,
+                    Url = url
+
+                }).ConfigureAwait(false))
+                {
+                    var auth = JsonSerializer.DeserializeFromStream<ConnectAuthenticationExchangeResult>(stream);
+
+                    server.UserId = auth.LocalUserId;
+                    server.AccessToken = auth.AccessToken;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Already logged at a lower level
+
+                server.UserId = null;
+                server.AccessToken = null;
+            }
         }
 
         private async Task ValidateAuthentication(ServerInfo server, ConnectionMode connectionMode, CancellationToken cancellationToken)
@@ -548,7 +579,12 @@ namespace MediaBrowser.ApiInteraction
             {
                 server.AccessToken = null;
                 server.UserId = null;
+                server.ExchangeToken = null;
             }
+
+            credentials.ConnectAccessToken = null;
+            credentials.ConnectUserId = null;
+
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return await Connect(CancellationToken.None).ConfigureAwait(false);

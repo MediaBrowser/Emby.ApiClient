@@ -5,11 +5,9 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -34,8 +32,9 @@ namespace MediaBrowser.ApiInteraction
         {
             var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
 
-            var hash = new Guid(_cryptographyProvider.CreateMD5(bytes))
-                .ToString("N");
+            bytes = _cryptographyProvider.CreateMD5(bytes);
+
+            var hash = BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
 
             var args = new Dictionary<string, string>
             {
