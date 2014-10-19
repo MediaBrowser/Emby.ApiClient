@@ -68,7 +68,7 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// The _ensure timer
         /// </summary>
-        private Timer _ensureTimer;
+        private IDisposable _ensureTimer;
 
         private int _keepAliveTimerMs;
         private bool _hasPerformedPostConnectionRequests = false;
@@ -270,7 +270,11 @@ namespace MediaBrowser.ApiInteraction
         {
             StopEnsureConnectionTimer();
 
+            #if PORTABLE
             _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
+            #else
+            _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
+            #endif
         }
 
         /// <summary>

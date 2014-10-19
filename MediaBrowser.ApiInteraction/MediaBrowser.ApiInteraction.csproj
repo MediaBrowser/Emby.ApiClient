@@ -86,10 +86,10 @@
     <Compile Include="ContentUploader.cs" />
     <Compile Include="INetworkConnection.cs" />
     <Compile Include="IServerLocator.cs" />
+    <Compile Include="MyPortableTimer.cs" />
     <Compile Include="Network\NetworkConnection.cs" />
     <Compile Include="PortableHttpWebRequestFactory.cs" />
     <Compile Include="QueryStringDictionary.cs" />
-    <Compile Include="TaskHelper.cs" />
     <Compile Include="WebSocket\ClientWebSocketFactory.cs" />
     <Compile Include="WebSocket\NativeClientWebSocket.cs" />
     <Compile Include="NewtonsoftJsonSerializer.cs" />

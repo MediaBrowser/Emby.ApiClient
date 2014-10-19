@@ -170,11 +170,7 @@ namespace MediaBrowser.ApiInteraction
             return await HttpClient.SendAsync(request).ConfigureAwait(false);
         }
 
-#if PORTABLE
-        private readonly AsyncSemaphore _validateConnectionSemaphore = new AsyncSemaphore(1, 1);
-#else
         private readonly SemaphoreSlim _validateConnectionSemaphore = new SemaphoreSlim(1, 1);
-#endif
 
         private DateTime _lastConnectionValidationTime = DateTime.MinValue;
 
@@ -211,7 +207,7 @@ namespace MediaBrowser.ApiInteraction
                     throw new Exception("Network unavailable.");
                 }
 
-                await TaskHelper.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(waitIntervalMs, cancellationToken).ConfigureAwait(false);
 
                 totalWaitMs += waitIntervalMs;
                 networkStatus = NetworkConnection.GetNetworkStatus();

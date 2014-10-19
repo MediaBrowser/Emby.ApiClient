@@ -78,7 +78,7 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.ContentType = options.RequestContentType;
                 _requestFactory.SetContentLength(httpWebRequest, options.RequestStream.Length);
 
-                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                using (var requestStream = await _requestFactory.GetRequestStreamAsync(httpWebRequest).ConfigureAwait(false))
                 {
                     await options.RequestStream.CopyToAsync(requestStream).ConfigureAwait(false);
                 }
@@ -91,7 +91,7 @@ namespace MediaBrowser.ApiInteraction
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
                 _requestFactory.SetContentLength(httpWebRequest, bytes.Length);
 
-                using (var requestStream = await httpWebRequest.GetRequestStreamAsync().ConfigureAwait(false))
+                using (var requestStream = await _requestFactory.GetRequestStreamAsync(httpWebRequest).ConfigureAwait(false))
                 {
                     await requestStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 }
@@ -230,6 +230,7 @@ namespace MediaBrowser.ApiInteraction
         void SetContentLength(HttpWebRequest request, long length);
 
         Task<WebResponse> GetResponseAsync(HttpWebRequest request);
+        Task<Stream> GetRequestStreamAsync(HttpWebRequest request);
     }
 
     public static class AsyncHttpClientFactory
