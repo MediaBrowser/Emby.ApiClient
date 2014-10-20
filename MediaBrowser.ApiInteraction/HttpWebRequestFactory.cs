@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -48,6 +49,11 @@ namespace MediaBrowser.ApiInteraction
         public Task<WebResponse> GetResponseAsync(HttpWebRequest request)
         {
             return request.GetResponseAsync();
-        } 
+        }
+
+        public Task<Stream> GetRequestStreamAsync(HttpWebRequest request)
+        {
+            return request.GetRequestStreamAsync();
+        }
     }
 }
