@@ -150,11 +150,7 @@ The above examples are designed for cases when your app always connects to a sin
                 device,
                 capabilities,
 				cryptoProvider,
-                ClientWebSocketFactory.CreateWebSocket);
-
-			// RemoteLoggedOut indicates the user was logged out remotely by the server
-			// Will be explained below
-			connectionManager.RemoteLoggedOut += connectionManager_RemoteLoggedOut;          
+                ClientWebSocketFactory.CreateWebSocket);         
 ```
 
 # Multi-Server Startup Workflow #
@@ -207,7 +203,7 @@ If the user wishes to connect to a new server, simply use the Connect overload t
 
 Similarly, if the user selects a server from the selection screen, use the overload that accepts a ServerInfo instance. When the user wishes to logout, use connectionManager.Logout instead of the individual apiClient.Logout.
 
-If at anytime the RemoteLoggedOut event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
+If at anytime a Logout event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
 
 ConnectionManager will handle opening and closing web socket connections at the appropiate times. All your app needs to do is use an ApiClient instance to subscribe to individual events.
 

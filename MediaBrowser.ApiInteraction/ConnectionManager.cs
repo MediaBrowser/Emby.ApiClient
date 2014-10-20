@@ -18,8 +18,13 @@ namespace MediaBrowser.ApiInteraction
 {
     public class ConnectionManager : IConnectionManager
     {
-        public event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
+        public event EventHandler<GenericEventArgs<UserDto>> LocalUserSignIn;
+        public event EventHandler<GenericEventArgs<ConnectUser>> ConnectUserSignIn;
+        public event EventHandler<EventArgs> LocalUserSignOut;
+        public event EventHandler<EventArgs> ConnectUserSignOut;
         public event EventHandler<EventArgs> RemoteLoggedOut;
+
+        public event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
 
         private readonly ICredentialProvider _credentialProvider;
         private readonly INetworkConnection _networkConnectivity;
@@ -39,6 +44,8 @@ namespace MediaBrowser.ApiInteraction
         public IApiClient CurrentApiClient { get; private set; }
 
         private readonly ConnectService _connectService;
+
+        public ConnectUser ConnectUser { get; private set; }
 
         public ConnectionManager(ILogger logger,
             ICredentialProvider credentialProvider,
@@ -138,6 +145,8 @@ namespace MediaBrowser.ApiInteraction
 
             if (!string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
             {
+                await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
+
                 foreach (var server in await GetConnectServers(credentials.ConnectUserId, cancellationToken).ConfigureAwait(false))
                 {
                     credentials.AddOrUpdateServer(server);
@@ -238,7 +247,8 @@ namespace MediaBrowser.ApiInteraction
             return new ConnectionResult
             {
                 Servers = servers,
-                State = servers.Count == 0 ? ConnectionState.Unavailable : ConnectionState.ServerSelection
+                State = servers.Count == 0 ? ConnectionState.Unavailable : ConnectionState.ServerSelection,
+                ConnectUser = ConnectUser
             };
         }
 
@@ -287,6 +297,8 @@ namespace MediaBrowser.ApiInteraction
 
                 if (!string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
                 {
+                    await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
+
                     await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -322,6 +334,7 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
+            result.ConnectUser = ConnectUser;
             return result;
         }
 
@@ -365,31 +378,68 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        private async Task EnsureConnectUser(ServerCredentials credentials, CancellationToken cancellationToken)
+        {
+            if (ConnectUser != null && string.Equals(ConnectUser.Id, credentials.ConnectUserId, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(credentials.ConnectUserId))
+            {
+                try
+                {
+                    ConnectUser = await _connectService.GetConnectUser(new ConnectUserQuery
+                    {
+                        Id = credentials.ConnectUserId
+
+                    }, cancellationToken).ConfigureAwait(false);
+
+                    OnConnectUserSignIn(ConnectUser);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                }
+            }
+        }
+
         private async Task ValidateAuthentication(ServerInfo server, ConnectionMode connectionMode, CancellationToken cancellationToken)
         {
             _logger.Debug("Validating saved authentication");
 
             var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-            url += "/mediabrowser/system/info?format=json";
-
             var headers = new HttpHeaders();
             headers.SetAccessToken(server.AccessToken);
 
+            var request = new HttpRequest
+            {
+                CancellationToken = cancellationToken,
+                Method = "GET",
+                RequestHeaders = headers,
+                Url = url + "/mediabrowser/system/info?format=json"
+            };
+
             try
             {
-                using (var stream = await _httpClient.SendAsync(new HttpRequest
-                {
-                    CancellationToken = cancellationToken,
-                    Method = "GET",
-                    RequestHeaders = headers,
-                    Url = url
-
-                }).ConfigureAwait(false))
+                using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
                 {
                     var systemInfo = JsonSerializer.DeserializeFromStream<SystemInfo>(stream);
 
                     UpdateServerInfo(server, systemInfo);
+                }
+
+                if (!string.IsNullOrEmpty(server.UserId))
+                {
+                    request.Url = url + "/mediabrowser/users/" + server.UserId + "?format=json";
+                }
+
+                using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
+                {
+                    var localUser = JsonSerializer.DeserializeFromStream<UserDto>(stream);
+
+                    OnLocalUserSignIn(localUser);
                 }
             }
             catch (Exception ex)
@@ -531,7 +581,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 return new ConnectionResult
                 {
-                    State = ConnectionState.Unavailable
+                    State = ConnectionState.Unavailable,
+                    ConnectUser = ConnectUser
                 };
             }
 
@@ -574,6 +625,18 @@ namespace MediaBrowser.ApiInteraction
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             EnsureWebSocketIfConfigured(apiClient);
+
+            OnLocalUserSignIn(result.User);
+        }
+
+        private void OnLocalUserSignIn(UserDto user)
+        {
+
+        }
+
+        private void OnConnectUserSignIn(ConnectUser user)
+        {
+
         }
 
         public async Task<ConnectionResult> Logout()
@@ -613,6 +676,8 @@ namespace MediaBrowser.ApiInteraction
             credentials.ConnectUserId = result.User.Id;
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+
+            OnConnectUserSignIn(result.User);
         }
 
         public Task<PinCreationResult> CreatePin()

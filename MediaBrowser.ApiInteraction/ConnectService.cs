@@ -117,7 +117,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query)
+        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, CancellationToken cancellationToken)
         {
             var dict = new QueryStringDictionary();
 
@@ -139,7 +139,8 @@ namespace MediaBrowser.ApiInteraction
             var request = new HttpRequest
             {
                 Method = "GET",
-                Url = url
+                Url = url,
+                CancellationToken = cancellationToken
             };
 
             await AddUserAccessToken(request).ConfigureAwait(false);
