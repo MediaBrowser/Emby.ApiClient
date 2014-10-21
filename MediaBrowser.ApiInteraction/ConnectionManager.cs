@@ -155,7 +155,7 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            return servers;
+            return credentials.Servers.ToList();
         }
 
         private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, CancellationToken cancellationToken)
