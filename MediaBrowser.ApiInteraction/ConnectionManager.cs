@@ -636,7 +636,12 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnConnectUserSignIn(ConnectUser user)
         {
+            ConnectUser = user;
 
+            if (ConnectUserSignIn != null)
+            {
+                ConnectUserSignIn(this, new GenericEventArgs<ConnectUser>(ConnectUser));
+            }
         }
 
         public async Task<ConnectionResult> Logout()
@@ -662,6 +667,11 @@ namespace MediaBrowser.ApiInteraction
             credentials.ConnectUserId = null;
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+
+            if (ConnectUserSignOut != null)
+            {
+                ConnectUserSignOut(this, EventArgs.Empty);
+            }
 
             return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
