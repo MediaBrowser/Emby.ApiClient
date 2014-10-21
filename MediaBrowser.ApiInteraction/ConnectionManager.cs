@@ -227,6 +227,16 @@ namespace MediaBrowser.ApiInteraction
 
             if (servers.Count == 1)
             {
+                if (servers[0].DateLastAccessed == DateTime.MinValue && ConnectUser == null)
+                {
+                    return new ConnectionResult
+                    {
+                        Servers = servers,
+                        State = ConnectionState.ServerSelection,
+                        ConnectUser = ConnectUser
+                    };
+                } 
+                
                 return await Connect(servers[0], cancellationToken).ConfigureAwait(false);
             }
 
