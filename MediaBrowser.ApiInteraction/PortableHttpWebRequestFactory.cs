@@ -21,8 +21,13 @@ namespace MediaBrowser.ApiInteraction
             //request.Headers["Content-Length"] = length.ToString(CultureInfo.InvariantCulture);
         }
 
-        public Task<WebResponse> GetResponseAsync(HttpWebRequest request)
+        public Task<WebResponse> GetResponseAsync(HttpWebRequest request, int timeoutMs)
         {
+            if (timeoutMs > 0)
+            {
+                return GetResponseAsync(request, TimeSpan.FromMilliseconds(timeoutMs));
+            }
+
             var tcs = new TaskCompletionSource<WebResponse>();
 
             try
@@ -46,6 +51,21 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return tcs.Task;
+        }
+
+        private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var t = Task.Factory.FromAsync<WebResponse>(
+                    request.BeginGetResponse,
+                    request.EndGetResponse,
+                    null);
+
+                if (!t.Wait(timeout)) throw new TimeoutException();
+
+                return t.Result;
+            });
         }
 
         public Task<Stream> GetRequestStreamAsync(HttpWebRequest request)

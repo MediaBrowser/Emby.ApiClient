@@ -227,6 +227,16 @@ namespace MediaBrowser.ApiInteraction
 
             if (servers.Count == 1)
             {
+                if (servers[0].DateLastAccessed == DateTime.MinValue && ConnectUser == null)
+                {
+                    return new ConnectionResult
+                    {
+                        Servers = servers,
+                        State = ConnectionState.ServerSelection,
+                        ConnectUser = ConnectUser
+                    };
+                } 
+                
                 return await Connect(servers[0], cancellationToken).ConfigureAwait(false);
             }
 
@@ -636,7 +646,12 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnConnectUserSignIn(ConnectUser user)
         {
+            ConnectUser = user;
 
+            if (ConnectUserSignIn != null)
+            {
+                ConnectUserSignIn(this, new GenericEventArgs<ConnectUser>(ConnectUser));
+            }
         }
 
         public async Task<ConnectionResult> Logout()
@@ -662,6 +677,11 @@ namespace MediaBrowser.ApiInteraction
             credentials.ConnectUserId = null;
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+
+            if (ConnectUserSignOut != null)
+            {
+                ConnectUserSignOut(this, EventArgs.Empty);
+            }
 
             return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
