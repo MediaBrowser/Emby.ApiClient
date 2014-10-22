@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -105,7 +106,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                var response = await _requestFactory.GetResponseAsync(httpWebRequest).ConfigureAwait(false);
+                var response = await _requestFactory.GetResponseAsync(httpWebRequest, options.Timeout).ConfigureAwait(false);
 
                 var httpResponse = (HttpWebResponse)response;
 
@@ -229,7 +230,7 @@ namespace MediaBrowser.ApiInteraction
 
         void SetContentLength(HttpWebRequest request, long length);
 
-        Task<WebResponse> GetResponseAsync(HttpWebRequest request);
+        Task<WebResponse> GetResponseAsync(HttpWebRequest request, int timeoutMs);
         Task<Stream> GetRequestStreamAsync(HttpWebRequest request);
     }
 
