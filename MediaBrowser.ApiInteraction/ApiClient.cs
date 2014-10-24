@@ -2876,7 +2876,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("DeviceId", DeviceId);
             dict.Add("Name", file.Name);
-            dict.Add("FullPath", file.FullPath);
+            dict.Add("Id", file.Id);
             dict.AddIfNotNullOrEmpty("Album", file.Album);
 
             var url = GetApiUrl("Devices/CameraUploads", dict);

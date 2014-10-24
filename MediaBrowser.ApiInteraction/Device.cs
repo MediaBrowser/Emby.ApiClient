@@ -44,7 +44,7 @@ namespace MediaBrowser.ApiInteraction
 
         public Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken)
         {
-            return apiClient.UploadFile(File.OpenRead(file.FullPath), file, cancellationToken);
+            return apiClient.UploadFile(File.OpenRead(file.Id), file, cancellationToken);
         }
     }
 }

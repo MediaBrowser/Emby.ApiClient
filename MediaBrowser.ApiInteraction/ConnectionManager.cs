@@ -74,7 +74,7 @@ namespace MediaBrowser.ApiInteraction
             Device.ResumeFromSleep += Device_ResumeFromSleep;
 
             var jsonSerializer = new NewtonsoftJsonSerializer();
-            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _credentialProvider, _cryptographyProvider);
+            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider);
         }
 
         public IJsonSerializer JsonSerializer
@@ -147,7 +147,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
 
-                foreach (var server in await GetConnectServers(credentials.ConnectUserId, cancellationToken).ConfigureAwait(false))
+                foreach (var server in await GetConnectServers(credentials.ConnectUserId, credentials.ConnectAccessToken, cancellationToken).ConfigureAwait(false))
                 {
                     credentials.AddOrUpdateServer(server);
                 }
@@ -158,11 +158,11 @@ namespace MediaBrowser.ApiInteraction
             return credentials.Servers.ToList();
         }
 
-        private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, CancellationToken cancellationToken)
+        private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
         {
             try
             {
-                var servers = await _connectService.GetServers(userId, cancellationToken).ConfigureAwait(false);
+                var servers = await _connectService.GetServers(userId, accessToken, cancellationToken).ConfigureAwait(false);
 
                 return servers.Select(i => new ServerInfo
                 {
@@ -327,12 +327,12 @@ namespace MediaBrowser.ApiInteraction
                     ConnectionState.ServerSignIn :
                     ConnectionState.SignedIn;
 
+                ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
+
                 if (result.State == ConnectionState.SignedIn)
                 {
                     EnsureWebSocketIfConfigured(result.ApiClient);
                 }
-
-                ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
 
                 CurrentApiClient = result.ApiClient;
 
@@ -395,7 +395,7 @@ namespace MediaBrowser.ApiInteraction
                 return;
             }
 
-            if (!string.IsNullOrEmpty(credentials.ConnectUserId))
+            if (!string.IsNullOrWhiteSpace(credentials.ConnectUserId) && !string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
             {
                 try
                 {
@@ -403,7 +403,7 @@ namespace MediaBrowser.ApiInteraction
                     {
                         Id = credentials.ConnectUserId
 
-                    }, cancellationToken).ConfigureAwait(false);
+                    }, credentials.ConnectAccessToken, cancellationToken).ConfigureAwait(false);
 
                     OnConnectUserSignIn(ConnectUser);
                 }
@@ -443,13 +443,13 @@ namespace MediaBrowser.ApiInteraction
                 if (!string.IsNullOrEmpty(server.UserId))
                 {
                     request.Url = url + "/mediabrowser/users/" + server.UserId + "?format=json";
-                }
 
-                using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
-                {
-                    var localUser = JsonSerializer.DeserializeFromStream<UserDto>(stream);
+                    using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
+                    {
+                        var localUser = JsonSerializer.DeserializeFromStream<UserDto>(stream);
 
-                    OnLocalUserSignIn(localUser);
+                        OnLocalUserSignIn(localUser);
+                    }
                 }
             }
             catch (Exception ex)
@@ -571,14 +571,14 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public IApiClient GetApiClient(BaseItemDto item)
+        public IApiClient GetApiClient(IHasServerId item)
         {
-            return GetApiClient("");
+            return GetApiClient(item.ServerId);
         }
 
         public IApiClient GetApiClient(string serverId)
         {
-            return ApiClients.Values.FirstOrDefault();
+            return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken)
