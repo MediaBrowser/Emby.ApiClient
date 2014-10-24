@@ -16,15 +16,13 @@ namespace MediaBrowser.ApiInteraction
         internal IJsonSerializer JsonSerializer { get; set; }
         private readonly ILogger _logger;
         private readonly IAsyncHttpClient _httpClient;
-        private readonly ICredentialProvider _credentialProvider;
         private readonly ICryptographyProvider _cryptographyProvider;
 
-        public ConnectService(IJsonSerializer jsonSerializer, ILogger logger, IAsyncHttpClient httpClient, ICredentialProvider credentialProvider, ICryptographyProvider cryptographyProvider)
+        public ConnectService(IJsonSerializer jsonSerializer, ILogger logger, IAsyncHttpClient httpClient, ICryptographyProvider cryptographyProvider)
         {
             JsonSerializer = jsonSerializer;
             _logger = logger;
             _httpClient = httpClient;
-            _credentialProvider = credentialProvider;
             _cryptographyProvider = cryptographyProvider;
         }
 
@@ -45,13 +43,18 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<ConnectAuthenticationResult>(GetConnectUrl("user/authenticate"), args);
         }
 
-        public Task Logout()
+        public Task Logout(string accessToken)
         {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException("accessToken");
+            }
+            
             var args = new Dictionary<string, string>
             {
             };
 
-            return PostAsync<EmptyRequestResult>(GetConnectUrl("user/logout"), args, true);
+            return PostAsync<EmptyRequestResult>(GetConnectUrl("user/logout"), args, accessToken);
         }
 
         public Task<PinCreationResult> CreatePin(string deviceId)
@@ -95,7 +98,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<PinExchangeResult>(GetConnectUrl("pin/authenticate"), args);
         }
 
-        private async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, bool addUserAccessToken = false)
+        private async Task<T> PostAsync<T>(string url, Dictionary<string, string> args, string userAccessToken = null)
             where T : class
         {
             var request = new HttpRequest
@@ -106,9 +109,9 @@ namespace MediaBrowser.ApiInteraction
 
             request.SetPostData(args);
 
-            if (addUserAccessToken)
+            if (!string.IsNullOrEmpty(userAccessToken))
             {
-                await AddUserAccessToken(request).ConfigureAwait(false);
+                AddUserAccessToken(request, userAccessToken);
             }
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
@@ -117,8 +120,13 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, CancellationToken cancellationToken)
+        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, string accessToken, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException("accessToken");
+            }
+            
             var dict = new QueryStringDictionary();
 
             if (!string.IsNullOrWhiteSpace(query.Id))
@@ -143,7 +151,7 @@ namespace MediaBrowser.ApiInteraction
                 CancellationToken = cancellationToken
             };
 
-            await AddUserAccessToken(request).ConfigureAwait(false);
+            AddUserAccessToken(request, accessToken);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
@@ -151,8 +159,17 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUserServer[]> GetServers(string userId, CancellationToken cancellationToken)
+        public async Task<ConnectUserServer[]> GetServers(string userId, string accessToken, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException("accessToken");
+            }
+            
             var dict = new QueryStringDictionary();
 
             dict.Add("userId", userId);
@@ -166,7 +183,7 @@ namespace MediaBrowser.ApiInteraction
                 CancellationToken = cancellationToken
             };
 
-            await AddUserAccessToken(request).ConfigureAwait(false);
+            AddUserAccessToken(request, accessToken);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
@@ -174,15 +191,21 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private async Task AddUserAccessToken(HttpRequest request)
+        private void AddUserAccessToken(HttpRequest request, string accessToken)
         {
-            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
-
-            request.RequestHeaders["X-Connect-UserToken"] = credentials.ConnectAccessToken;
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException("accessToken");
+            }
+            request.RequestHeaders["X-Connect-UserToken"] = accessToken;
         }
 
         private string GetConnectUrl(string handler)
         {
+            if (string.IsNullOrWhiteSpace(handler))
+            {
+                throw new ArgumentNullException("handler");
+            }
             return "https://connect.mediabrowser.tv/service/" + handler;
         }
     }

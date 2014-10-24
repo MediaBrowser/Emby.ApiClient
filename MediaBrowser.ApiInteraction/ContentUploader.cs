@@ -40,7 +40,7 @@ namespace MediaBrowser.ApiInteraction
             files.AddRange(device.GetLocalVideos());
 
             files = files
-                .Where(i => !history.FilesUploaded.Any(f => string.Equals(f.FullPath, i.FullPath, StringComparison.OrdinalIgnoreCase)))
+                .Where(i => !history.FilesUploaded.Any(f => string.Equals(f.Id, i.Id, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
             var numComplete = 0;
@@ -49,7 +49,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _logger.Debug("Uploading {0}", file.FullPath);
+                _logger.Debug("Uploading {0}", file.Id);
 
                 try
                 {
