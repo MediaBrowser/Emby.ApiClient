@@ -153,6 +153,10 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
+            credentials.Servers = credentials.Servers
+                .OrderByDescending(i => i.DateLastAccessed)
+                .ToList();
+
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return credentials.Servers.ToList();
@@ -221,13 +225,11 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         private async Task<ConnectionResult> Connect(List<ServerInfo> servers, CancellationToken cancellationToken)
         {
-            servers = servers
-                .OrderByDescending(i => i.DateLastAccessed)
-                .ToList();
-
             if (servers.Count == 1)
             {
-                if (servers[0].DateLastAccessed == DateTime.MinValue && ConnectUser == null)
+                var isFirstAccess = servers[0].DateLastAccessed == DateTime.MinValue;
+
+                if (isFirstAccess && ConnectUser == null)
                 {
                     return new ConnectionResult
                     {
@@ -237,7 +239,14 @@ namespace MediaBrowser.ApiInteraction
                     };
                 } 
                 
-                return await Connect(servers[0], cancellationToken).ConfigureAwait(false);
+                var result = await Connect(servers[0], cancellationToken).ConfigureAwait(false);
+
+                if (result.State == ConnectionState.Unavailable)
+                {
+                    result.State = ConnectionState.ServerSelection;
+                }
+
+                return result;
             }
 
             foreach (var server in servers)
@@ -257,7 +266,7 @@ namespace MediaBrowser.ApiInteraction
             return new ConnectionResult
             {
                 Servers = servers,
-                State = servers.Count == 0 ? ConnectionState.Unavailable : ConnectionState.ServerSelection,
+                State = (servers.Count == 0 && ConnectUser == null) ? ConnectionState.Unavailable : ConnectionState.ServerSelection,
                 ConnectUser = ConnectUser
             };
         }
@@ -578,7 +587,7 @@ namespace MediaBrowser.ApiInteraction
 
         public IApiClient GetApiClient(string serverId)
         {
-            return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase));
+            return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase)) ?? CurrentApiClient;
         }
 
         public async Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken)
