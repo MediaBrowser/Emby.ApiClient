@@ -166,7 +166,7 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>System.String.</returns>
         protected string GetSlugName(string name)
         {
-            return name.Replace('/', '-').Replace('?', '-');
+            return name.Replace('/', '-').Replace('?', '-').Replace('&', '-');
         }
 
         /// <summary>
