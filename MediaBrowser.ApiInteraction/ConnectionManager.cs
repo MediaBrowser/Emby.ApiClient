@@ -70,6 +70,7 @@ namespace MediaBrowser.ApiInteraction
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
             ApiClients = new Dictionary<string, IApiClient>(StringComparer.OrdinalIgnoreCase);
+            SaveLocalCredentials = true;
 
             Device.ResumeFromSleep += Device_ResumeFromSleep;
 
@@ -82,6 +83,8 @@ namespace MediaBrowser.ApiInteraction
             get { return _connectService.JsonSerializer; }
             set { _connectService.JsonSerializer = value; }
         }
+
+        public bool SaveLocalCredentials { get; set; }
 
         async void Device_ResumeFromSleep(object sender, EventArgs e)
         {
@@ -117,7 +120,7 @@ namespace MediaBrowser.ApiInteraction
 
         void apiClient_Authenticated(object sender, GenericEventArgs<AuthenticationResult> e)
         {
-            OnAuthenticated(sender as IApiClient, e.Argument);
+            OnAuthenticated(sender as IApiClient, e.Argument, SaveLocalCredentials);
         }
 
         private void EnsureWebSocketIfConfigured(IApiClient apiClient)
@@ -132,8 +135,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            var servers = credentials.Servers.ToList();
-            _logger.Debug("{0} servers in saved credentials", servers.Count);
+            _logger.Debug("{0} servers in saved credentials", credentials.Servers.Count);
 
             if (_networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable())
             {
@@ -174,7 +176,7 @@ namespace MediaBrowser.ApiInteraction
                     Id = i.SystemId,
                     Name = i.Name,
                     RemoteAddress = i.Url,
-                    LocalAddress = null
+                    LocalAddress = i.LocalAddress
                 });
             }
             catch
@@ -227,6 +229,8 @@ namespace MediaBrowser.ApiInteraction
         {
             if (servers.Count == 1)
             {
+                _logger.Debug("1 server in the list.");
+
                 var isFirstAccess = servers[0].DateLastAccessed == DateTime.MinValue;
 
                 if (isFirstAccess && ConnectUser == null)
@@ -310,7 +314,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (systemInfo != null)
             {
-                UpdateServerInfo(server, systemInfo);
+                server.ImportInfo(systemInfo);
 
                 var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
@@ -446,7 +450,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     var systemInfo = JsonSerializer.DeserializeFromStream<SystemInfo>(stream);
 
-                    UpdateServerInfo(server, systemInfo);
+                    server.ImportInfo(systemInfo);
                 }
 
                 if (!string.IsNullOrEmpty(server.UserId))
@@ -493,41 +497,6 @@ namespace MediaBrowser.ApiInteraction
                 // Already logged at a lower level
 
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Updates the server information.
-        /// </summary>
-        /// <param name="server">The server.</param>
-        /// <param name="systemInfo">The system information.</param>
-        private void UpdateServerInfo(ServerInfo server, PublicSystemInfo systemInfo)
-        {
-            server.Name = systemInfo.ServerName;
-            server.Id = systemInfo.Id;
-
-            if (!string.IsNullOrEmpty(systemInfo.LocalAddress))
-            {
-                server.LocalAddress = systemInfo.LocalAddress;
-            }
-            if (!string.IsNullOrEmpty(systemInfo.WanAddress))
-            {
-                server.RemoteAddress = systemInfo.WanAddress;
-            }
-
-            var fullSystemInfo = systemInfo as SystemInfo;
-
-            if (fullSystemInfo != null)
-            {
-                server.WakeOnLanInfos = new List<WakeOnLanInfo>();
-
-                if (!string.IsNullOrEmpty(fullSystemInfo.MacAddress))
-                {
-                    server.WakeOnLanInfos.Add(new WakeOnLanInfo
-                    {
-                        MacAddress = fullSystemInfo.MacAddress
-                    });
-                }
             }
         }
 
@@ -607,7 +576,7 @@ namespace MediaBrowser.ApiInteraction
 
             var server = new ServerInfo();
 
-            UpdateServerInfo(server, publicInfo);
+            server.ImportInfo(publicInfo);
 
             return await Connect(server, cancellationToken).ConfigureAwait(false);
         }
@@ -627,18 +596,29 @@ namespace MediaBrowser.ApiInteraction
             return address;
         }
 
-        private async void OnAuthenticated(IApiClient apiClient, AuthenticationResult result)
+        private async void OnAuthenticated(IApiClient apiClient,
+            AuthenticationResult result,
+            bool saveCredentials)
         {
             var systeminfo = await apiClient.GetSystemInfoAsync().ConfigureAwait(false);
 
             var server = ((ApiClient)apiClient).ServerInfo;
-            UpdateServerInfo(server, systeminfo);
+            server.ImportInfo(systeminfo);
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
             server.DateLastAccessed = DateTime.UtcNow;
-            server.UserId = result.User.Id;
-            server.AccessToken = result.AccessToken;
+
+            if (saveCredentials)
+            {
+                server.UserId = result.User.Id;
+                server.AccessToken = result.AccessToken;
+            }
+            else
+            {
+                server.UserId = null;
+                server.AccessToken = null;
+            }
 
             credentials.AddOrUpdateServer(server);
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
