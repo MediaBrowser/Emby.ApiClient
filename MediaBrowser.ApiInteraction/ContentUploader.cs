@@ -34,10 +34,10 @@ namespace MediaBrowser.ApiInteraction
 
             var history = await _apiClient.GetContentUploadHistory(deviceId).ConfigureAwait(false);
 
-            var files = device.GetLocalPhotos()
+            var files = (await device.GetLocalPhotos().ConfigureAwait(false))
                 .ToList();
 
-            files.AddRange(device.GetLocalVideos());
+            files.AddRange((await device.GetLocalVideos().ConfigureAwait(false)));
 
             files = files
                 .Where(i => !history.FilesUploaded.Any(f => string.Equals(f.Id, i.Id, StringComparison.OrdinalIgnoreCase)))

@@ -32,12 +32,12 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public virtual IEnumerable<LocalFileInfo> GetLocalPhotos()
+        public virtual async Task<IEnumerable<LocalFileInfo>> GetLocalPhotos()
         {
             return new List<LocalFileInfo>();
         }
 
-        public virtual IEnumerable<LocalFileInfo> GetLocalVideos()
+        public virtual async Task<IEnumerable<LocalFileInfo>> GetLocalVideos()
         {
             return new List<LocalFileInfo>();
         }
