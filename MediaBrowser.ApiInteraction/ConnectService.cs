@@ -1,4 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
+﻿using System.IO;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -187,7 +188,14 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
-                return JsonSerializer.DeserializeFromStream<ConnectUserServer[]>(stream);
+                using (var reader = new StreamReader(stream))
+                {
+                    var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    _logger.Debug("Connect servers response: {0}", json);
+
+                    return JsonSerializer.DeserializeFromString<ConnectUserServer[]>(json);
+                }
             }
         }
 

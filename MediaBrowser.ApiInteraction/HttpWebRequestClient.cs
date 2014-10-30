@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.ApiInteraction
 {
@@ -25,8 +26,13 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="verb">The verb.</param>
         /// <param name="statusCode">The status code.</param>
+        /// <param name="headers">The headers.</param>
         /// <param name="requestTime">The request time.</param>
-        private void OnResponseReceived(string url, string verb, HttpStatusCode statusCode, DateTime requestTime)
+        private void OnResponseReceived(string url, 
+            string verb, 
+            HttpStatusCode statusCode, 
+            Dictionary<string,string> headers,
+            DateTime requestTime)
         {
             var duration = DateTime.Now - requestTime;
 
@@ -39,7 +45,8 @@ namespace MediaBrowser.ApiInteraction
                     HttpResponseReceived(this, new HttpResponseEventArgs
                     {
                         Url = url,
-                        StatusCode = statusCode
+                        StatusCode = statusCode,
+                        //Headers = headers
                     });
                 }
                 catch (Exception ex)
@@ -110,7 +117,7 @@ namespace MediaBrowser.ApiInteraction
 
                 var httpResponse = (HttpWebResponse)response;
 
-                OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, requestTime);
+                OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, ConvertHeaders(response), requestTime);
 
                 EnsureSuccessStatusCode(httpResponse);
 
@@ -124,45 +131,59 @@ namespace MediaBrowser.ApiInteraction
 
                 throw exception;
             }
-            catch (WebException ex)
-            {
-                Logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                var response = ex.Response as HttpWebResponse;
-                if (response != null)
-                {
-                    OnResponseReceived(options.Url, options.Method, response.StatusCode, requestTime);
-                }
-
-                throw GetException(ex, options.Url);
-            }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw;
+                throw GetExceptionToThrow(ex, options, requestTime);
             }
         }
 
         /// <summary>
-        /// Gets the exception.
+        /// Converts the headers.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="url">The URL.</param>
-        /// <returns>HttpException.</returns>
-        private HttpException GetException(WebException ex, string url)
+        /// <param name="response">The response.</param>
+        /// <returns>Dictionary&lt;System.String, System.String&gt;.</returns>
+        private Dictionary<string, string> ConvertHeaders(WebResponse response)
         {
-            Logger.ErrorException("Error getting response from " + url, ex);
+            var headers = response.Headers;
 
-            var exception = new HttpException(ex.Message, ex);
+            return headers.Cast<string>().ToDictionary(p => p, p => headers[p]);
+        }
 
-            var response = ex.Response as HttpWebResponse;
-            if (response != null)
+        private Exception GetExceptionToThrow(Exception ex, HttpRequest options, DateTime requestTime)
+        {
+            var webException = ex as WebException ?? ex.InnerException as WebException;
+
+            if (webException != null)
             {
-                exception.StatusCode = response.StatusCode;
+                Logger.ErrorException("Error getting response from " + options.Url, ex);
+
+                var httpException = new HttpException(ex.Message, ex);
+                
+                var response = webException.Response as HttpWebResponse;
+                if (response != null)
+                {
+                    httpException.StatusCode = response.StatusCode;
+                    OnResponseReceived(options.Url, options.Method, response.StatusCode, ConvertHeaders(response), requestTime);
+                }
+
+                return httpException;
             }
 
-            return exception;
+            var timeoutException = ex as TimeoutException ?? ex.InnerException as TimeoutException;
+            if (timeoutException != null)
+            {
+                Logger.ErrorException("Request timeout to " + options.Url, ex);
+                
+                var httpException = new HttpException(ex.Message, ex)
+                {
+                    IsTimedOut = true
+                };
+
+                return httpException;
+            }
+
+            Logger.ErrorException("Error getting response from " + options.Url, ex);
+            return ex;
         }
 
         private void ApplyHeaders(HttpHeaders headers, HttpWebRequest request)
