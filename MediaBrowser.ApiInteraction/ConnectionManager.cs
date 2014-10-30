@@ -99,7 +99,11 @@ namespace MediaBrowser.ApiInteraction
             {
                 var address = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-                apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion, ClientCapabilities, _cryptographyProvider);
+                apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion,
+                    ClientCapabilities, _cryptographyProvider)
+                {
+                    JsonSerializer = JsonSerializer
+                };
 
                 ApiClients[server.Id] = apiClient;
 
@@ -155,10 +159,6 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            credentials.Servers = credentials.Servers
-                .OrderByDescending(i => i.DateLastAccessed)
-                .ToList();
-
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             return credentials.Servers.ToList();
@@ -170,13 +170,16 @@ namespace MediaBrowser.ApiInteraction
             {
                 var servers = await _connectService.GetServers(userId, accessToken, cancellationToken).ConfigureAwait(false);
 
+                _logger.Debug("User has {0} connect servers", servers.Length);
+
                 return servers.Select(i => new ServerInfo
                 {
                     ExchangeToken = i.AccessKey,
                     Id = i.SystemId,
                     Name = i.Name,
                     RemoteAddress = i.Url,
-                    LocalAddress = i.LocalAddress
+                    LocalAddress = i.LocalAddress,
+                    UserLinkType = string.Equals(i.UserType, "guest", StringComparison.OrdinalIgnoreCase) ? UserLinkType.Guest : UserLinkType.LinkedUser
                 });
             }
             catch
@@ -227,27 +230,21 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         private async Task<ConnectionResult> Connect(List<ServerInfo> servers, CancellationToken cancellationToken)
         {
+            servers = servers
+               .OrderByDescending(i => i.DateLastAccessed)
+               .ToList();
+
             if (servers.Count == 1)
             {
                 _logger.Debug("1 server in the list.");
 
-                var isFirstAccess = servers[0].DateLastAccessed == DateTime.MinValue;
-
-                if (isFirstAccess && ConnectUser == null)
-                {
-                    return new ConnectionResult
-                    {
-                        Servers = servers,
-                        State = ConnectionState.ServerSelection,
-                        ConnectUser = ConnectUser
-                    };
-                } 
-                
                 var result = await Connect(servers[0], cancellationToken).ConfigureAwait(false);
 
                 if (result.State == ConnectionState.Unavailable)
                 {
-                    result.State = ConnectionState.ServerSelection;
+                    result.State = result.ConnectUser == null ?
+                        ConnectionState.ConnectSignIn :
+                        ConnectionState.ServerSelection;
                 }
 
                 return result;
@@ -255,7 +252,7 @@ namespace MediaBrowser.ApiInteraction
 
             foreach (var server in servers)
             {
-                // If it has saved credential info, try to use that
+                // If it has saved credentials, try to use that
                 if (!string.IsNullOrEmpty(server.AccessToken))
                 {
                     var result = await Connect(server, cancellationToken).ConfigureAwait(false);
@@ -267,12 +264,20 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            return new ConnectionResult
+            var finalResult = new ConnectionResult
             {
                 Servers = servers,
-                State = (servers.Count == 0 && ConnectUser == null) ? ConnectionState.Unavailable : ConnectionState.ServerSelection,
                 ConnectUser = ConnectUser
             };
+
+            if (finalResult.State != ConnectionState.SignedIn)
+            {
+                finalResult.State = servers.Count == 0 && finalResult.ConnectUser == null ?
+                    ConnectionState.ConnectSignIn :
+                    ConnectionState.ServerSelection;
+            }
+
+            return finalResult;
         }
 
         /// <summary>
@@ -655,13 +660,18 @@ namespace MediaBrowser.ApiInteraction
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            foreach (var server in credentials.Servers)
+            var servers = credentials.Servers
+                .Where(i => !i.UserLinkType.HasValue || i.UserLinkType.Value != UserLinkType.Guest)
+                .ToList();
+
+            foreach (var server in servers)
             {
                 server.AccessToken = null;
                 server.UserId = null;
                 server.ExchangeToken = null;
             }
 
+            credentials.Servers = servers;
             credentials.ConnectAccessToken = null;
             credentials.ConnectUserId = null;
 
@@ -707,6 +717,8 @@ namespace MediaBrowser.ApiInteraction
 
             credentials.ConnectAccessToken = result.AccessToken;
             credentials.ConnectUserId = result.UserId;
+
+            await EnsureConnectUser(credentials, CancellationToken.None).ConfigureAwait(false);
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
         }

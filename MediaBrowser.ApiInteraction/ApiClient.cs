@@ -36,7 +36,7 @@ namespace MediaBrowser.ApiInteraction
     /// </summary>
     public partial class ApiClient : BaseApiClient, IApiClient
     {
-        public event EventHandler<EventArgs> RemoteLoggedOut;
+        public event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
         public event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 if (RemoteLoggedOut != null)
                 {
-                    RemoteLoggedOut(this, EventArgs.Empty);
+                    RemoteLoggedOut(this, new GenericEventArgs<RemoteLogoutReason>());
                 }
             }
         }
