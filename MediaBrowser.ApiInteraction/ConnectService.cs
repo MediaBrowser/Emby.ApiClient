@@ -1,11 +1,11 @@
-﻿using System.IO;
-using MediaBrowser.ApiInteraction.Cryptography;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,18 +27,27 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
         }
 
-        public Task<ConnectAuthenticationResult> Authenticate(string username, string password)
+        public static string GetConnectPasswordMd5(string password, ICryptographyProvider cryptographyProvider)
         {
-            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
+            password = ConnectPassword.PerformPreHashFilter(password ?? string.Empty);
 
-            bytes = _cryptographyProvider.CreateMD5(bytes);
+            var bytes = Encoding.UTF8.GetBytes(password);
+
+            bytes = cryptographyProvider.CreateMD5(bytes);
 
             var hash = BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
+
+            return hash;
+        }
+
+        public Task<ConnectAuthenticationResult> Authenticate(string username, string password)
+        {
+            var md5 = GetConnectPasswordMd5(password ?? string.Empty, _cryptographyProvider);
 
             var args = new Dictionary<string, string>
             {
                 {"userName",username},
-                {"password",hash}
+                {"password",md5}
             };
 
             return PostAsync<ConnectAuthenticationResult>(GetConnectUrl("user/authenticate"), args);
