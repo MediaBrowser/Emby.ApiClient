@@ -1630,15 +1630,16 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("username");
             }
 
-            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
-
             var url = GetApiUrl("Users/AuthenticateByName");
 
             var args = new Dictionary<string, string>();
 
             args["username"] = Uri.EscapeDataString(username);
+
+            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
             args["password"] = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
-            args["passwordMD5"] = BitConverter.ToString(_cryptographyProvider.CreateMD5(bytes)).Replace("-", string.Empty);
+
+            args["passwordMD5"] = ConnectService.GetConnectPasswordMd5(password ?? string.Empty, _cryptographyProvider);
 
             var result = await PostAsync<AuthenticationResult>(url, args, CancellationToken.None);
 

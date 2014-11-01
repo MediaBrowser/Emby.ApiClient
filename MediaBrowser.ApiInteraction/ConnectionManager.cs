@@ -413,6 +413,8 @@ namespace MediaBrowser.ApiInteraction
                 return;
             }
 
+            ConnectUser = null;
+
             if (!string.IsNullOrWhiteSpace(credentials.ConnectUserId) && !string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
             {
                 try
