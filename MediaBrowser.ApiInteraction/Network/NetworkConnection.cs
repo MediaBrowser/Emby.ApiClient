@@ -71,7 +71,8 @@ namespace MediaBrowser.ApiInteraction.Network
         /// </returns>
         private bool IsNetworkAvailable()
         {
-            return IsNetworkAvailable(0);
+            return true;
+            //return IsNetworkAvailable(0);
         }
 
         /// <summary>

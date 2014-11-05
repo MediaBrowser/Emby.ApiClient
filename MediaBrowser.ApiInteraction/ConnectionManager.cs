@@ -293,7 +293,7 @@ namespace MediaBrowser.ApiInteraction
             PublicSystemInfo systemInfo = null;
             var connectionMode = ConnectionMode.Local;
 
-            if (!string.IsNullOrEmpty(server.LocalAddress))
+            if (!string.IsNullOrEmpty(server.LocalAddress) && _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable())
             {
                 _logger.Debug("Connecting to local server address...");
 
@@ -650,7 +650,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectionResult> Logout()
+        public async Task Logout()
         {
             foreach (var client in ApiClients.Values.ToList())
             {
@@ -679,12 +679,12 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
+            ConnectUser = null;
+
             if (ConnectUserSignOut != null)
             {
                 ConnectUserSignOut(this, EventArgs.Empty);
             }
-
-            return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
 
         public async Task LoginToConnect(string username, string password)

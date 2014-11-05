@@ -46,7 +46,7 @@ namespace MediaBrowser.ApiInteraction
 
             var args = new Dictionary<string, string>
             {
-                {"userName",username},
+                {"nameOrEmail",username},
                 {"password",md5}
             };
 
@@ -143,13 +143,21 @@ namespace MediaBrowser.ApiInteraction
             {
                 dict.Add("id", query.Id);
             }
+            else if (!string.IsNullOrWhiteSpace(query.NameOrEmail))
+            {
+                dict.Add("nameOrEmail", query.NameOrEmail);
+            }
             else if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 dict.Add("name", query.Name);
             }
             else if (!string.IsNullOrWhiteSpace(query.Email))
             {
-                dict.Add("name", query.Email);
+                dict.Add("email", query.Email);
+            }
+            else
+            {
+                throw new ArgumentException("Empty ConnectUserQuery supplied");
             }
 
             var url = GetConnectUrl("user") + "?" + dict.GetQueryString();
