@@ -658,7 +658,7 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
             queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
 
-            if (options.Format != ImageOutputFormat.Original)
+            if (options.Format.HasValue)
             {
                 queryParams.Add("Format", options.Format.ToString());
             }

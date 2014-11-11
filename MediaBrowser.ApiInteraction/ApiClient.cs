@@ -2741,7 +2741,7 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var queryString = new QueryStringDictionary();
-            queryString.AddIfNotNull("Group", query.GroupItems);
+            queryString.AddIfNotNull("GroupItems", query.GroupItems);
             queryString.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
             queryString.AddIfNotNullOrEmpty("ParentId", query.ParentId);
             queryString.AddIfNotNull("IsPlayed", query.IsPlayed);
@@ -2907,6 +2907,11 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<DevicesOptions>(stream);
             }
+        }
+
+        public Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -366,6 +366,12 @@ namespace MediaBrowser.ApiInteraction
             return result;
         }
 
+        public Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken)
+        {
+            var client = (ApiClient) apiClient;
+            return Connect(client.ServerInfo, cancellationToken);
+        }
+
         private async Task AddAuthenticationInfoFromConnect(ServerInfo server,
             ConnectionMode connectionMode,
             ServerCredentials credentials,
