@@ -170,16 +170,18 @@ ServerInfo and ApiClient will be null if State == Unavailable. If State==SignedI
 
 			switch (result.State)
 			{
-				case ConnectionState.Unavailable:
-					// No servers found. User must manually enter connection info.
+				case ConnectionState.ConnectSignIn:
+					// Connect sign in screen should be presented
+					// Authenticate using LoginToConnect, then call Connect again to start over
 
 				case ConnectionState.ServerSignIn:
 					// A server was found and the user needs to login.
 					// Display a login screen and authenticate with the server using result.ApiClient
 
 				case ConnectionState.ServerSelection:
-					// Multiple servers available
-					// Display a selection screen
+						// Multiple servers available
+						// Display a selection screen using result.Servers
+						// When a server is chosen, call the Connect overload that accept either a ServerInfo object or a String url.
 
 				case ConnectionState.SignedIn:
 					// A server was found and the user has been signed in using previously saved credentials.
@@ -197,15 +199,27 @@ If the user wishes to connect to a new server, simply use the Connect overload t
 
             var result = await connectionManager.Connect(address, cancellationToken);
 
-			// Proceed with same switch statement as above example
+			switch (result.State)
+			{
+				case ConnectionState.Unavailable:
+					// Server unreachable
+
+				case ConnectionState.ServerSignIn:
+					// A server was found and the user needs to login.
+					// Display a login screen and authenticate with the server using result.ApiClient
+
+				case ConnectionState.SignedIn:
+					// A server was found and the user has been signed in using previously saved credentials.
+					// Ready to browse using result.ApiClient
+			}
 
 ```
 
 Similarly, if the user selects a server from the selection screen, use the overload that accepts a ServerInfo instance. When the user wishes to logout, use connectionManager.Logout instead of the individual apiClient.Logout.
 
-If at anytime a Logout event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
+If at anytime the RemoteLoggedOut event is fired, simply start the workflow all over again by calling connectionManager.Connect(cancellationToken).
 
-ConnectionManager will handle opening and closing web socket connections at the appropiate times. All your app needs to do is use an ApiClient instance to subscribe to individual events.
+ConnectionManager will handle opening and closing web socket connections at the appropriate times. All your app needs to do is use an ApiClient instance to subscribe to individual events.
 
 
 ``` c#

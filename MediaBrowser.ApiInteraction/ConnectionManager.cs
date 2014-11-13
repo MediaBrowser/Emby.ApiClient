@@ -293,7 +293,9 @@ namespace MediaBrowser.ApiInteraction
             PublicSystemInfo systemInfo = null;
             var connectionMode = ConnectionMode.Local;
 
-            if (!string.IsNullOrEmpty(server.LocalAddress) && _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable())
+            if (!string.IsNullOrEmpty(server.LocalAddress) &&
+                (IsLocalHost(server.LocalAddress) ||
+                _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable()))
             {
                 _logger.Debug("Connecting to local server address...");
 
@@ -301,7 +303,7 @@ namespace MediaBrowser.ApiInteraction
                 systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
 
                 // If that failed, wake the device and retry
-                if (systemInfo == null && server.WakeOnLanInfos.Count > 0)
+                if (systemInfo == null && server.WakeOnLanInfos.Count > 0 && !IsLocalHost(server.LocalAddress))
                 {
                     await WakeServer(server, cancellationToken).ConfigureAwait(false);
                     systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
@@ -366,6 +368,12 @@ namespace MediaBrowser.ApiInteraction
             return result;
         }
 
+        private bool IsLocalHost(string address)
+        {
+            return address.IndexOf("localhost", StringComparison.OrdinalIgnoreCase) != -1 || 
+                address.IndexOf("/127.", StringComparison.OrdinalIgnoreCase) != -1;
+        }
+
         public Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken)
         {
             var client = (ApiClient) apiClient;
@@ -377,6 +385,16 @@ namespace MediaBrowser.ApiInteraction
             ServerCredentials credentials,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(credentials.ConnectUserId))
+            {
+                throw new ArgumentException("server");
+            }
+
+            if (string.IsNullOrWhiteSpace(server.ExchangeToken))
+            {
+                throw new ArgumentException("server");
+            }
+
             _logger.Debug("Adding authentication info from Connect");
 
             var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
@@ -588,6 +606,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var server = new ServerInfo();
+
+            if (IsLocalHost(address))
+            {
+                server.IsLocalAddressFixed = true;
+            }
 
             server.ImportInfo(publicInfo);
 
