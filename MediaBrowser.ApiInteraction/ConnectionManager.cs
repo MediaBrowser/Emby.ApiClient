@@ -250,17 +250,15 @@ namespace MediaBrowser.ApiInteraction
                 return result;
             }
 
-            foreach (var server in servers)
+            var firstServer = servers.FirstOrDefault();
+            // See if we have any saved credentials and can auto sign in
+            if (firstServer != null && !string.IsNullOrEmpty(firstServer.AccessToken))
             {
-                // If it has saved credentials, try to use that
-                if (!string.IsNullOrEmpty(server.AccessToken))
-                {
-                    var result = await Connect(server, cancellationToken).ConfigureAwait(false);
+                var result = await Connect(firstServer, cancellationToken).ConfigureAwait(false);
 
-                    if (result.State == ConnectionState.SignedIn)
-                    {
-                        return result;
-                    }
+                if (result.State == ConnectionState.SignedIn)
+                {
+                    return result;
                 }
             }
 
@@ -270,12 +268,9 @@ namespace MediaBrowser.ApiInteraction
                 ConnectUser = ConnectUser
             };
 
-            if (finalResult.State != ConnectionState.SignedIn)
-            {
-                finalResult.State = servers.Count == 0 && finalResult.ConnectUser == null ?
-                    ConnectionState.ConnectSignIn :
-                    ConnectionState.ServerSelection;
-            }
+            finalResult.State = servers.Count == 0 && finalResult.ConnectUser == null ?
+                ConnectionState.ConnectSignIn :
+                ConnectionState.ServerSelection;
 
             return finalResult;
         }
@@ -293,6 +288,8 @@ namespace MediaBrowser.ApiInteraction
             PublicSystemInfo systemInfo = null;
             var connectionMode = ConnectionMode.Local;
 
+            // Try connect locally if there's a local address,
+            // and we're either on localhost or the device has a local connection
             if (!string.IsNullOrEmpty(server.LocalAddress) &&
                 (IsLocalHost(server.LocalAddress) ||
                 _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable()))
