@@ -1,4 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
+﻿using System.Globalization;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -294,15 +295,34 @@ namespace MediaBrowser.ApiInteraction
                 (IsLocalHost(server.LocalAddress) ||
                 _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable()))
             {
+                // Kick off wake on lan on a separate thread (if applicable)
+                var sendWakeOnLan = server.WakeOnLanInfos.Count > 0 && !IsLocalHost(server.LocalAddress);
+
+                var wakeOnLanTask = sendWakeOnLan ?
+                    Task.Run(() => WakeServer(server, cancellationToken), cancellationToken) : 
+                    Task.FromResult(true);
+
+                var wakeOnLanSendTime = DateTime.Now;
+
                 _logger.Debug("Connecting to local server address...");
 
                 // Try to connect to the local address
                 systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
 
                 // If that failed, wake the device and retry
-                if (systemInfo == null && server.WakeOnLanInfos.Count > 0 && !IsLocalHost(server.LocalAddress))
+                if (systemInfo == null && sendWakeOnLan)
                 {
-                    await WakeServer(server, cancellationToken).ConfigureAwait(false);
+                    await wakeOnLanTask.ConfigureAwait(false);
+
+                    // After wake on lan finishes, make sure at least 10 seconds have elapsed since the time it was first sent out
+                    var waitTime = TimeSpan.FromSeconds(10).TotalMilliseconds -
+                                   (DateTime.Now - wakeOnLanSendTime).TotalMilliseconds;
+
+                    if (waitTime > 0)
+                    {
+                        await Task.Delay(Convert.ToInt32(waitTime, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+                    }
+
                     systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -512,7 +532,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 2000,
+                    Timeout = 5000,
                     Method = "GET"
 
                 }).ConfigureAwait(false))
