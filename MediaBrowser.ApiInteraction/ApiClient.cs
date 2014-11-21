@@ -9,6 +9,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Playlists;
@@ -56,10 +57,10 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="accessToken">The access token.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public ApiClient(ILogger logger, 
-            string serverAddress, 
-            string accessToken, 
-            ClientCapabilities capabilities, 
+        public ApiClient(ILogger logger,
+            string serverAddress,
+            string accessToken,
+            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
@@ -80,12 +81,12 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public ApiClient(ILogger logger, 
-            string serverAddress, 
-            string clientName, 
-            IDevice device, 
-            string applicationVersion, 
-            ClientCapabilities capabilities, 
+        public ApiClient(ILogger logger,
+            string serverAddress,
+            string clientName,
+            IDevice device,
+            string applicationVersion,
+            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, device, applicationVersion)
         {
@@ -2912,6 +2913,20 @@ namespace MediaBrowser.ApiInteraction
         public Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("UserId", CurrentUserId);
+
+            var url = GetApiUrl("Items/" + itemId + "/MediaInfo", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<LiveMediaInfoResult>(stream);
+            }
         }
     }
 }

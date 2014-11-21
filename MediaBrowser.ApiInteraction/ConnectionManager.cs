@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.ApiInteraction.Cryptography;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -154,10 +154,19 @@ namespace MediaBrowser.ApiInteraction
             {
                 await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
 
-                foreach (var server in await GetConnectServers(credentials.ConnectUserId, credentials.ConnectAccessToken, cancellationToken).ConfigureAwait(false))
+                var connectServers = await GetConnectServers(credentials.ConnectUserId, credentials.ConnectAccessToken, cancellationToken)
+                            .ConfigureAwait(false);
+
+                foreach (var server in connectServers)
                 {
                     credentials.AddOrUpdateServer(server);
                 }
+
+                // Remove old servers
+                credentials.Servers = credentials.Servers
+                    .Where(i => !string.IsNullOrWhiteSpace(i.ExchangeToken) ||
+                        connectServers.Any(c => string.Equals(c.Id, i.Id, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
             }
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
@@ -165,7 +174,7 @@ namespace MediaBrowser.ApiInteraction
             return credentials.Servers.ToList();
         }
 
-        private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
+        private async Task<List<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
         {
             try
             {
@@ -181,7 +190,8 @@ namespace MediaBrowser.ApiInteraction
                     RemoteAddress = i.Url,
                     LocalAddress = i.LocalAddress,
                     UserLinkType = string.Equals(i.UserType, "guest", StringComparison.OrdinalIgnoreCase) ? UserLinkType.Guest : UserLinkType.LinkedUser
-                });
+                
+                }).ToList();
             }
             catch
             {
@@ -683,7 +693,15 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnLocalUserSignIn(UserDto user)
         {
+            if (LocalUserSignIn != null)
+            {
+                LocalUserSignIn(this, new GenericEventArgs<UserDto>(user));
+            }
+        }
 
+        private void OnLocalUserSignout(IApiClient apiClient)
+        {
+            
         }
 
         private void OnConnectUserSignIn(ConnectUser user)
@@ -703,6 +721,7 @@ namespace MediaBrowser.ApiInteraction
                 if (!string.IsNullOrEmpty(client.AccessToken))
                 {
                     await client.Logout().ConfigureAwait(false);
+                    OnLocalUserSignout(client);
                 }
             }
 
