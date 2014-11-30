@@ -545,7 +545,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 5000,
+                    Timeout = 15000,
                     Method = "GET"
 
                 }).ConfigureAwait(false))
