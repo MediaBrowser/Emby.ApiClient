@@ -76,7 +76,7 @@ namespace MediaBrowser.ApiInteraction
             Device.ResumeFromSleep += Device_ResumeFromSleep;
 
             var jsonSerializer = new NewtonsoftJsonSerializer();
-            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider);
+            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider, applicationName, applicationVersion);
         }
 
         public IJsonSerializer JsonSerializer
@@ -356,7 +356,10 @@ namespace MediaBrowser.ApiInteraction
                 {
                     await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
 
-                    await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(server.ExchangeToken))
+                    {
+                        await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 if (!string.IsNullOrWhiteSpace(server.AccessToken))

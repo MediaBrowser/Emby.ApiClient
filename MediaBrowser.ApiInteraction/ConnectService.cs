@@ -18,13 +18,17 @@ namespace MediaBrowser.ApiInteraction
         private readonly ILogger _logger;
         private readonly IAsyncHttpClient _httpClient;
         private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly string _appName;
+        private readonly string _appVersion;
 
-        public ConnectService(IJsonSerializer jsonSerializer, ILogger logger, IAsyncHttpClient httpClient, ICryptographyProvider cryptographyProvider)
+        public ConnectService(IJsonSerializer jsonSerializer, ILogger logger, IAsyncHttpClient httpClient, ICryptographyProvider cryptographyProvider, string appName, string appVersion)
         {
             JsonSerializer = jsonSerializer;
             _logger = logger;
             _httpClient = httpClient;
             _cryptographyProvider = cryptographyProvider;
+            _appName = appName;
+            _appVersion = appVersion;
         }
 
         public static string GetConnectPasswordMd5(string password, ICryptographyProvider cryptographyProvider)
@@ -86,12 +90,16 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetConnectUrl("pin") + "?" + dict.GetQueryString();
 
-            using (var stream = await _httpClient.SendAsync(new HttpRequest
+            var request = new HttpRequest
             {
                 Method = "GET",
                 Url = url
 
-            }).ConfigureAwait(false))
+            };
+
+            AddAppInfo(request, _appName, _appVersion);
+
+            using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
                 return JsonSerializer.DeserializeFromStream<PinStatusResult>(stream);
             }
@@ -123,6 +131,8 @@ namespace MediaBrowser.ApiInteraction
             {
                 AddUserAccessToken(request, userAccessToken);
             }
+
+            AddAppInfo(request, _appName, _appVersion);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
@@ -170,6 +180,7 @@ namespace MediaBrowser.ApiInteraction
             };
 
             AddUserAccessToken(request, accessToken);
+            AddAppInfo(request, _appName, _appVersion);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
@@ -202,6 +213,7 @@ namespace MediaBrowser.ApiInteraction
             };
 
             AddUserAccessToken(request, accessToken);
+            AddAppInfo(request, _appName, _appVersion);
 
             using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
             {
@@ -223,6 +235,19 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("accessToken");
             }
             request.RequestHeaders["X-Connect-UserToken"] = accessToken;
+        }
+
+        private void AddAppInfo(HttpRequest request, string appName, string appVersion)
+        {
+            if (string.IsNullOrWhiteSpace(appName))
+            {
+                throw new ArgumentNullException("appName");
+            }
+            if (string.IsNullOrWhiteSpace(appVersion))
+            {
+                throw new ArgumentNullException("appVersion");
+            }
+            request.RequestHeaders["X-Application"] = appName + "/" + appVersion;
         }
 
         private string GetConnectUrl(string handler)
