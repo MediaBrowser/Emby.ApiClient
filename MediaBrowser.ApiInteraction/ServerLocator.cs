@@ -2,7 +2,9 @@
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -26,38 +28,50 @@ namespace MediaBrowser.ApiInteraction
             _logger = logger;
         }
 
-        public Task<List<ServerDiscoveryInfo>> FindServers(CancellationToken cancellationToken)
-        {
-            return FindServers(2000, cancellationToken);
-        }
-
-        /// <summary>
-        /// Attemps to discover the server within a local network
-        /// </summary>
         public Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken)
         {
             var taskCompletionSource = new TaskCompletionSource<List<ServerDiscoveryInfo>>();
+            var serversFound = new ConcurrentBag<ServerDiscoveryInfo>();
 
-            var timeoutToken = new CancellationTokenSource(timeoutMs).Token;
+            _logger.Debug("Searching for servers with timeout of {0} ms", timeoutMs);
 
-            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken);
+            var innerCancellationSource = new CancellationTokenSource();
+            var linkedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(
+                innerCancellationSource.Token, cancellationToken);
 
-            linkedTokenSource.Token.Register(() => taskCompletionSource.TrySetCanceled());
+            BeginFindServer(serversFound, taskCompletionSource, innerCancellationSource);
 
-            FindServer(taskCompletionSource, timeoutMs);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(timeoutMs, linkedCancellationSource.Token).ConfigureAwait(false);
+                    taskCompletionSource.TrySetResult(serversFound.ToList());
+                }
+                catch (OperationCanceledException)
+                {
+                    
+                }
+            });
 
             return taskCompletionSource.Task;
         }
 
-        private async void FindServer(TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, int timeoutMs)
+        private void BeginFindServer(ConcurrentBag<ServerDiscoveryInfo> serversFound, TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, CancellationTokenSource cancellationTokenSource)
         {
-            _logger.Debug("Searching for servers with timeout of {0} ms", timeoutMs);
+            FindServer(serversFound.Add, exception =>
+            {
+                taskCompletionSource.TrySetException(exception);
+                cancellationTokenSource.Cancel();
 
+            }, cancellationTokenSource.Token);
+        }
+
+        private async void FindServer(Action<ServerDiscoveryInfo> serverFound, Action<Exception> error, CancellationToken cancellationToken)
+        {
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
             {
-                client.Client.ReceiveTimeout = timeoutMs;
-
                 // Construct the message the server is expecting
                 var bytes = Encoding.UTF8.GetBytes("who is MediaBrowserServer_v2?");
 
@@ -69,33 +83,39 @@ namespace MediaBrowser.ApiInteraction
                     // Send the broadcast
                     await client.SendAsync(bytes, bytes.Length, targetEndPoint).ConfigureAwait(false);
 
-                    // Get a result back
-                    var result = await client.ReceiveAsync().ConfigureAwait(false);
-
-                    if (result.RemoteEndPoint.Port == targetEndPoint.Port)
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        // Convert bytes to text
-                        var json = Encoding.UTF8.GetString(result.Buffer);
+                        // Get a result back
+                        var result = await client.ReceiveAsync().ConfigureAwait(false);
 
-                        if (!string.IsNullOrEmpty(json))
+                        if (result.RemoteEndPoint.Port == targetEndPoint.Port)
                         {
-                            try
+                            // Convert bytes to text
+                            var json = Encoding.UTF8.GetString(result.Buffer);
+
+                            _logger.Debug("Received response from endpoint: " + result.RemoteEndPoint + ". Response: " + json);
+
+                            if (!string.IsNullOrEmpty(json))
                             {
-                                var info = _jsonSerializer.DeserializeFromString<ServerDiscoveryInfo>(json);
-                                taskCompletionSource.SetResult(new List<ServerDiscoveryInfo> { info });
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.ErrorException("Error parsing server discovery info", ex);
+                                try
+                                {
+                                    var info = _jsonSerializer.DeserializeFromString<ServerDiscoveryInfo>(json);
+
+                                    info.EndpointAddress = result.RemoteEndPoint.Address.ToString();
+
+                                    serverFound(info);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.ErrorException("Error parsing server discovery info", ex);
+                                }
                             }
                         }
                     }
-
-                    taskCompletionSource.SetException(new ArgumentException("Unexpected response"));
                 }
                 catch (Exception ex)
                 {
-                    taskCompletionSource.TrySetException(ex);
+                    error(ex);
                 }
             }
         }

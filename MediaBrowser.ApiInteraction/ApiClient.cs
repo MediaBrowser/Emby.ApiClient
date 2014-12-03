@@ -493,14 +493,14 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var url = GetNextUpUrl(query);
-
+            
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
-        public async Task<ItemsResult> GetUpcomingEpisodesAsync(NextUpQuery query)
+        public async Task<ItemsResult> GetUpcomingEpisodesAsync(UpcomingEpisodesQuery query)
         {
             if (query == null)
             {
@@ -525,6 +525,13 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("UserId", query.UserId);
 
+            dict.AddIfNotNull("EnableImages", query.EnableImages);
+            if (query.EnableImageTypes != null)
+            {
+                dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
+            }
+            dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
+            
             var url = GetApiUrl("Shows/Upcoming", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
@@ -1837,7 +1844,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken)
         {
             url = AddDataFormat(url);
 
@@ -2812,7 +2819,7 @@ namespace MediaBrowser.ApiInteraction
 
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetPlaylistItems(Model.Playlists.PlaylistItemQuery query)
+        public async Task<QueryResult<BaseItemDto>> GetPlaylistItems(PlaylistItemQuery query)
         {
             if (query == null)
             {
@@ -2915,11 +2922,11 @@ namespace MediaBrowser.ApiInteraction
             throw new NotImplementedException();
         }
 
-        public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId)
+        public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId)
         {
             var dict = new QueryStringDictionary { };
 
-            dict.Add("UserId", CurrentUserId);
+            dict.Add("UserId", userId);
 
             var url = GetApiUrl("Items/" + itemId + "/MediaInfo", dict);
 
