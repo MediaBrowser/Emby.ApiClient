@@ -39,7 +39,7 @@ namespace MediaBrowser.ApiInteraction
             var linkedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(
                 innerCancellationSource.Token, cancellationToken);
 
-            BeginFindServer(serversFound, taskCompletionSource, innerCancellationSource);
+            BeginFindServers(serversFound, taskCompletionSource, innerCancellationSource);
 
             Task.Run(async () =>
             {
@@ -57,9 +57,9 @@ namespace MediaBrowser.ApiInteraction
             return taskCompletionSource.Task;
         }
 
-        private void BeginFindServer(ConcurrentBag<ServerDiscoveryInfo> serversFound, TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, CancellationTokenSource cancellationTokenSource)
+        private void BeginFindServers(ConcurrentBag<ServerDiscoveryInfo> serversFound, TaskCompletionSource<List<ServerDiscoveryInfo>> taskCompletionSource, CancellationTokenSource cancellationTokenSource)
         {
-            FindServer(serversFound.Add, exception =>
+            FindServers(serversFound.Add, exception =>
             {
                 taskCompletionSource.TrySetException(exception);
                 cancellationTokenSource.Cancel();
@@ -67,8 +67,10 @@ namespace MediaBrowser.ApiInteraction
             }, cancellationTokenSource.Token);
         }
 
-        private async void FindServer(Action<ServerDiscoveryInfo> serverFound, Action<Exception> error, CancellationToken cancellationToken)
+        private async void FindServers(Action<ServerDiscoveryInfo> serverFound, Action<Exception> error, CancellationToken cancellationToken)
         {
+            var serverIdsFound = new List<string>();
+
             // Create a udp client
             using (var client = new UdpClient(new IPEndPoint(IPAddress.Any, GetRandomUnusedPort())))
             {
@@ -101,9 +103,12 @@ namespace MediaBrowser.ApiInteraction
                                 {
                                     var info = _jsonSerializer.DeserializeFromString<ServerDiscoveryInfo>(json);
 
-                                    info.EndpointAddress = result.RemoteEndPoint.Address.ToString();
-
-                                    serverFound(info);
+                                    if (!serverIdsFound.Contains(info.Id))
+                                    {
+                                        serverIdsFound.Add(info.Id);
+                                        info.EndpointAddress = result.RemoteEndPoint.Address.ToString();
+                                        serverFound(info);
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
