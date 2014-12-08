@@ -10,6 +10,7 @@ using MediaBrowser.Model.System;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace MediaBrowser.ApiInteraction
     {
         public event EventHandler<GenericEventArgs<UserDto>> LocalUserSignIn;
         public event EventHandler<GenericEventArgs<ConnectUser>> ConnectUserSignIn;
-        public event EventHandler<EventArgs> LocalUserSignOut;
+        public event EventHandler<GenericEventArgs<IApiClient>> LocalUserSignOut;
         public event EventHandler<EventArgs> ConnectUserSignOut;
         public event EventHandler<EventArgs> RemoteLoggedOut;
 
@@ -75,7 +76,7 @@ namespace MediaBrowser.ApiInteraction
             Device.ResumeFromSleep += Device_ResumeFromSleep;
 
             var jsonSerializer = new NewtonsoftJsonSerializer();
-            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider);
+            _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider, applicationName, applicationVersion);
         }
 
         public IJsonSerializer JsonSerializer
@@ -97,7 +98,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (!ApiClients.TryGetValue(server.Id, out apiClient))
             {
-                var address = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+                var address = server.GetAddress(connectionMode);
 
                 apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion,
                     ClientCapabilities, _cryptographyProvider)
@@ -153,10 +154,19 @@ namespace MediaBrowser.ApiInteraction
             {
                 await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
 
-                foreach (var server in await GetConnectServers(credentials.ConnectUserId, credentials.ConnectAccessToken, cancellationToken).ConfigureAwait(false))
+                var connectServers = await GetConnectServers(credentials.ConnectUserId, credentials.ConnectAccessToken, cancellationToken)
+                            .ConfigureAwait(false);
+
+                foreach (var server in connectServers)
                 {
                     credentials.AddOrUpdateServer(server);
                 }
+
+                // Remove old servers
+                credentials.Servers = credentials.Servers
+                    .Where(i => !string.IsNullOrWhiteSpace(i.ExchangeToken) ||
+                        connectServers.Any(c => string.Equals(c.Id, i.Id, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
             }
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
@@ -164,7 +174,7 @@ namespace MediaBrowser.ApiInteraction
             return credentials.Servers.ToList();
         }
 
-        private async Task<IEnumerable<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
+        private async Task<List<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
         {
             try
             {
@@ -180,7 +190,8 @@ namespace MediaBrowser.ApiInteraction
                     RemoteAddress = i.Url,
                     LocalAddress = i.LocalAddress,
                     UserLinkType = string.Equals(i.UserType, "guest", StringComparison.OrdinalIgnoreCase) ? UserLinkType.Guest : UserLinkType.LinkedUser
-                });
+
+                }).ToList();
             }
             catch
             {
@@ -194,7 +205,7 @@ namespace MediaBrowser.ApiInteraction
 
             try
             {
-                servers = await _serverDiscovery.FindServers(1000, cancellationToken).ConfigureAwait(false);
+                servers = await _serverDiscovery.FindServers(1500, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -213,9 +224,34 @@ namespace MediaBrowser.ApiInteraction
             {
                 Id = i.Id,
                 LocalAddress = i.Address,
-                Name = i.Name
+                Name = i.Name,
+                ManualAddress = ConvertEndpointAddressToManualAddress(i)
             })
             .ToList();
+        }
+
+        private string ConvertEndpointAddressToManualAddress(ServerDiscoveryInfo info)
+        {
+            if (!string.IsNullOrWhiteSpace(info.Address) && !string.IsNullOrWhiteSpace(info.EndpointAddress))
+            {
+                var address = info.EndpointAddress.Split(':').First();
+
+                // Determine the port, if any
+                var parts = info.Address.Split(':');
+                if (parts.Length > 1)
+                {
+                    var portString = parts.Last();
+                    int port;
+                    if (int.TryParse(portString, NumberStyles.Any, CultureInfo.InvariantCulture, out port))
+                    {
+                        address += ":" + portString;
+                    }
+                }
+
+                return NormalizeAddress(address);
+            }
+
+            return null;
         }
 
         public async Task<ConnectionResult> Connect(CancellationToken cancellationToken)
@@ -250,17 +286,15 @@ namespace MediaBrowser.ApiInteraction
                 return result;
             }
 
-            foreach (var server in servers)
+            var firstServer = servers.FirstOrDefault();
+            // See if we have any saved credentials and can auto sign in
+            if (firstServer != null && !string.IsNullOrEmpty(firstServer.AccessToken))
             {
-                // If it has saved credentials, try to use that
-                if (!string.IsNullOrEmpty(server.AccessToken))
-                {
-                    var result = await Connect(server, cancellationToken).ConfigureAwait(false);
+                var result = await Connect(firstServer, cancellationToken).ConfigureAwait(false);
 
-                    if (result.State == ConnectionState.SignedIn)
-                    {
-                        return result;
-                    }
+                if (result.State == ConnectionState.SignedIn)
+                {
+                    return result;
                 }
             }
 
@@ -270,12 +304,9 @@ namespace MediaBrowser.ApiInteraction
                 ConnectUser = ConnectUser
             };
 
-            if (finalResult.State != ConnectionState.SignedIn)
-            {
-                finalResult.State = servers.Count == 0 && finalResult.ConnectUser == null ?
-                    ConnectionState.ConnectSignIn :
-                    ConnectionState.ServerSelection;
-            }
+            finalResult.State = servers.Count == 0 && finalResult.ConnectUser == null ?
+                ConnectionState.ConnectSignIn :
+                ConnectionState.ServerSelection;
 
             return finalResult;
         }
@@ -291,79 +322,152 @@ namespace MediaBrowser.ApiInteraction
             };
 
             PublicSystemInfo systemInfo = null;
-            var connectionMode = ConnectionMode.Local;
+            var connectionMode = ConnectionMode.Manual;
 
-            if (!string.IsNullOrEmpty(server.LocalAddress))
+            var tests = new[] { ConnectionMode.Manual, ConnectionMode.Local, ConnectionMode.Remote }.ToList();
+
+            // If we've connected to the server before, try to optimize by starting with the last used connection mode
+            if (server.LastConnectionMode.HasValue)
             {
-                _logger.Debug("Connecting to local server address...");
-
-                // Try to connect to the local address
-                systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
-
-                // If that failed, wake the device and retry
-                if (systemInfo == null && server.WakeOnLanInfos.Count > 0)
-                {
-                    await WakeServer(server, cancellationToken).ConfigureAwait(false);
-                    systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
-                }
+                tests.Remove(server.LastConnectionMode.Value);
+                tests.Insert(0, server.LastConnectionMode.Value);
             }
 
-            // If local connection is unavailable, try to connect to the remote address
-            if (systemInfo == null && !string.IsNullOrEmpty(server.RemoteAddress))
-            {
-                _logger.Debug("Connecting to remote server address...");
+            var isLocalNetworkAvailable = _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable();
 
-                systemInfo = await TryConnect(server.RemoteAddress, cancellationToken).ConfigureAwait(false);
-                connectionMode = ConnectionMode.Remote;
+            // Kick off wake on lan on a separate thread (if applicable)
+            var sendWakeOnLan = server.WakeOnLanInfos.Count > 0 && isLocalNetworkAvailable;
+
+            var wakeOnLanTask = sendWakeOnLan ?
+                Task.Run(() => WakeServer(server, cancellationToken), cancellationToken) :
+                Task.FromResult(true);
+
+            var wakeOnLanSendTime = DateTime.Now;
+
+            foreach (var mode in tests)
+            {
+                _logger.Debug("Attempting to connect to server {0}. ConnectionMode: {1}", server.Name, mode.ToString());
+
+                if (mode == ConnectionMode.Local)
+                {
+                    // Try connect locally if there's a local address,
+                    // and we're either on localhost or the device has a local connection
+                    if (!string.IsNullOrEmpty(server.LocalAddress) && isLocalNetworkAvailable)
+                    {
+                        // Try to connect to the local address
+                        systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
+
+                        // If that failed, wake the device and retry
+                        if (systemInfo == null && sendWakeOnLan)
+                        {
+                            await wakeOnLanTask.ConfigureAwait(false);
+
+                            // After wake on lan finishes, make sure at least 10 seconds have elapsed since the time it was first sent out
+                            var waitTime = TimeSpan.FromSeconds(10).TotalMilliseconds -
+                                           (DateTime.Now - wakeOnLanSendTime).TotalMilliseconds;
+
+                            if (waitTime > 0)
+                            {
+                                await Task.Delay(Convert.ToInt32(waitTime, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+                            }
+
+                            systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+                else if (mode == ConnectionMode.Manual)
+                {
+                    // Try manual address if there is one, but only if it's different from the local/remote addresses
+                    if (!string.IsNullOrEmpty(server.ManualAddress)
+                        && !string.Equals(server.ManualAddress, server.LocalAddress, StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(server.ManualAddress, server.RemoteAddress, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Try to connect to the local address
+                        systemInfo = await TryConnect(server.ManualAddress, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else if (mode == ConnectionMode.Remote)
+                {
+                    if (!string.IsNullOrEmpty(server.RemoteAddress))
+                    {
+                        systemInfo = await TryConnect(server.RemoteAddress, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                if (systemInfo != null)
+                {
+                    connectionMode = mode;
+                    break;
+                }
             }
 
             if (systemInfo != null)
             {
-                server.ImportInfo(systemInfo);
-
-                var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
-
-                if (!string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
-                {
-                    await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
-
-                    await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
-                }
-
-                if (!string.IsNullOrWhiteSpace(server.AccessToken))
-                {
-                    await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
-                }
-
-                credentials.AddOrUpdateServer(server);
-                server.DateLastAccessed = DateTime.UtcNow;
-
-                await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
-
-                result.ApiClient = GetOrAddApiClient(server, connectionMode);
-                result.State = string.IsNullOrEmpty(server.AccessToken) ?
-                    ConnectionState.ServerSignIn :
-                    ConnectionState.SignedIn;
-
-                ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
-
-                if (result.State == ConnectionState.SignedIn)
-                {
-                    EnsureWebSocketIfConfigured(result.ApiClient);
-                }
-
-                CurrentApiClient = result.ApiClient;
-
-                result.Servers.Add(server);
-
-                if (Connected != null)
-                {
-                    Connected(this, new GenericEventArgs<ConnectionResult>(result));
-                }
+                await OnSuccessfulConnection(server, systemInfo, result, connectionMode, cancellationToken)
+                        .ConfigureAwait(false);
             }
 
             result.ConnectUser = ConnectUser;
             return result;
+        }
+
+        private async Task OnSuccessfulConnection(ServerInfo server,
+            PublicSystemInfo systemInfo,
+            ConnectionResult result,
+            ConnectionMode connectionMode,
+            CancellationToken cancellationToken)
+        {
+            server.ImportInfo(systemInfo);
+
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(credentials.ConnectAccessToken))
+            {
+                await EnsureConnectUser(credentials, cancellationToken).ConfigureAwait(false);
+
+                if (!string.IsNullOrWhiteSpace(server.ExchangeToken))
+                {
+                    await AddAuthenticationInfoFromConnect(server, connectionMode, credentials, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(server.AccessToken))
+            {
+                await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
+            }
+
+            credentials.AddOrUpdateServer(server);
+            server.DateLastAccessed = DateTime.UtcNow;
+            server.LastConnectionMode = connectionMode;
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+
+            result.ApiClient = GetOrAddApiClient(server, connectionMode);
+            result.State = string.IsNullOrEmpty(server.AccessToken) ?
+                ConnectionState.ServerSignIn :
+                ConnectionState.SignedIn;
+
+            ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
+
+            if (result.State == ConnectionState.SignedIn)
+            {
+                EnsureWebSocketIfConfigured(result.ApiClient);
+            }
+
+            CurrentApiClient = result.ApiClient;
+
+            result.Servers.Add(server);
+
+            if (Connected != null)
+            {
+                Connected(this, new GenericEventArgs<ConnectionResult>(result));
+            }
+        }
+
+        public Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken)
+        {
+            var client = (ApiClient)apiClient;
+            return Connect(client.ServerInfo, cancellationToken);
         }
 
         private async Task AddAuthenticationInfoFromConnect(ServerInfo server,
@@ -371,9 +475,19 @@ namespace MediaBrowser.ApiInteraction
             ServerCredentials credentials,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(credentials.ConnectUserId))
+            {
+                throw new ArgumentException("server");
+            }
+
+            if (string.IsNullOrWhiteSpace(server.ExchangeToken))
+            {
+                throw new ArgumentException("server");
+            }
+
             _logger.Debug("Adding authentication info from Connect");
 
-            var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+            var url = server.GetAddress(connectionMode);
 
             url += "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
@@ -438,7 +552,7 @@ namespace MediaBrowser.ApiInteraction
         {
             _logger.Debug("Validating saved authentication");
 
-            var url = connectionMode == ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+            var url = server.GetAddress(connectionMode);
 
             var headers = new HttpHeaders();
             headers.SetAccessToken(server.AccessToken);
@@ -491,7 +605,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 2000,
+                    Timeout = 15000,
                     Method = "GET"
 
                 }).ConfigureAwait(false))
@@ -581,7 +695,11 @@ namespace MediaBrowser.ApiInteraction
                 };
             }
 
-            var server = new ServerInfo();
+            var server = new ServerInfo
+            {
+                ManualAddress = address,
+                LastConnectionMode = ConnectionMode.Manual
+            };
 
             server.ImportInfo(publicInfo);
 
@@ -637,6 +755,14 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnLocalUserSignIn(UserDto user)
         {
+            if (LocalUserSignIn != null)
+            {
+                LocalUserSignIn(this, new GenericEventArgs<UserDto>(user));
+            }
+        }
+
+        private void OnLocalUserSignout(IApiClient apiClient)
+        {
 
         }
 
@@ -650,13 +776,14 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectionResult> Logout()
+        public async Task Logout()
         {
             foreach (var client in ApiClients.Values.ToList())
             {
                 if (!string.IsNullOrEmpty(client.AccessToken))
                 {
                     await client.Logout().ConfigureAwait(false);
+                    OnLocalUserSignout(client);
                 }
             }
 
@@ -679,12 +806,12 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
+            ConnectUser = null;
+
             if (ConnectUserSignOut != null)
             {
                 ConnectUserSignOut(this, EventArgs.Empty);
             }
-
-            return await Connect(CancellationToken.None).ConfigureAwait(false);
         }
 
         public async Task LoginToConnect(string username, string password)

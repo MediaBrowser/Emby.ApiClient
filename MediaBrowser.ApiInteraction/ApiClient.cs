@@ -9,6 +9,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Playlists;
@@ -56,10 +57,10 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="accessToken">The access token.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public ApiClient(ILogger logger, 
-            string serverAddress, 
-            string accessToken, 
-            ClientCapabilities capabilities, 
+        public ApiClient(ILogger logger,
+            string serverAddress,
+            string accessToken,
+            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
@@ -80,12 +81,12 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="applicationVersion">The application version.</param>
         /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
-        public ApiClient(ILogger logger, 
-            string serverAddress, 
-            string clientName, 
-            IDevice device, 
-            string applicationVersion, 
-            ClientCapabilities capabilities, 
+        public ApiClient(ILogger logger,
+            string serverAddress,
+            string clientName,
+            IDevice device,
+            string applicationVersion,
+            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, device, applicationVersion)
         {
@@ -492,14 +493,14 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var url = GetNextUpUrl(query);
-
+            
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
             }
         }
 
-        public async Task<ItemsResult> GetUpcomingEpisodesAsync(NextUpQuery query)
+        public async Task<ItemsResult> GetUpcomingEpisodesAsync(UpcomingEpisodesQuery query)
         {
             if (query == null)
             {
@@ -524,6 +525,13 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("UserId", query.UserId);
 
+            dict.AddIfNotNull("EnableImages", query.EnableImages);
+            if (query.EnableImageTypes != null)
+            {
+                dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
+            }
+            dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
+            
             var url = GetApiUrl("Shows/Upcoming", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
@@ -1836,7 +1844,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<Stream> GetSerializedStreamAsync(string url, CancellationToken cancellationToken)
         {
             url = AddDataFormat(url);
 
@@ -2741,7 +2749,7 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var queryString = new QueryStringDictionary();
-            queryString.AddIfNotNull("Group", query.GroupItems);
+            queryString.AddIfNotNull("GroupItems", query.GroupItems);
             queryString.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
             queryString.AddIfNotNullOrEmpty("ParentId", query.ParentId);
             queryString.AddIfNotNull("IsPlayed", query.IsPlayed);
@@ -2811,7 +2819,7 @@ namespace MediaBrowser.ApiInteraction
 
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetPlaylistItems(Model.Playlists.PlaylistItemQuery query)
+        public async Task<QueryResult<BaseItemDto>> GetPlaylistItems(PlaylistItemQuery query)
         {
             if (query == null)
             {
@@ -2906,6 +2914,25 @@ namespace MediaBrowser.ApiInteraction
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<DevicesOptions>(stream);
+            }
+        }
+
+        public Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.Add("UserId", userId);
+
+            var url = GetApiUrl("Items/" + itemId + "/MediaInfo", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<LiveMediaInfoResult>(stream);
             }
         }
     }

@@ -370,6 +370,13 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("MinIndexNumber", query.MinIndexNumber);
 
+            dict.AddIfNotNull("EnableImages", query.EnableImages);
+            if (query.EnableImageTypes != null)
+            {
+                dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
+            }
+            dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
+
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres, "|");
             dict.AddIfNotNull("Genres", query.AllGenres, "|");
@@ -445,6 +452,13 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("UserId", query.UserId);
 
+            dict.AddIfNotNull("EnableImages", query.EnableImages);
+            if (query.EnableImageTypes != null)
+            {
+                dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
+            }
+            dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
+            
             return GetApiUrl("Shows/NextUp", dict);
         }
 
@@ -619,6 +633,13 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("NameLessThan", query.NameLessThan);
             dict.AddIfNotNullOrEmpty("NameStartsWithOrGreater", query.NameStartsWithOrGreater);
 
+            dict.AddIfNotNull("EnableImages", query.EnableImages);
+            if (query.EnableImageTypes != null)
+            {
+                dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
+            }
+            dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
+            
             return GetApiUrl(type, dict);
         }
 
@@ -658,7 +679,7 @@ namespace MediaBrowser.ApiInteraction
             queryParams.AddIfNotNull("CropWhitespace", options.CropWhitespace);
             queryParams.Add("EnableImageEnhancers", options.EnableImageEnhancers);
 
-            if (options.Format != ImageOutputFormat.Original)
+            if (options.Format.HasValue)
             {
                 queryParams.Add("Format", options.Format.ToString());
             }
