@@ -164,7 +164,7 @@ namespace MediaBrowser.ApiInteraction
 
                 // Remove old servers
                 credentials.Servers = credentials.Servers
-                    .Where(i => !string.IsNullOrWhiteSpace(i.ExchangeToken) ||
+                    .Where(i => string.IsNullOrWhiteSpace(i.ExchangeToken) ||
                         connectServers.Any(c => string.Equals(c.Id, i.Id, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
             }
