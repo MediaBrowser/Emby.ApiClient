@@ -17,6 +17,7 @@ using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Users;
@@ -2917,11 +2918,6 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId)
         {
             var dict = new QueryStringDictionary { };
@@ -2934,6 +2930,28 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<LiveMediaInfoResult>(stream);
             }
+        }
+
+        public Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateItem(BaseItemDto item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SyncJob> RequestSync(SyncJobRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            var url = GetApiUrl("Sync/Jobs");
+
+            return PostAsync<SyncJobRequest, SyncJob>(url, request, CancellationToken.None);
         }
     }
 }

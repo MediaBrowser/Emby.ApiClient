@@ -450,8 +450,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("StartIndex", query.StartIndex);
 
-            if (query.SeriesId != null)
-                dict.Add("SeriesId", query.SeriesId);
+            dict.AddIfNotNullOrEmpty("SeriesId", query.SeriesId);
 
             dict.Add("UserId", query.UserId);
 
