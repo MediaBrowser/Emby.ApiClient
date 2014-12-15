@@ -2942,7 +2942,7 @@ namespace MediaBrowser.ApiInteraction
             throw new NotImplementedException();
         }
 
-        public Task<SyncJob> RequestSync(SyncJobRequest request)
+        public Task<SyncJob> CreateSyncJob(SyncJobRequest request)
         {
             if (request == null)
             {

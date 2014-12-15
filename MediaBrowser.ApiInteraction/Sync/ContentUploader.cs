@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.ApiInteraction.Sync
 {
     public class ContentUploader
     {
