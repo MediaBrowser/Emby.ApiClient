@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
@@ -26,11 +27,18 @@ namespace MediaBrowser.ApiInteraction.Sync
                 return;
             }
 
-            var result = await _connectionManager.Connect(server, cancellationToken).ConfigureAwait(false);
+            // Don't need these here
+            var result = await _connectionManager.Connect(server, new ConnectionOptions
+            {
+                EnableWebSocket = false,
+                ReportCapabilities = false
+
+            }, cancellationToken).ConfigureAwait(false);
 
             if (result.State == ConnectionState.SignedIn)
             {
                 await SyncInternal(server, result.ApiClient, progress, cancellationToken).ConfigureAwait(false);
+                progress.Report(100);
             }
             else
             {
@@ -39,11 +47,15 @@ namespace MediaBrowser.ApiInteraction.Sync
             }
         }
 
-        public async Task SyncInternal(ServerInfo server, IApiClient apiClient, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task SyncInternal(ServerInfo server, IApiClient apiClient, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var contentUploader = new ContentUploader(apiClient, _logger);
 
-            await contentUploader.UploadImages(progress, cancellationToken).ConfigureAwait(false);
+            var uploadProgress = new ActionableProgress<double>();
+            uploadProgress.RegisterAction(progress.Report);
+            await contentUploader.UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
+
+            // Do sync here
         }
         
         private void LogNoAuthentication(ServerInfo server)

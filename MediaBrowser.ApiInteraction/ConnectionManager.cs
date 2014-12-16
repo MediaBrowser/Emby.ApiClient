@@ -314,7 +314,12 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attempts to connect to a server
         /// </summary>
-        public async Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken)
+        public Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken)
+        {
+            return Connect(server, new ConnectionOptions(), cancellationToken);
+        }
+
+        public async Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken)
         {
             var result = new ConnectionResult
             {
@@ -403,7 +408,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (systemInfo != null)
             {
-                await OnSuccessfulConnection(server, systemInfo, result, connectionMode, cancellationToken)
+                await OnSuccessfulConnection(server, options, systemInfo, result, connectionMode, cancellationToken)
                         .ConfigureAwait(false);
             }
 
@@ -412,6 +417,7 @@ namespace MediaBrowser.ApiInteraction
         }
 
         private async Task OnSuccessfulConnection(ServerInfo server,
+            ConnectionOptions options,
             PublicSystemInfo systemInfo,
             ConnectionResult result,
             ConnectionMode connectionMode,
@@ -449,7 +455,7 @@ namespace MediaBrowser.ApiInteraction
 
             ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
 
-            if (result.State == ConnectionState.SignedIn)
+            if (result.State == ConnectionState.SignedIn && options.EnableWebSocket)
             {
                 EnsureWebSocketIfConfigured(result.ApiClient);
             }
