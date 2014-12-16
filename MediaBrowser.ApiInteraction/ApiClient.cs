@@ -124,10 +124,7 @@ namespace MediaBrowser.ApiInteraction
             NetworkConnection = networkConnection;
             ConnectionMode = initialMode;
             ServerInfo = info;
-            ServerAddress = initialMode == ConnectionMode.Local ?
-                info.LocalAddress :
-                info.RemoteAddress;
-
+            ServerAddress = info.GetAddress(initialMode);
         }
 
         private async Task<Stream> SendAsync(HttpRequest request, bool enableFailover = true)
