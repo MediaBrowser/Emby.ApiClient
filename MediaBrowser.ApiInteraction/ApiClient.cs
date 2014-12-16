@@ -266,9 +266,7 @@ namespace MediaBrowser.ApiInteraction
 
         private string ReplaceServerAddress(string url)
         {
-            var baseUrl = ConnectionMode == ConnectionMode.Local ?
-                (ServerInfo.LocalAddress) :
-                (ServerInfo.RemoteAddress);
+            var baseUrl = ServerInfo.GetAddress(ConnectionMode);
 
             var index = url.IndexOf("/mediabrowser", StringComparison.OrdinalIgnoreCase);
 
