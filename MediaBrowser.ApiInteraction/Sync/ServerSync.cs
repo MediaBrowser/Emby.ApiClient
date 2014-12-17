@@ -49,13 +49,15 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task SyncInternal(ServerInfo server, IApiClient apiClient, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var contentUploader = new ContentUploader(apiClient, _logger);
+            const double cameraUploadTotalPercentage = .25;
 
             var uploadProgress = new ActionableProgress<double>();
-            uploadProgress.RegisterAction(progress.Report);
-            await contentUploader.UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
+            uploadProgress.RegisterAction(p => progress.Report(p * cameraUploadTotalPercentage));
+            await new ContentUploader(apiClient, _logger).UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
 
-            // Do sync here
+            var syncProgress = new ActionableProgress<double>();
+            syncProgress.RegisterAction(p => progress.Report((cameraUploadTotalPercentage * 100) + (p * (1 - cameraUploadTotalPercentage))));
+            await new MediaSync().Sync(apiClient, uploadProgress, cancellationToken).ConfigureAwait(false);
         }
         
         private void LogNoAuthentication(ServerInfo server)

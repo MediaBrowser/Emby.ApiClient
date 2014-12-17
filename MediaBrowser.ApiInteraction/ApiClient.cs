@@ -223,6 +223,15 @@ namespace MediaBrowser.ApiInteraction
                 urlList.Reverse();
             }
 
+            if (!string.IsNullOrEmpty(ServerInfo.ManualAddress))
+            {
+                if (!string.Equals(ServerInfo.ManualAddress, ServerInfo.LocalAddress, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(ServerInfo.ManualAddress, ServerInfo.RemoteAddress, StringComparison.OrdinalIgnoreCase))
+                {
+                    urlList.Insert(0, new Tuple<string, ConnectionMode>(ServerInfo.ManualAddress, ConnectionMode.Manual));
+                }
+            }
+
             foreach (var url in urlList)
             {
                 var connected = await TryConnect(url.Item1, cancellationToken).ConfigureAwait(false);
@@ -489,7 +498,7 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var url = GetNextUpUrl(query);
-            
+
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
                 return DeserializeFromStream<ItemsResult>(stream);
@@ -527,7 +536,7 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
             }
             dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
-            
+
             var url = GetApiUrl("Shows/Upcoming", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
@@ -2767,7 +2776,6 @@ namespace MediaBrowser.ApiInteraction
 
         public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)
         {
-
             if (playlistId == null)
             {
                 throw new ArgumentNullException("playlistId");
@@ -2785,9 +2793,8 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
-        public async Task<PlaylistCreationResult> CreatePlaylist(Model.Playlists.PlaylistCreationRequest request)
+        public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request)
         {
-
             if (string.IsNullOrEmpty(request.UserId))
             {
                 throw new ArgumentNullException("userId");
@@ -2947,6 +2954,70 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sync/Jobs");
 
             return PostAsync<SyncJobRequest, SyncJob>(url, request, CancellationToken.None);
+        }
+
+        public Task<Stream> GetSyncJobItemFile(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("Sync/JobItems/" + id + "/File");
+
+            return GetStream(url);
+        }
+
+        public async Task<QueryResult<SyncJobItem>> GetSyncJobItems(SyncJobItemQuery query)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("IsCompleted", query.IsCompleted);
+            dict.AddIfNotNullOrEmpty("JobId", query.JobId);
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
+
+            if (query.Status.HasValue)
+            {
+                dict.Add("Status", query.Status.Value.ToString());
+            }
+
+            var url = GetApiUrl("Sync/JobItems", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<SyncJobItem>>(stream);
+            }
+        }
+
+        public async Task<QueryResult<SyncJob>> GetSyncJobs(SyncJobQuery query)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNull("IsCompleted", query.IsCompleted);
+            dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
+
+            var url = GetApiUrl("Sync/Jobs", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<QueryResult<SyncJob>>(stream);
+            }
+        }
+
+        public Task ReportSyncJobItemTransferred(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("Sync/JobItems/" + id + "/Transferred");
+
+            return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
     }
 }
