@@ -2956,18 +2956,6 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SyncJobRequest, SyncJob>(url, request, CancellationToken.None);
         }
 
-        public Task<Stream> GetSyncJobItemFile(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            var url = GetApiUrl("Sync/JobItems/" + id + "/File");
-
-            return GetStream(url);
-        }
-
         public async Task<QueryResult<SyncJobItem>> GetSyncJobItems(SyncJobItemQuery query)
         {
             var dict = new QueryStringDictionary { };
@@ -3018,6 +3006,31 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sync/JobItems/" + id + "/Transferred");
 
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
+        }
+
+
+        public Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("Sync/JobItems/" + id + "/File");
+
+            return GetStream(url, cancellationToken);
+        }
+
+        public Task UpdateUserConfiguration(string userId, UserConfiguration configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
+            var url = GetApiUrl("Users/" + userId + "/Configuration");
+
+            return PostAsync<UserConfiguration, EmptyRequestResult>(url, configuration, CancellationToken.None);
         }
     }
 }
