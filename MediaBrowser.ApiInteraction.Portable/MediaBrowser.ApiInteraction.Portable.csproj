@@ -50,9 +50,6 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\ConnectService.cs">
       <Link>ConnectService.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\ContentUploader.cs">
-      <Link>ContentUploader.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Cryptography\ICryptographyProvider.cs">
       <Link>Cryptography\ICryptographyProvider.cs</Link>
     </Compile>
@@ -86,6 +83,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\QueryStringDictionary.cs">
       <Link>QueryStringDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\ContentUploader.cs">
+      <Link>Sync\ContentUploader.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -102,7 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MediaBrowser.Model">
-      <HintPath>..\packages\MediaBrowser.Common.3.0.517\lib\portable-net4+sl4+wp71+win8+wpa81\MediaBrowser.Model.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.522\lib\portable-net4+sl4+wp71+win8+wpa81\MediaBrowser.Model.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\portable-net45+wp80+win8+wpa81+aspnetcore50\Newtonsoft.Json.dll</HintPath>
