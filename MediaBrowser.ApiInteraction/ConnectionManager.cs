@@ -360,24 +360,7 @@ namespace MediaBrowser.ApiInteraction
                     if (!string.IsNullOrEmpty(server.LocalAddress) && isLocalNetworkAvailable)
                     {
                         // Try to connect to the local address
-                        systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
-
-                        // If that failed, wake the device and retry
-                        if (systemInfo == null && sendWakeOnLan)
-                        {
-                            await wakeOnLanTask.ConfigureAwait(false);
-
-                            // After wake on lan finishes, make sure at least 10 seconds have elapsed since the time it was first sent out
-                            var waitTime = TimeSpan.FromSeconds(10).TotalMilliseconds -
-                                           (DateTime.Now - wakeOnLanSendTime).TotalMilliseconds;
-
-                            if (waitTime > 0)
-                            {
-                                await Task.Delay(Convert.ToInt32(waitTime, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
-                            }
-
-                            systemInfo = await TryConnect(server.LocalAddress, cancellationToken).ConfigureAwait(false);
-                        }
+                        systemInfo = await TryConnect(server.LocalAddress, 5000, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 else if (mode == ConnectionMode.Manual)
@@ -388,14 +371,14 @@ namespace MediaBrowser.ApiInteraction
                         && !string.Equals(server.ManualAddress, server.RemoteAddress, StringComparison.OrdinalIgnoreCase))
                     {
                         // Try to connect to the local address
-                        systemInfo = await TryConnect(server.ManualAddress, cancellationToken).ConfigureAwait(false);
+                        systemInfo = await TryConnect(server.ManualAddress, 15000, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 else if (mode == ConnectionMode.Remote)
                 {
                     if (!string.IsNullOrEmpty(server.RemoteAddress))
                     {
-                        systemInfo = await TryConnect(server.RemoteAddress, cancellationToken).ConfigureAwait(false);
+                        systemInfo = await TryConnect(server.RemoteAddress, 15000, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -404,6 +387,22 @@ namespace MediaBrowser.ApiInteraction
                     connectionMode = mode;
                     break;
                 }
+            }
+
+            if (systemInfo == null && !string.IsNullOrEmpty(server.LocalAddress) && isLocalNetworkAvailable && sendWakeOnLan)
+            {
+                await wakeOnLanTask.ConfigureAwait(false);
+
+                // After wake on lan finishes, make sure at least 10 seconds have elapsed since the time it was first sent out
+                var waitTime = TimeSpan.FromSeconds(10).TotalMilliseconds -
+                               (DateTime.Now - wakeOnLanSendTime).TotalMilliseconds;
+
+                if (waitTime > 0)
+                {
+                    await Task.Delay(Convert.ToInt32(waitTime, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+                }
+
+                systemInfo = await TryConnect(server.LocalAddress, 15000, cancellationToken).ConfigureAwait(false);
             }
 
             if (systemInfo != null)
@@ -601,7 +600,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private async Task<PublicSystemInfo> TryConnect(string url, CancellationToken cancellationToken)
+        private async Task<PublicSystemInfo> TryConnect(string url, int timeout, CancellationToken cancellationToken)
         {
             url += "/mediabrowser/system/info/public?format=json";
 
@@ -611,7 +610,7 @@ namespace MediaBrowser.ApiInteraction
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    Timeout = 15000,
+                    Timeout = timeout,
                     Method = "GET"
 
                 }).ConfigureAwait(false))
@@ -690,7 +689,7 @@ namespace MediaBrowser.ApiInteraction
         {
             address = NormalizeAddress(address);
 
-            var publicInfo = await TryConnect(address, cancellationToken).ConfigureAwait(false);
+            var publicInfo = await TryConnect(address, 15000, cancellationToken).ConfigureAwait(false);
 
             if (publicInfo == null)
             {
