@@ -90,6 +90,7 @@
     <Compile Include="Network\NetworkConnection.cs" />
     <Compile Include="PortableHttpWebRequestFactory.cs" />
     <Compile Include="QueryStringDictionary.cs" />
+    <Compile Include="Sync\DoubleProgress.cs" />
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiServerSync.cs" />
     <Compile Include="Sync\ServerSync.cs" />

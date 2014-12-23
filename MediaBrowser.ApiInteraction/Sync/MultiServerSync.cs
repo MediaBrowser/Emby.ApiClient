@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -41,7 +40,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var currentPercent = startingPercent;
-                var serverProgress = new ActionableProgress<double>();
+                var serverProgress = new DoubleProgress();
                 serverProgress.RegisterAction(pct =>
                 {
                     var totalProgress = pct*percentPerServer;

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
@@ -51,11 +50,11 @@ namespace MediaBrowser.ApiInteraction.Sync
         {
             const double cameraUploadTotalPercentage = .25;
 
-            var uploadProgress = new ActionableProgress<double>();
+            var uploadProgress = new DoubleProgress();
             uploadProgress.RegisterAction(p => progress.Report(p * cameraUploadTotalPercentage));
             await new ContentUploader(apiClient, _logger).UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
 
-            var syncProgress = new ActionableProgress<double>();
+            var syncProgress = new DoubleProgress();
             syncProgress.RegisterAction(p => progress.Report((cameraUploadTotalPercentage * 100) + (p * (1 - cameraUploadTotalPercentage))));
             await new MediaSync().Sync(apiClient, uploadProgress, cancellationToken).ConfigureAwait(false);
         }
