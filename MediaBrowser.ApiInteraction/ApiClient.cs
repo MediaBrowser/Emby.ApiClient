@@ -2082,6 +2082,12 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("SupportsContentUploading", capabilities.SupportsContentUploading);
             dict.Add("SupportsMediaControl", capabilities.SupportsMediaControl);
+            dict.Add("SupportsSync", capabilities.SupportsSync);
+            dict.Add("SupportsUniqueIdentifier", capabilities.SupportsUniqueIdentifier);
+            dict.Add("MessageCallbackUrl", capabilities.MessageCallbackUrl);            
+
+            if (capabilities.DeviceProfile != null)
+                dict.Add("DeviceProfile", SerializeToJson(capabilities.DeviceProfile));
 
             var url = GetApiUrl("Sessions/Capabilities", dict);
 
