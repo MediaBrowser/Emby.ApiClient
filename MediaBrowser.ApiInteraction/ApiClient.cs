@@ -2068,30 +2068,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("capabilities");
             }
 
-            var dict = new QueryStringDictionary();
+            var url = GetApiUrl("Sessions/Capabilities/Full");
 
-            if (capabilities.PlayableMediaTypes != null && capabilities.PlayableMediaTypes.Count > 0)
-            {
-                dict.Add("PlayableMediaTypes", capabilities.PlayableMediaTypes);
-            }
-
-            if (capabilities.SupportedCommands != null && capabilities.SupportedCommands.Count > 0)
-            {
-                dict.Add("SupportedCommands", capabilities.SupportedCommands);
-            }
-
-            dict.Add("SupportsContentUploading", capabilities.SupportsContentUploading);
-            dict.Add("SupportsMediaControl", capabilities.SupportsMediaControl);
-            dict.Add("SupportsSync", capabilities.SupportsSync);
-            dict.Add("SupportsUniqueIdentifier", capabilities.SupportsUniqueIdentifier);
-            dict.Add("MessageCallbackUrl", capabilities.MessageCallbackUrl);            
-
-            if (capabilities.DeviceProfile != null)
-                dict.Add("DeviceProfile", SerializeToJson(capabilities.DeviceProfile));
-
-            var url = GetApiUrl("Sessions/Capabilities", dict);
-
-            return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
+            return PostAsync<ClientCapabilities,EmptyRequestResult>(url, capabilities, cancellationToken);
         }
 
         public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
