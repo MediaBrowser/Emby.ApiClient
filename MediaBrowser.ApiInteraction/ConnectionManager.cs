@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;

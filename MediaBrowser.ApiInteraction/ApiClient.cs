@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
@@ -287,9 +288,21 @@ namespace MediaBrowser.ApiInteraction
             return url;
         }
 
-        private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
             return SendAsync(new HttpRequest
+            {
+                CancellationToken = cancellationToken,
+                Method = "GET",
+                RequestHeaders = HttpHeaders,
+                Url = url
+            });
+        }
+
+
+        public Task<HttpResponse> GetResponse(string url, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return HttpClient.GetResponse(new HttpRequest
             {
                 CancellationToken = cancellationToken,
                 Method = "GET",
@@ -2993,7 +3006,6 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
-
         public Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
@@ -3016,6 +3028,23 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Users/" + userId + "/Configuration");
 
             return PostAsync<UserConfiguration, EmptyRequestResult>(url, configuration, CancellationToken.None);
+        }
+
+        public Task ReportOfflineActions(List<UserAction> actions)
+        {
+            if (actions == null || actions.Count == 0)
+            {
+                throw new ArgumentNullException("actions");
+            }
+
+            var url = GetApiUrl("Sync/OfflineActions");
+
+            return PostAsync<List<UserAction>, EmptyRequestResult>(url, actions, CancellationToken.None);
+        }
+
+        public async Task<List<SyncedItem>> GetReadySyncItems(string targetId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.ApiInteraction.Net
 {
     public class HttpHeaders : Dictionary<string,string>
     {

@@ -4,13 +4,13 @@ using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.ApiInteraction.Net
 {
     /// <summary>
     /// Class HttpWebRequestClient
@@ -46,7 +46,7 @@ namespace MediaBrowser.ApiInteraction
                     {
                         Url = url,
                         StatusCode = statusCode,
-                        //Headers = headers
+                        Headers = headers
                     });
                 }
                 catch (Exception ex)
@@ -73,7 +73,7 @@ namespace MediaBrowser.ApiInteraction
             _requestFactory = requestFactory;
         }
 
-        public async Task<Stream> SendAsync(HttpRequest options)
+        public async Task<HttpResponse> GetResponse(HttpRequest options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -117,13 +117,14 @@ namespace MediaBrowser.ApiInteraction
 
                 var httpResponse = (HttpWebResponse)response;
 
-                OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, ConvertHeaders(response), requestTime);
+                var headers = ConvertHeaders(response);
+                OnResponseReceived(options.Url, options.Method, httpResponse.StatusCode, headers, requestTime);
 
                 EnsureSuccessStatusCode(httpResponse);
 
                 options.CancellationToken.ThrowIfCancellationRequested();
 
-                return httpResponse.GetResponseStream();
+                return GetResponse(httpResponse, headers);
             }
             catch (OperationCanceledException ex)
             {
@@ -135,6 +136,43 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw GetExceptionToThrow(ex, options, requestTime);
             }
+        }
+
+        private HttpResponse GetResponse(HttpWebResponse httpResponse, Dictionary<string,string> headers)
+        {
+            return new HttpResponse(httpResponse)
+            {
+                Content = httpResponse.GetResponseStream(),
+
+                StatusCode = httpResponse.StatusCode,
+
+                ContentType = httpResponse.ContentType,
+
+                Headers = headers,
+
+                ContentLength = GetContentLength(httpResponse),
+
+                ResponseUrl = httpResponse.ResponseUri.ToString()
+            };
+        }
+
+        private long? GetContentLength(HttpWebResponse response)
+        {
+            var length = response.ContentLength;
+
+            if (length == 0)
+            {
+                return null;
+            }
+
+            return length;
+        }
+
+        public async Task<Stream> SendAsync(HttpRequest options)
+        {
+            var response = await GetResponse(options).ConfigureAwait(false);
+
+            return response.Content;
         }
 
         /// <summary>

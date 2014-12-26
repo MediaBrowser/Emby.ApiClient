@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.ApiInteraction.Net
 {
     /// <summary>
     /// Interface IHttpClient
@@ -21,5 +22,12 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="options">The options.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
         Task<Stream> SendAsync(HttpRequest options);
+
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task&lt;HttpResponse&gt;.</returns>
+        Task<HttpResponse> GetResponse(HttpRequest options);
     }
 }

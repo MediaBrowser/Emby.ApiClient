@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace MediaBrowser.ApiInteraction
+namespace MediaBrowser.ApiInteraction.Net
 {
     public class HttpRequest
     {
