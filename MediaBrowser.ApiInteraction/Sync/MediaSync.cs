@@ -42,11 +42,12 @@ namespace MediaBrowser.ApiInteraction.Sync
                 totalProgress += 1;
                 progress.Report(totalProgress);
             });
-            await GetNewMedia(apiClient, innerProgress, cancellationToken);
+            await GetNewMedia(apiClient, serverInfo, innerProgress, cancellationToken);
             progress.Report(100);
         }
 
         private async Task GetNewMedia(IApiClient apiClient,
+            ServerInfo server,
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
@@ -58,7 +59,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await GetItem(apiClient, jobItem, cancellationToken).ConfigureAwait(false);
+                await GetItem(apiClient, server, jobItem, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -69,6 +70,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         private async Task GetItem(IApiClient apiClient,
+            ServerInfo server,
             SyncedItem jobItem,
             CancellationToken cancellationToken)
         {
@@ -78,12 +80,12 @@ namespace MediaBrowser.ApiInteraction.Sync
             await _localAssetManager.AddOrUpdate(libraryItem).ConfigureAwait(false);
 
             // Download item file
-            await GetItemFile(apiClient, jobItem, cancellationToken).ConfigureAwait(false);
+            await GetItemFile(apiClient, server, jobItem, cancellationToken).ConfigureAwait(false);
 
-            var localFiles = await _localAssetManager.GetFiles(jobItem.Item.Id).ConfigureAwait(false);
+            var localFiles = await _localAssetManager.GetFiles(jobItem.Item, server).ConfigureAwait(false);
 
             // Download images
-            await GetItemImages(apiClient, libraryItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemImages(apiClient, server, libraryItem, localFiles, cancellationToken).ConfigureAwait(false);
 
             // Download subtitles
             await GetItemSubtitles(apiClient, libraryItem, localFiles, cancellationToken).ConfigureAwait(false);
@@ -93,6 +95,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         private async Task GetItemFile(IApiClient apiClient,
+            ServerInfo server,
             SyncedItem jobItem,
             CancellationToken cancellationToken)
         {
@@ -100,11 +103,12 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             using (var stream = await apiClient.GetSyncJobItemFile(jobItem.SyncJobItemId, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveMedia(stream, jobItem).ConfigureAwait(false);
+                await _localAssetManager.SaveMedia(stream, jobItem, server).ConfigureAwait(false);
             }
         }
 
         private async Task GetItemImages(IApiClient apiClient,
+            ServerInfo server,
             BaseItemDto item,
             List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
@@ -119,7 +123,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                 // Image not on server anymore (or has been changed)
                 if (current == null)
                 {
-                    await _localAssetManager.Delete(image);
+                    await _localAssetManager.DeleteFile(image.Path);
                 }
             }
 
@@ -131,7 +135,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                 // Download image
                 if (current == null)
                 {
-                    await DownloadImage(apiClient, item, image, cancellationToken).ConfigureAwait(false);
+                    await DownloadImage(apiClient, server, item, image, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -154,6 +158,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         private async Task DownloadImage(IApiClient apiClient,
+            ServerInfo server,
             BaseItemDto item,
             ImageInfo image,
             CancellationToken cancellationToken)
@@ -166,7 +171,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveImage(response.Content, response.ContentType, item.Id, image).ConfigureAwait(false);
+                await _localAssetManager.SaveImage(response.Content, response.ContentType, item, image, server).ConfigureAwait(false);
             }
         }
 

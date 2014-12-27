@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Sync;
@@ -25,12 +26,14 @@ namespace MediaBrowser.ApiInteraction.Data
         }
 
         /// <summary>
-        /// Creates the specified action.
+        /// Records the user action.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns>Task.</returns>
-        public Task Create(UserAction action)
+        public Task RecordUserAction(UserAction action)
         {
+            action.Id = Guid.NewGuid().ToString("N");
+
             return _userActionRepository.Create(action);
         }
 
@@ -67,11 +70,14 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <summary>
         /// Gets the files.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="server">The server.</param>
         /// <returns>Task&lt;List&lt;ItemFileInfo&gt;&gt;.</returns>
-        public async Task<List<ItemFileInfo>> GetFiles(string itemId)
+        public async Task<List<ItemFileInfo>> GetFiles(BaseItemDto item, ServerInfo server)
         {
-            var list = await _fileRepository.Get(itemId).ConfigureAwait(false);
+            var path = GetDirectoryPath(item, server);
+
+            var list = await _fileRepository.GetFileSystemEntries(path).ConfigureAwait(false);
 
             foreach (var file in list)
             {
@@ -97,19 +103,20 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <summary>
         /// Deletes the specified file.
         /// </summary>
-        /// <param name="file">The file.</param>
+        /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
-        public Task Delete(ItemFileInfo file)
+        public Task DeleteFile(string path)
         {
-            return _fileRepository.Delete(file);
+            return _fileRepository.DeleteFile(path);
         }
 
         public async Task SaveImage(Stream stream,
             string mimeType,
-            string itemId,
-            ImageInfo imageInfo)
+            BaseItemDto item,
+            ImageInfo imageInfo,
+            ServerInfo server)
         {
-            var localFiles = await GetFiles(itemId).ConfigureAwait(false);
+            var localFiles = await GetFiles(item, server).ConfigureAwait(false);
 
             var media = localFiles.FirstOrDefault(i => i.Type == ItemFileType.Media);
 
@@ -120,13 +127,10 @@ namespace MediaBrowser.ApiInteraction.Data
 
             var imageFilename = GetSaveFileName(media.Name, imageInfo) + GetSaveExtension(mimeType);
 
-            await _fileRepository.Save(stream, new ItemFileInfo
-            {
-                ImageType = imageInfo.ImageType,
-                Name = imageFilename,
-                ItemId = itemId,
-                Type = ItemFileType.Image
-            });
+            var path = GetDirectoryPath(item, server);
+            path = Path.Combine(path, imageFilename);
+
+            await _fileRepository.SaveFile(stream, path);
         }
 
         private string GetSaveFileName(string mediaName, ImageInfo imageInfo)
@@ -143,7 +147,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return MimeTypes.ToExtension(mimeType);
         }
 
-        public Task SaveMedia(Stream stream, SyncedItem jobItem)
+        public Task SaveMedia(Stream stream, SyncedItem jobItem, ServerInfo server)
         {
             var libraryItem = jobItem.Item;
 
@@ -154,12 +158,67 @@ namespace MediaBrowser.ApiInteraction.Data
                 filename = Guid.NewGuid().ToString("N");
             }
 
-            return _fileRepository.Save(stream, new ItemFileInfo
+            filename = _fileRepository.GetValidFileName(filename);
+
+            var path = GetDirectoryPath(libraryItem, server);
+
+            path = Path.Combine(path, filename);
+
+            return _fileRepository.SaveFile(stream, path);
+        }
+
+        private string GetDirectoryPath(BaseItemDto item, ServerInfo server)
+        {
+            var parts = new List<string>
             {
-                Name = filename,
-                ItemId = libraryItem.Id,
-                Type = ItemFileType.Media
-            });
+                server.Name
+            };
+
+            if (item.IsType("movie"))
+            {
+                parts.Add("Movies");
+                parts.Add(item.Name);
+            }
+            else if (item.IsType("episode"))
+            {
+                parts.Add("TV");
+                parts.Add(item.SeriesName);
+
+                if (!string.IsNullOrWhiteSpace(item.SeasonName))
+                {
+                    parts.Add(item.SeasonName);
+                }
+            }
+            else if (item.IsVideo)
+            {
+                parts.Add("Videos");
+                parts.Add(item.Name);
+            }
+            else if (item.IsAudio)
+            {
+                parts.Add("Music");
+
+                if (!string.IsNullOrWhiteSpace(item.AlbumArtist))
+                {
+                    parts.Add(item.AlbumArtist);
+                }
+
+                if (!string.IsNullOrWhiteSpace(item.Album))
+                {
+                    parts.Add(item.Album);
+                }
+            }
+            else if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
+            {
+                parts.Add("Photos");
+
+                if (!string.IsNullOrWhiteSpace(item.Album))
+                {
+                    parts.Add(item.Album);
+                }
+            }
+
+            return Path.Combine(parts.Select(_fileRepository.GetValidFileName).ToArray());
         }
     }
 }
