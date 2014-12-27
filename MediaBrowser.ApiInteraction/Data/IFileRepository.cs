@@ -12,7 +12,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<ItemFileInfo>> GetFileSystemEntries(string path);
+        Task<List<DeviceFileInfo>> GetFileSystemEntries(string path);
 
         /// <summary>
         /// Saves the specified stream.

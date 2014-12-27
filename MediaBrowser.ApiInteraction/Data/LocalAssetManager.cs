@@ -79,15 +79,49 @@ namespace MediaBrowser.ApiInteraction.Data
 
             var list = await _fileRepository.GetFileSystemEntries(path).ConfigureAwait(false);
 
+            var itemFiles = new List<ItemFileInfo>();
+
             foreach (var file in list)
             {
-                if (file.Type == ItemFileType.Image)
+                var itemFile = new ItemFileInfo
                 {
-                    file.ImageType = GetImageType(file.Name);
+                    Path = file.Path, 
+                    Name = file.Name, 
+                    ItemId = item.Id
+                };
+
+                if (IsImageFile(file.Path))
+                {
+                    itemFile.Type = ItemFileType.Image;
+                    itemFile.ImageType = GetImageType(file.Name);
+                }
+                else if (IsSubtitleFile(file.Path))
+                {
+                    itemFile.Type = ItemFileType.Subtitles;
+                }
+                else
+                {
+                    itemFile.Type = ItemFileType.Media;
                 }
             }
 
-            return list;
+            return itemFiles;
+        }
+
+        private static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
+        private bool IsImageFile(string path)
+        {
+            var ext = Path.GetExtension(path) ?? string.Empty;
+
+            return SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static readonly string[] SupportedSubtitleExtensions = { ".srt", ".vtt" };
+        private bool IsSubtitleFile(string path)
+        {
+            var ext = Path.GetExtension(path) ?? string.Empty;
+
+            return SupportedSubtitleExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
