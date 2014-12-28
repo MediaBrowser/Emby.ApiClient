@@ -11,24 +11,31 @@ namespace MediaBrowser.ApiInteraction.Data
         /// Gets the file system entries.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<DeviceFileInfo>> GetFileSystemEntries(string path);
+        /// <returns>Task&lt;List&lt;DeviceFileInfo&gt;&gt;.</returns>
+        Task<List<DeviceFileInfo>> GetFileSystemEntries(IEnumerable<string> path);
 
         /// <summary>
-        /// Saves the specified stream.
+        /// Saves the file.
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
-        Task SaveFile(Stream stream, string path);
+        Task SaveFile(Stream stream, IEnumerable<string> path);
 
         /// <summary>
         /// Deletes the file.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
-        Task DeleteFile(string path);
+        Task DeleteFile(IEnumerable<string> path);
 
+        /// <summary>
+        /// Deletes the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Task.</returns>
+        Task DeleteFolder(IEnumerable<string> path);
+        
         /// <summary>
         /// Strips invalid characters from a given name
         /// </summary>

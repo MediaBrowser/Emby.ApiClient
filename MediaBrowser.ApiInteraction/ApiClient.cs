@@ -3044,7 +3044,16 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<List<SyncedItem>> GetReadySyncItems(string targetId)
         {
-            throw new NotImplementedException();
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("TargetId", targetId);
+
+            var url = GetApiUrl("Sync/Items/Ready", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<SyncedItem>>(stream);
+            }
         }
     }
 }

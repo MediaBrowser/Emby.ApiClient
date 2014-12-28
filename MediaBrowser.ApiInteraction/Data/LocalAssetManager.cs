@@ -90,12 +90,12 @@ namespace MediaBrowser.ApiInteraction.Data
                     ItemId = item.Id
                 };
 
-                if (IsImageFile(file.Path))
+                if (IsImageFile(file.Name))
                 {
                     itemFile.Type = ItemFileType.Image;
                     itemFile.ImageType = GetImageType(file.Name);
                 }
-                else if (IsSubtitleFile(file.Path))
+                else if (IsSubtitleFile(file.Name))
                 {
                     itemFile.Type = ItemFileType.Subtitles;
                 }
@@ -139,7 +139,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
-        public Task DeleteFile(string path)
+        public Task DeleteFile(IEnumerable<string> path)
         {
             return _fileRepository.DeleteFile(path);
         }
@@ -160,9 +160,8 @@ namespace MediaBrowser.ApiInteraction.Data
             }
 
             var imageFilename = GetSaveFileName(media.Name, imageInfo) + GetSaveExtension(mimeType);
-
             var path = GetDirectoryPath(item, server);
-            path = Path.Combine(path, imageFilename);
+            path.Add(imageFilename);
 
             await _fileRepository.SaveFile(stream, path);
         }
@@ -195,13 +194,12 @@ namespace MediaBrowser.ApiInteraction.Data
             filename = _fileRepository.GetValidFileName(filename);
 
             var path = GetDirectoryPath(libraryItem, server);
-
-            path = Path.Combine(path, filename);
+            path.Add(filename);
 
             return _fileRepository.SaveFile(stream, path);
         }
 
-        private string GetDirectoryPath(BaseItemDto item, ServerInfo server)
+        private List<string> GetDirectoryPath(BaseItemDto item, ServerInfo server)
         {
             var parts = new List<string>
             {
@@ -252,7 +250,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 }
             }
 
-            return Path.Combine(parts.Select(_fileRepository.GetValidFileName).ToArray());
+            return parts.Select(_fileRepository.GetValidFileName).ToList();
         }
     }
 }
