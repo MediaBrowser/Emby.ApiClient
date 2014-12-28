@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Data
@@ -17,12 +19,14 @@ namespace MediaBrowser.ApiInteraction.Data
         private readonly IUserActionRepository _userActionRepository;
         private readonly IItemRepository _itemRepository;
         private readonly IFileRepository _fileRepository;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
-        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository)
+        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider)
         {
             _userActionRepository = userActionRepository;
             _itemRepository = itemRepository;
             _fileRepository = fileRepository;
+            _cryptographyProvider = cryptographyProvider;
         }
 
         /// <summary>
@@ -62,7 +66,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        public Task AddOrUpdate(BaseItemDto item)
+        public Task AddOrUpdate(LocalItem item)
         {
             return _itemRepository.AddOrUpdate(item);
         }
@@ -71,11 +75,11 @@ namespace MediaBrowser.ApiInteraction.Data
         /// Gets the files.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="server">The server.</param>
         /// <returns>Task&lt;List&lt;ItemFileInfo&gt;&gt;.</returns>
-        public async Task<List<ItemFileInfo>> GetFiles(BaseItemDto item, ServerInfo server)
+        public async Task<List<ItemFileInfo>> GetFiles(LocalItem item)
         {
-            var path = GetDirectoryPath(item, server);
+            var path = item.LocalPath;
+            path = path.Take(path.Length - 1).ToArray();
 
             var list = await _fileRepository.GetFileSystemEntries(path).ConfigureAwait(false);
 
@@ -85,9 +89,8 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 var itemFile = new ItemFileInfo
                 {
-                    Path = file.Path, 
-                    Name = file.Name, 
-                    ItemId = item.Id
+                    Path = file.Path,
+                    Name = file.Name
                 };
 
                 if (IsImageFile(file.Name))
@@ -146,29 +149,33 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public async Task SaveImage(Stream stream,
             string mimeType,
-            BaseItemDto item,
+            LocalItem item,
             ImageInfo imageInfo,
             ServerInfo server)
         {
-            var localFiles = await GetFiles(item, server).ConfigureAwait(false);
+            var path = item.LocalPath.ToList();
 
-            var media = localFiles.FirstOrDefault(i => i.Type == ItemFileType.Media);
+            var imageFilename = GetSaveFileName(item, imageInfo) + GetSaveExtension(mimeType);
 
-            if (media == null)
-            {
-                throw new ArgumentException("Media not found");
-            }
-
-            var imageFilename = GetSaveFileName(media.Name, imageInfo) + GetSaveExtension(mimeType);
-            var path = GetDirectoryPath(item, server);
-            path.Add(imageFilename);
+            // Replace media filename with image filename
+            path[path.Count - 1] = imageFilename;
 
             await _fileRepository.SaveFile(stream, path);
         }
 
-        private string GetSaveFileName(string mediaName, ImageInfo imageInfo)
+        private string GetSaveFileName(LocalItem item, ImageInfo imageInfo)
         {
-            var name = Path.GetFileNameWithoutExtension(mediaName);
+            var path = item.LocalPath.ToList();
+            var mediaFileName = path.Last();
+
+            var libraryItem = item.Item;
+
+            var name = Path.GetFileNameWithoutExtension(mediaFileName);
+
+            if (libraryItem.IsType("episode"))
+            {
+                name += "-thumb";
+            }
 
             // TODO: Handle other image types
 
@@ -180,23 +187,9 @@ namespace MediaBrowser.ApiInteraction.Data
             return MimeTypes.ToExtension(mimeType);
         }
 
-        public Task SaveMedia(Stream stream, SyncedItem jobItem, ServerInfo server)
+        public Task SaveMedia(Stream stream, LocalItem localItem, ServerInfo server)
         {
-            var libraryItem = jobItem.Item;
-
-            var filename = jobItem.OriginalFileName;
-
-            if (string.IsNullOrEmpty(filename))
-            {
-                filename = Guid.NewGuid().ToString("N");
-            }
-
-            filename = _fileRepository.GetValidFileName(filename);
-
-            var path = GetDirectoryPath(libraryItem, server);
-            path.Add(filename);
-
-            return _fileRepository.SaveFile(stream, path);
+            return _fileRepository.SaveFile(stream, localItem.LocalPath);
         }
 
         private List<string> GetDirectoryPath(BaseItemDto item, ServerInfo server)
@@ -251,6 +244,40 @@ namespace MediaBrowser.ApiInteraction.Data
             }
 
             return parts.Select(_fileRepository.GetValidFileName).ToList();
+        }
+
+        public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string originalFileName)
+        {
+            var path = GetDirectoryPath(libraryItem, server);
+            path.Add(GetLocalFileName(libraryItem, originalFileName));
+
+            return new LocalItem
+            {
+                Item = libraryItem,
+                ItemId = libraryItem.Id,
+                ServerId = server.Id,
+                LocalPath = path.ToArray(),
+                UniqueId = GetLocalId(libraryItem.Id, server.Id)
+            };
+        }
+
+        private string GetLocalFileName(BaseItemDto item, string originalFileName)
+        {
+            var filename = originalFileName;
+
+            if (string.IsNullOrEmpty(filename))
+            {
+                filename = item.Name;
+            }
+
+            return _fileRepository.GetValidFileName(filename);
+        }
+
+        public string GetLocalId(string serverId, string itemId)
+        {
+            var bytes = Encoding.UTF8.GetBytes(serverId + itemId);
+            bytes = _cryptographyProvider.CreateMD5(bytes);
+            return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
         }
     }
 }

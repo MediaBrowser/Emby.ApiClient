@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Sync;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Data
@@ -10,13 +10,13 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        Task AddOrUpdate(BaseItemDto item);
+        Task AddOrUpdate(LocalItem item);
 
         /// <summary>
         /// Gets the item.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Task&lt;BaseItemDto&gt;.</returns>
-        Task<BaseItemDto> Get(string id);
+        Task<LocalItem> Get(string id);
     }
 }

@@ -76,19 +76,21 @@ namespace MediaBrowser.ApiInteraction.Sync
         {
             var libraryItem = jobItem.Item;
 
-            // Download item file
-            await _localAssetManager.AddOrUpdate(libraryItem).ConfigureAwait(false);
+            var localItem = _localAssetManager.CreateLocalItem(libraryItem, server, jobItem.OriginalFileName);
 
             // Download item file
-            await GetItemFile(apiClient, server, jobItem, cancellationToken).ConfigureAwait(false);
+            await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
 
-            var localFiles = await _localAssetManager.GetFiles(jobItem.Item, server).ConfigureAwait(false);
+            // Download item file
+            await GetItemFile(apiClient, server, localItem, jobItem.SyncJobItemId, cancellationToken).ConfigureAwait(false);
+
+            var localFiles = await _localAssetManager.GetFiles(localItem).ConfigureAwait(false);
 
             // Download images
-            await GetItemImages(apiClient, server, libraryItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemImages(apiClient, server, localItem, localFiles, cancellationToken).ConfigureAwait(false);
 
             // Download subtitles
-            await GetItemSubtitles(apiClient, libraryItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemSubtitles(apiClient, localItem, localFiles, cancellationToken).ConfigureAwait(false);
 
             // Let the server know it was successfully downloaded
             await apiClient.ReportSyncJobItemTransferred(jobItem.SyncJobItemId).ConfigureAwait(false);
@@ -96,24 +98,28 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task GetItemFile(IApiClient apiClient,
             ServerInfo server,
-            SyncedItem jobItem,
+            LocalItem item,
+            string syncJobItemId,
             CancellationToken cancellationToken)
         {
-            _logger.Debug("Downloading media with Id {0} to local repository", jobItem.Item.Id);
+            _logger.Debug("Downloading media with Id {0} to local repository", item.Item.Id);
 
-            using (var stream = await apiClient.GetSyncJobItemFile(jobItem.SyncJobItemId, cancellationToken).ConfigureAwait(false))
+            using (var stream = await apiClient.GetSyncJobItemFile(syncJobItemId, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveMedia(stream, jobItem, server).ConfigureAwait(false);
+                await _localAssetManager.SaveMedia(stream, item, server).ConfigureAwait(false);
             }
         }
 
         private async Task GetItemImages(IApiClient apiClient,
             ServerInfo server,
-            BaseItemDto item,
+            LocalItem item,
             List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
         {
-            var serverImages = GetServerImages(item).ToList();
+            var libraryItem = item.Item;
+
+            var serverImages = GetServerImages(libraryItem)
+                .ToList();
 
             foreach (var image in localFiles)
             {
@@ -159,11 +165,13 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task DownloadImage(IApiClient apiClient,
             ServerInfo server,
-            BaseItemDto item,
+            LocalItem item,
             ImageInfo image,
             CancellationToken cancellationToken)
         {
-            var url = apiClient.GetImageUrl(item, new ImageOptions
+            var libraryItem = item.Item;
+
+            var url = apiClient.GetImageUrl(libraryItem, new ImageOptions
             {
                 ImageIndex = image.ImageIndex,
                 ImageType = image.ImageType
@@ -176,7 +184,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         private async Task GetItemSubtitles(IApiClient apiClient,
-            BaseItemDto item,
+            LocalItem item,
             List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
         {
