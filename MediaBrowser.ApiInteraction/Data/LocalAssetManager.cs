@@ -2,6 +2,8 @@
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
@@ -20,13 +22,15 @@ namespace MediaBrowser.ApiInteraction.Data
         private readonly IItemRepository _itemRepository;
         private readonly IFileRepository _fileRepository;
         private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ILogger _logger;
 
-        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider)
+        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider, ILogger logger)
         {
             _userActionRepository = userActionRepository;
             _itemRepository = itemRepository;
             _fileRepository = fileRepository;
             _cryptographyProvider = cryptographyProvider;
+            _logger = logger;
         }
 
         /// <summary>
@@ -189,6 +193,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task SaveMedia(Stream stream, LocalItem localItem, ServerInfo server)
         {
+            _logger.Debug("Saving media to " + localItem.LocalPath);
             return _fileRepository.SaveFile(stream, localItem.LocalPath);
         }
 
@@ -251,12 +256,20 @@ namespace MediaBrowser.ApiInteraction.Data
             var path = GetDirectoryPath(libraryItem, server);
             path.Add(GetLocalFileName(libraryItem, originalFileName));
 
+            var localPath = _fileRepository.GetFullLocalPath(path);
+
+            foreach (var mediaSource in libraryItem.MediaSources)
+            {
+                mediaSource.Path = localPath;
+                mediaSource.Protocol = MediaProtocol.File;
+            }
+
             return new LocalItem
             {
                 Item = libraryItem,
                 ItemId = libraryItem.Id,
                 ServerId = server.Id,
-                LocalPath = _fileRepository.GetFullLocalPath(path),
+                LocalPath = localPath,
                 UniqueId = GetLocalId(libraryItem.Id, server.Id)
             };
         }

@@ -55,6 +55,10 @@ namespace MediaBrowser.ApiInteraction.Playback
                     if (fileExists)
                     {
                         options.MediaSources = localItem.Item.MediaSources;
+
+                        var result = streamBuilder.BuildAudioItem(options);
+                        result.PlayMethod = PlayMethod.DirectPlay;
+                        return result;
                     }
                 }
             }
@@ -89,6 +93,10 @@ namespace MediaBrowser.ApiInteraction.Playback
                     if (fileExists)
                     {
                         options.MediaSources = localItem.Item.MediaSources;
+
+                        var result = streamBuilder.BuildVideoItem(options);
+                        result.PlayMethod = PlayMethod.DirectPlay;
+                        return result;
                     }
                 }
             }
