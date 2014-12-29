@@ -3055,5 +3055,12 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<List<SyncedItem>>(stream);
             }
         }
+
+        public Task<SyncDataResponse> SyncData(SyncDataRequest request)
+        {
+            var url = GetApiUrl("Sync/Data");
+
+            return PostAsync<SyncDataRequest, SyncDataResponse>(url, request, CancellationToken.None);
+        }
     }
 }

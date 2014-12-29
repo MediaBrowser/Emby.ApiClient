@@ -79,7 +79,7 @@ namespace MediaBrowser.ApiInteraction.Data
         public async Task<List<ItemFileInfo>> GetFiles(LocalItem item)
         {
             var path = item.LocalPath;
-            path = path.Take(path.Length - 1).ToArray();
+            path = _fileRepository.GetParentDirectoryPath(path);
 
             var list = await _fileRepository.GetFileSystemEntries(path).ConfigureAwait(false);
 
@@ -142,7 +142,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
-        public Task DeleteFile(IEnumerable<string> path)
+        public Task DeleteFile(string path)
         {
             return _fileRepository.DeleteFile(path);
         }
@@ -153,24 +153,24 @@ namespace MediaBrowser.ApiInteraction.Data
             ImageInfo imageInfo,
             ServerInfo server)
         {
-            var path = item.LocalPath.ToList();
+            var path = item.LocalPath;
 
             var imageFilename = GetSaveFileName(item, imageInfo) + GetSaveExtension(mimeType);
 
-            // Replace media filename with image filename
-            path[path.Count - 1] = imageFilename;
+            var parentPath = _fileRepository.GetParentDirectoryPath(path);
+
+            path = Path.Combine(parentPath, imageFilename);
 
             await _fileRepository.SaveFile(stream, path);
         }
 
         private string GetSaveFileName(LocalItem item, ImageInfo imageInfo)
         {
-            var path = item.LocalPath.ToList();
-            var mediaFileName = path.Last();
+            var path = item.LocalPath;
 
             var libraryItem = item.Item;
 
-            var name = Path.GetFileNameWithoutExtension(mediaFileName);
+            var name = Path.GetFileNameWithoutExtension(path);
 
             if (libraryItem.IsType("episode"))
             {
@@ -256,7 +256,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 Item = libraryItem,
                 ItemId = libraryItem.Id,
                 ServerId = server.Id,
-                LocalPath = path.ToArray(),
+                LocalPath = _fileRepository.GetFullLocalPath(path),
                 UniqueId = GetLocalId(libraryItem.Id, server.Id)
             };
         }
@@ -273,11 +273,21 @@ namespace MediaBrowser.ApiInteraction.Data
             return _fileRepository.GetValidFileName(filename);
         }
 
-        public string GetLocalId(string serverId, string itemId)
+        private string GetLocalId(string serverId, string itemId)
         {
             var bytes = Encoding.UTF8.GetBytes(serverId + itemId);
             bytes = _cryptographyProvider.CreateMD5(bytes);
             return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
+        }
+
+        public Task<LocalItem> GetLocalItem(string serverId, string itemId)
+        {
+            return _itemRepository.Get(GetLocalId(serverId, itemId));
+        }
+
+        public Task<bool> FileExists(string path)
+        {
+            return _fileRepository.FileExists(path);
         }
     }
 }
