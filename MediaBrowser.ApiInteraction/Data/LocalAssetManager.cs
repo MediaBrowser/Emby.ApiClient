@@ -56,6 +56,16 @@ namespace MediaBrowser.ApiInteraction.Data
         }
 
         /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        public Task Delete(LocalItem item)
+        {
+            return _itemRepository.Delete(item.UniqueId);
+        }
+        
+        /// <summary>
         /// Gets all user actions by serverId
         /// </summary>
         /// <param name="serverId"></param>
@@ -301,6 +311,11 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task<bool> FileExists(string path)
         {
             return _fileRepository.FileExists(path);
+        }
+
+        public Task<List<string>> GetServerItemIds(string serverId)
+        {
+            return _itemRepository.GetServerItemIds(serverId);
         }
     }
 }

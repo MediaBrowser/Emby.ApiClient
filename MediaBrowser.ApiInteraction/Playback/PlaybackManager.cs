@@ -159,6 +159,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                 };
 
                 await _localAssetManager.RecordUserAction(action).ConfigureAwait(false);
+                return;
             }
 
             // Put a try/catch here because we need to stop transcoding regardless

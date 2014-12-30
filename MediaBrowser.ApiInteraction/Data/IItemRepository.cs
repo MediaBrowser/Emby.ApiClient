@@ -21,6 +21,13 @@ namespace MediaBrowser.ApiInteraction.Data
         Task<LocalItem> Get(string id);
 
         /// <summary>
+        /// Deletes the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task Delete(string id);
+
+        /// <summary>
         /// Gets the server item ids.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>

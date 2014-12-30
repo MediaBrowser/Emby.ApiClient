@@ -32,13 +32,19 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             // First report actions to the server that occurred while offline
             await ReportOfflineActions(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
-
             progress.Report(1);
+
+            await SyncData(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
+            progress.Report(2);
+
+            // Do the data sync twice so the server knows what was removed from the device
+            await SyncData(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
+            progress.Report(3);
 
             var innerProgress = new DoubleProgress();
             innerProgress.RegisterAction(pct =>
             {
-                var totalProgress = pct * .99;
+                var totalProgress = pct * .97;
                 totalProgress += 1;
                 progress.Report(totalProgress);
             });
@@ -191,7 +197,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         }
 
-        private async Task ReportOfflineActions(IApiClient apiClient,
+        private async Task SyncData(IApiClient apiClient,
             ServerInfo serverInfo,
             CancellationToken cancellationToken)
         {
@@ -216,6 +222,53 @@ namespace MediaBrowser.ApiInteraction.Sync
             {
                 await _localAssetManager.Delete(action).ConfigureAwait(false);
             }
+        }
+
+        private async Task ReportOfflineActions(IApiClient apiClient,
+            ServerInfo serverInfo,
+            CancellationToken cancellationToken)
+        {
+            var localIds = await _localAssetManager.GetServerItemIds(serverInfo.Id).ConfigureAwait(false);
+
+            var result = await apiClient.SyncData(new SyncDataRequest
+            {
+                TargetId = apiClient.DeviceId,
+                LocalItemIds = localIds
+
+            }).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var itemIdToRemove in result.ItemIdsToRemove)
+            {
+                try
+                {
+                    await RemoveItem(serverInfo.Id, itemIdToRemove).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting item from device. Id: {0}", ex, itemIdToRemove);
+                }
+            }
+        }
+
+        private async Task RemoveItem(string serverId, string itemId)
+        {
+            var localItem = await _localAssetManager.GetLocalItem(serverId, itemId);
+
+            if (localItem == null)
+            {
+                return;
+            }
+
+            var files = await _localAssetManager.GetFiles(localItem);
+
+            foreach (var file in files)
+            {
+                await _localAssetManager.DeleteFile(file.Path).ConfigureAwait(false);
+            }
+
+            await _localAssetManager.Delete(localItem).ConfigureAwait(false);
         }
     }
 }

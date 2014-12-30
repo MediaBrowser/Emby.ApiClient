@@ -172,7 +172,7 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            return credentials.Servers.ToList();
+            return credentials.Servers.OrderByDescending(i => i.DateLastAccessed).ToList();
         }
 
         private async Task<List<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
