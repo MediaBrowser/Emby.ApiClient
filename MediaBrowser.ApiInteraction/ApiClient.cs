@@ -2083,7 +2083,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = GetApiUrl("Sessions/Capabilities/Full");
 
-            return PostAsync<ClientCapabilities,EmptyRequestResult>(url, capabilities, cancellationToken);
+            return PostAsync<ClientCapabilities, EmptyRequestResult>(url, capabilities, cancellationToken);
         }
 
         public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -2958,15 +2958,14 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new QueryStringDictionary { };
 
-            dict.AddIfNotNull("IsCompleted", query.IsCompleted);
             dict.AddIfNotNullOrEmpty("JobId", query.JobId);
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
 
-            if (query.Status.HasValue)
+            if (query.Statuses.Count > 0)
             {
-                dict.Add("Status", query.Status.Value.ToString());
+                dict.Add("Statuses", string.Join(",", query.Statuses.Select(i => i.ToString()).ToArray()));
             }
 
             var url = GetApiUrl("Sync/JobItems", dict);
