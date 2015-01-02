@@ -62,7 +62,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <returns>Task.</returns>
         public Task Delete(LocalItem item)
         {
-            return _itemRepository.Delete(item.UniqueId);
+            return _itemRepository.Delete(item.Id);
         }
         
         /// <summary>
@@ -280,7 +280,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 ItemId = libraryItem.Id,
                 ServerId = server.Id,
                 LocalPath = localPath,
-                UniqueId = GetLocalId(libraryItem.Id, server.Id)
+                Id = GetLocalId(libraryItem.Id, server.Id)
             };
         }
 
