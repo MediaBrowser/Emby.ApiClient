@@ -280,7 +280,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 ItemId = libraryItem.Id,
                 ServerId = server.Id,
                 LocalPath = localPath,
-                Id = GetLocalId(libraryItem.Id, server.Id)
+                Id = GetLocalId(server.Id, libraryItem.Id)
             };
         }
 
