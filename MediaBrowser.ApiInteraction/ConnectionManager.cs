@@ -731,10 +731,7 @@ namespace MediaBrowser.ApiInteraction
             AuthenticationResult result,
             bool saveCredentials)
         {
-            var systeminfo = await apiClient.GetSystemInfoAsync().ConfigureAwait(false);
-
             var server = ((ApiClient)apiClient).ServerInfo;
-            server.ImportInfo(systeminfo);
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
