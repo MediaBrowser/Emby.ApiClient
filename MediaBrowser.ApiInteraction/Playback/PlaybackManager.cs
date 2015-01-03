@@ -88,7 +88,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                     StringComparison.OrdinalIgnoreCase))
                 {
                     // Finally, check to make sure the local file is actually available at this time
-                    var fileExists = await _localAssetManager.FileExists(localMediaSource.Path).ConfigureAwait(false);
+                    var fileExists = await _localAssetManager.FileExists(localItem.LocalPath).ConfigureAwait(false);
 
                     if (fileExists)
                     {
