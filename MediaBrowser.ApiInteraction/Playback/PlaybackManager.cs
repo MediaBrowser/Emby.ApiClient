@@ -42,7 +42,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (localItem != null)
             {
-                var localMediaSource = options.MediaSources[0];
+                var localMediaSource = localItem.Item.MediaSources[0];
 
                 // Use the local media source, unless a specific server media source was requested
                 if (string.IsNullOrWhiteSpace(options.MediaSourceId) ||
@@ -80,7 +80,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (localItem != null)
             {
-                var localMediaSource = options.MediaSources[0];
+                var localMediaSource = localItem.Item.MediaSources[0];
 
                 // Use the local media source, unless a specific server media source was requested
                 if (string.IsNullOrWhiteSpace(options.MediaSourceId) ||
@@ -88,7 +88,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                     StringComparison.OrdinalIgnoreCase))
                 {
                     // Finally, check to make sure the local file is actually available at this time
-                    var fileExists = await _localAssetManager.FileExists(localItem.LocalPath).ConfigureAwait(false);
+                    var fileExists = await _localAssetManager.FileExists(localMediaSource.Path).ConfigureAwait(false);
 
                     if (fileExists)
                     {
