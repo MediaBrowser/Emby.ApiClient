@@ -766,7 +766,10 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnLocalUserSignout(IApiClient apiClient)
         {
-
+            if (LocalUserSignOut != null)
+            {
+                LocalUserSignOut(this, new GenericEventArgs<IApiClient>(apiClient));
+            }
         }
 
         private void OnConnectUserSignIn(ConnectUser user)
@@ -809,11 +812,14 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            ConnectUser = null;
-
-            if (ConnectUserSignOut != null)
+            if (ConnectUser != null)
             {
-                ConnectUserSignOut(this, EventArgs.Empty);
+                ConnectUser = null;
+
+                if (ConnectUserSignOut != null)
+                {
+                    ConnectUserSignOut(this, EventArgs.Empty);
+                }
             }
         }
 
