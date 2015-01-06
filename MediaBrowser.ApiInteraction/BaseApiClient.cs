@@ -377,7 +377,7 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
             }
             dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
-
+            dict.AddIfNotNull("CollapseBoxSetItems", query.CollapseBoxSetItems);
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres, "|");
             dict.AddIfNotNull("Genres", query.AllGenres, "|");
