@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -171,7 +172,7 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            return credentials.Servers.ToList();
+            return credentials.Servers.OrderByDescending(i => i.DateLastAccessed).ToList();
         }
 
         private async Task<List<ServerInfo>> GetConnectServers(string userId, string accessToken, CancellationToken cancellationToken)
@@ -730,10 +731,7 @@ namespace MediaBrowser.ApiInteraction
             AuthenticationResult result,
             bool saveCredentials)
         {
-            var systeminfo = await apiClient.GetSystemInfoAsync().ConfigureAwait(false);
-
             var server = ((ApiClient)apiClient).ServerInfo;
-            server.ImportInfo(systeminfo);
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
@@ -768,7 +766,10 @@ namespace MediaBrowser.ApiInteraction
 
         private void OnLocalUserSignout(IApiClient apiClient)
         {
-
+            if (LocalUserSignOut != null)
+            {
+                LocalUserSignOut(this, new GenericEventArgs<IApiClient>(apiClient));
+            }
         }
 
         private void OnConnectUserSignIn(ConnectUser user)
@@ -811,11 +812,14 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            ConnectUser = null;
-
-            if (ConnectUserSignOut != null)
+            if (ConnectUser != null)
             {
-                ConnectUserSignOut(this, EventArgs.Empty);
+                ConnectUser = null;
+
+                if (ConnectUserSignOut != null)
+                {
+                    ConnectUserSignOut(this, EventArgs.Empty);
+                }
             }
         }
 

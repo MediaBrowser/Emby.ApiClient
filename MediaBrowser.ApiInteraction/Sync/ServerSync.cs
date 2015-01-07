@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Data;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
@@ -10,11 +11,13 @@ namespace MediaBrowser.ApiInteraction.Sync
     {
         private readonly IConnectionManager _connectionManager;
         private readonly ILogger _logger;
+        private readonly LocalAssetManager _userActionAssetManager;
 
-        public ServerSync(IConnectionManager connectionManager, ILogger logger)
+        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager)
         {
             _connectionManager = connectionManager;
             _logger = logger;
+            _userActionAssetManager = userActionAssetManager;
         }
 
         public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
@@ -52,11 +55,14 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             var uploadProgress = new DoubleProgress();
             uploadProgress.RegisterAction(p => progress.Report(p * cameraUploadTotalPercentage));
-            await new ContentUploader(apiClient, _logger).UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
+            await new ContentUploader(apiClient, _logger)
+                .UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
 
             var syncProgress = new DoubleProgress();
             syncProgress.RegisterAction(p => progress.Report((cameraUploadTotalPercentage * 100) + (p * (1 - cameraUploadTotalPercentage))));
-            await new MediaSync().Sync(apiClient, uploadProgress, cancellationToken).ConfigureAwait(false);
+
+            await new MediaSync(_userActionAssetManager, _logger)
+                .Sync(apiClient, server, uploadProgress, cancellationToken).ConfigureAwait(false);
         }
         
         private void LogNoAuthentication(ServerInfo server)

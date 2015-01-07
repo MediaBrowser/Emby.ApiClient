@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Data;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,13 @@ namespace MediaBrowser.ApiInteraction.Sync
     {
         private readonly IConnectionManager _connectionManager;
         private readonly ILogger _logger;
+        private readonly LocalAssetManager _userActionAssetManager;
 
-        public MultiServerSync(IConnectionManager connectionManager, ILogger logger)
+        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager)
         {
             _connectionManager = connectionManager;
             _logger = logger;
+            _userActionAssetManager = userActionAssetManager;
         }
 
         public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
@@ -47,8 +50,8 @@ namespace MediaBrowser.ApiInteraction.Sync
                     totalProgress += currentPercent;
                     progress.Report(totalProgress);
                 });
-                
-                await new ServerSync(_connectionManager, _logger)
+
+                await new ServerSync(_connectionManager, _logger, _userActionAssetManager)
                     .Sync(server, serverProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;

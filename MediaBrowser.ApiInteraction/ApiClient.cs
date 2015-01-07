@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
@@ -287,9 +288,21 @@ namespace MediaBrowser.ApiInteraction
             return url;
         }
 
-        private Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
             return SendAsync(new HttpRequest
+            {
+                CancellationToken = cancellationToken,
+                Method = "GET",
+                RequestHeaders = HttpHeaders,
+                Url = url
+            });
+        }
+
+
+        public Task<HttpResponse> GetResponse(string url, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return HttpClient.GetResponse(new HttpRequest
             {
                 CancellationToken = cancellationToken,
                 Method = "GET",
@@ -2068,30 +2081,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("capabilities");
             }
 
-            var dict = new QueryStringDictionary();
+            var url = GetApiUrl("Sessions/Capabilities/Full");
 
-            if (capabilities.PlayableMediaTypes != null && capabilities.PlayableMediaTypes.Count > 0)
-            {
-                dict.Add("PlayableMediaTypes", capabilities.PlayableMediaTypes);
-            }
-
-            if (capabilities.SupportedCommands != null && capabilities.SupportedCommands.Count > 0)
-            {
-                dict.Add("SupportedCommands", capabilities.SupportedCommands);
-            }
-
-            dict.Add("SupportsContentUploading", capabilities.SupportsContentUploading);
-            dict.Add("SupportsMediaControl", capabilities.SupportsMediaControl);
-            dict.Add("SupportsSync", capabilities.SupportsSync);
-            dict.Add("SupportsUniqueIdentifier", capabilities.SupportsUniqueIdentifier);
-            dict.Add("MessageCallbackUrl", capabilities.MessageCallbackUrl);            
-
-            if (capabilities.DeviceProfile != null)
-                dict.Add("DeviceProfile", SerializeToJson(capabilities.DeviceProfile));
-
-            var url = GetApiUrl("Sessions/Capabilities", dict);
-
-            return PostAsync<EmptyRequestResult>(url, dict, cancellationToken);
+            return PostAsync<ClientCapabilities, EmptyRequestResult>(url, capabilities, cancellationToken);
         }
 
         public async Task<LiveTvInfo> GetLiveTvInfoAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -2966,15 +2958,14 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new QueryStringDictionary { };
 
-            dict.AddIfNotNull("IsCompleted", query.IsCompleted);
             dict.AddIfNotNullOrEmpty("JobId", query.JobId);
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
 
-            if (query.Status.HasValue)
+            if (query.Statuses.Count > 0)
             {
-                dict.Add("Status", query.Status.Value.ToString());
+                dict.Add("Statuses", string.Join(",", query.Statuses.Select(i => i.ToString()).ToArray()));
             }
 
             var url = GetApiUrl("Sync/JobItems", dict);
@@ -3014,7 +3005,6 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
-
         public Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
@@ -3037,6 +3027,39 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Users/" + userId + "/Configuration");
 
             return PostAsync<UserConfiguration, EmptyRequestResult>(url, configuration, CancellationToken.None);
+        }
+
+        public Task ReportOfflineActions(List<UserAction> actions)
+        {
+            if (actions == null || actions.Count == 0)
+            {
+                throw new ArgumentNullException("actions");
+            }
+
+            var url = GetApiUrl("Sync/OfflineActions");
+
+            return PostAsync<List<UserAction>, EmptyRequestResult>(url, actions, CancellationToken.None);
+        }
+
+        public async Task<List<SyncedItem>> GetReadySyncItems(string targetId)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("TargetId", targetId);
+
+            var url = GetApiUrl("Sync/Items/Ready", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<SyncedItem>>(stream);
+            }
+        }
+
+        public Task<SyncDataResponse> SyncData(SyncDataRequest request)
+        {
+            var url = GetApiUrl("Sync/Data");
+
+            return PostAsync<SyncDataRequest, SyncDataResponse>(url, request, CancellationToken.None);
         }
     }
 }

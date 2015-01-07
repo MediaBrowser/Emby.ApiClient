@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.ApiInteraction.Net;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -376,7 +377,7 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("EnableImageTypes", query.EnableImageTypes.Select(f => f.ToString()));
             }
             dict.AddIfNotNull("ImageTypeLimit", query.ImageTypeLimit);
-
+            dict.AddIfNotNull("CollapseBoxSetItems", query.CollapseBoxSetItems);
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres, "|");
             dict.AddIfNotNull("Genres", query.AllGenres, "|");
@@ -1214,29 +1215,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the url needed to stream an audio file
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
-        public string GetAudioStreamUrl(StreamOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException("options");
-            }
-
-            var handler = "Audio/" + options.ItemId + "/stream";
-
-            if (!string.IsNullOrEmpty(options.OutputFileExtension))
-            {
-                handler += "." + options.OutputFileExtension.TrimStart('.');
-            }
-
-            return GetMediaStreamUrl(handler, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
         /// Gets the url needed to stream a video file
         /// </summary>
         /// <param name="options">The options.</param>
@@ -1313,7 +1291,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="queryParams">The query params.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">handler</exception>
-        private string GetMediaStreamUrl(string handler, StreamOptions options, QueryStringDictionary queryParams)
+        private string GetMediaStreamUrl(string handler, VideoStreamOptions options, QueryStringDictionary queryParams)
         {
             if (string.IsNullOrEmpty(handler))
             {

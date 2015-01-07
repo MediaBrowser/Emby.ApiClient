@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Network
+namespace MediaBrowser.ApiInteraction.Net
 {
     public class NetworkConnection : INetworkConnection
     {
