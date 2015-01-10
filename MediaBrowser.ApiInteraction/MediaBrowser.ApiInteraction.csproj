@@ -96,6 +96,8 @@
     <Compile Include="QueryStringDictionary.cs" />
     <Compile Include="Sync\DoubleProgress.cs" />
     <Compile Include="Data\LocalAssetManager.cs" />
+    <Compile Include="Sync\FileTransferManager.cs" />
+    <Compile Include="Sync\IFileTransferManager.cs" />
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiServerSync.cs" />
     <Compile Include="Sync\ServerSync.cs" />

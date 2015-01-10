@@ -14,13 +14,15 @@ namespace MediaBrowser.ApiInteraction.Sync
 {
     public class MediaSync
     {
+        private readonly IFileTransferManager _fileTransferManager;
         private readonly LocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
 
-        public MediaSync(LocalAssetManager localAssetManager, ILogger logger)
+        public MediaSync(LocalAssetManager localAssetManager, ILogger logger, IFileTransferManager fileTransferManager)
         {
             _localAssetManager = localAssetManager;
             _logger = logger;
+            _fileTransferManager = fileTransferManager;
         }
 
         public async Task Sync(IApiClient apiClient,
@@ -87,9 +89,13 @@ namespace MediaBrowser.ApiInteraction.Sync
             // Download item file
             await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
 
-            // Download item file
-            await GetItemFile(apiClient, server, localItem, jobItem.SyncJobItemId, cancellationToken).ConfigureAwait(false);
+            var fileTransferProgress = new DoubleProgress();
+            //TODO report transfer progress
+            fileTransferProgress.RegisterAction((pct) =>{ });
 
+            // Download item file
+            await _fileTransferManager.GetItemFileAsync(apiClient, server, localItem, jobItem.SyncJobItemId,fileTransferProgress, cancellationToken).ConfigureAwait(false);
+            
             var localFiles = await _localAssetManager.GetFiles(localItem).ConfigureAwait(false);
 
             // Download images
@@ -100,20 +106,6 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             // Let the server know it was successfully downloaded
             await apiClient.ReportSyncJobItemTransferred(jobItem.SyncJobItemId).ConfigureAwait(false);
-        }
-
-        private async Task GetItemFile(IApiClient apiClient,
-            ServerInfo server,
-            LocalItem item,
-            string syncJobItemId,
-            CancellationToken cancellationToken)
-        {
-            _logger.Debug("Downloading media with Id {0} to local repository", item.Item.Id);
-
-            using (var stream = await apiClient.GetSyncJobItemFile(syncJobItemId, cancellationToken).ConfigureAwait(false))
-            {
-                await _localAssetManager.SaveMedia(stream, item, server).ConfigureAwait(false);
-            }
         }
 
         private async Task GetItemImages(IApiClient apiClient,

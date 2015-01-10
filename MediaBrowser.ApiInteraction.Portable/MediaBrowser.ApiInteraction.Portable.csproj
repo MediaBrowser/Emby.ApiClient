@@ -107,6 +107,12 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\DoubleProgress.cs">
       <Link>Sync\DoubleProgress.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\FileTransferManager.cs">
+      <Link>Sync\FileTransferManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IFileTransferManager.cs">
+      <Link>Sync\IFileTransferManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\MediaSync.cs">
       <Link>Sync\MediaSync.cs</Link>
     </Compile>

@@ -10,14 +10,16 @@ namespace MediaBrowser.ApiInteraction.Sync
     public class ServerSync
     {
         private readonly IConnectionManager _connectionManager;
+        private readonly IFileTransferManager _fileTransferManager;
         private readonly ILogger _logger;
-        private readonly LocalAssetManager _userActionAssetManager;
+        private readonly LocalAssetManager _localAssetManager;
 
-        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager)
+        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager, IFileTransferManager fileTransferManager)
         {
             _connectionManager = connectionManager;
+            _fileTransferManager = fileTransferManager;
             _logger = logger;
-            _userActionAssetManager = userActionAssetManager;
+            _localAssetManager = localAssetManager;
         }
 
         public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
@@ -61,10 +63,10 @@ namespace MediaBrowser.ApiInteraction.Sync
             var syncProgress = new DoubleProgress();
             syncProgress.RegisterAction(p => progress.Report((cameraUploadTotalPercentage * 100) + (p * (1 - cameraUploadTotalPercentage))));
 
-            await new MediaSync(_userActionAssetManager, _logger)
+            await new MediaSync(_localAssetManager, _logger, _fileTransferManager)
                 .Sync(apiClient, server, uploadProgress, cancellationToken).ConfigureAwait(false);
         }
-        
+
         private void LogNoAuthentication(ServerInfo server)
         {
             _logger.Info("Skipping sync process for server " + server.Name + ". No server authentication information available.");
