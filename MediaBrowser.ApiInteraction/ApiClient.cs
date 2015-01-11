@@ -3017,6 +3017,16 @@ namespace MediaBrowser.ApiInteraction
             return GetStream(url, cancellationToken);
         }
 
+        public string GetSyncJobItemFileUrl(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            return GetApiUrl("Sync/JobItems/" + id + "/File");
+        }
+
         public Task UpdateUserConfiguration(string userId, UserConfiguration configuration)
         {
             if (configuration == null)

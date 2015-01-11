@@ -12,13 +12,20 @@ namespace MediaBrowser.ApiInteraction.Sync
     {
         private readonly IConnectionManager _connectionManager;
         private readonly ILogger _logger;
-        private readonly LocalAssetManager _userActionAssetManager;
+        private readonly LocalAssetManager _localAssetManager;
+        private readonly IFileTransferManager _fileTransferManager;
 
-        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager)
+        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager) :
+            this(connectionManager, logger, localAssetManager, new FileTransferManager(localAssetManager, logger))
+        { }
+
+
+        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager, IFileTransferManager fileTransferManager)
         {
             _connectionManager = connectionManager;
             _logger = logger;
-            _userActionAssetManager = userActionAssetManager;
+            _localAssetManager = userActionAssetManager;
+            _fileTransferManager = fileTransferManager;
         }
 
         public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
@@ -46,12 +53,12 @@ namespace MediaBrowser.ApiInteraction.Sync
                 var serverProgress = new DoubleProgress();
                 serverProgress.RegisterAction(pct =>
                 {
-                    var totalProgress = pct*percentPerServer;
+                    var totalProgress = pct * percentPerServer;
                     totalProgress += currentPercent;
                     progress.Report(totalProgress);
                 });
 
-                await new ServerSync(_connectionManager, _logger, _userActionAssetManager)
+                await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager)
                     .Sync(server, serverProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
