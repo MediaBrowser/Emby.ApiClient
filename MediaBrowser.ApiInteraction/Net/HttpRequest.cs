@@ -14,6 +14,7 @@ namespace MediaBrowser.ApiInteraction.Net
         public HttpHeaders RequestHeaders { get; set; }
         public string Url { get; set; }
         public Stream RequestStream { get; set; }
+        public bool BypassSslCertificateValidation { get; set; }
 
         public int Timeout { get; set; }
 
