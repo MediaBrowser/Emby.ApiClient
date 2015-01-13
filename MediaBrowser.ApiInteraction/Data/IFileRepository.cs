@@ -63,5 +63,12 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
         string GetParentDirectoryPath(string path);
+
+        /// <summary>
+        /// Gets the file stream.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Task&lt;Stream&gt;.</returns>
+        Task<Stream> GetFileStream(string path);
     }
 }
