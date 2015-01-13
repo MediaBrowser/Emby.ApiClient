@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -316,6 +317,16 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task<List<string>> GetServerItemIds(string serverId)
         {
             return _itemRepository.GetServerItemIds(serverId);
+        }
+
+        public Task<Stream> GetFileStream(StreamInfo info)
+        {
+            return GetFileStream(info.ToUrl(null));
+        }
+
+        public Task<Stream> GetFileStream(string path)
+        {
+            return _fileRepository.GetFileStream(path);
         }
     }
 }
