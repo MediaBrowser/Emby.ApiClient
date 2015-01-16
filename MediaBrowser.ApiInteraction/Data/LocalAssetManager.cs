@@ -304,9 +304,14 @@ namespace MediaBrowser.ApiInteraction.Data
             return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
         }
 
+        public Task<LocalItem> GetLocalItem(string localId)
+        {
+            return _itemRepository.Get(localId);
+        }
+
         public Task<LocalItem> GetLocalItem(string serverId, string itemId)
         {
-            return _itemRepository.Get(GetLocalId(serverId, itemId));
+            return GetLocalItem(GetLocalId(serverId, itemId));
         }
 
         public Task<bool> FileExists(string path)
