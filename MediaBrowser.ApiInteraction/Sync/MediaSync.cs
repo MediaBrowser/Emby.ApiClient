@@ -62,24 +62,40 @@ namespace MediaBrowser.ApiInteraction.Sync
             var jobItems = await apiClient.GetReadySyncItems(apiClient.DeviceId).ConfigureAwait(false);
 
             var numComplete = 0;
+            double startingPercent = 0;
+            double percentPerItem = 1;
+            if (jobItems.Count > 0)
+            {
+                percentPerItem /= jobItems.Count;
+            }
 
             foreach (var jobItem in jobItems)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await GetItem(apiClient, server, jobItem, cancellationToken).ConfigureAwait(false);
+                var currentPercent = startingPercent;
+                var innerProgress = new DoubleProgress();
+                innerProgress.RegisterAction(pct =>
+                {
+                    var totalProgress = pct * percentPerItem;
+                    totalProgress += currentPercent;
+                    progress.Report(totalProgress);
+                });
+
+                await GetItem(apiClient, server, jobItem, innerProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
-                double percent = numComplete;
-                percent /= jobItems.Count;
-
-                progress.Report(100 * percent);
+                startingPercent = numComplete;
+                startingPercent /= jobItems.Count;
+                startingPercent *= 100;
+                progress.Report(startingPercent);
             }
         }
 
         private async Task GetItem(IApiClient apiClient,
             ServerInfo server,
             SyncedItem jobItem,
+            IProgress<double> progress,
             CancellationToken cancellationToken)
         {
             var libraryItem = jobItem.Item;
@@ -90,26 +106,28 @@ namespace MediaBrowser.ApiInteraction.Sync
             await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
 
             var fileTransferProgress = new DoubleProgress();
-            //TODO report transfer progress
-            fileTransferProgress.RegisterAction((pct) =>{ });
+            fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
 
             // Download item file
-            await _fileTransferManager.GetItemFileAsync(apiClient, server, localItem, jobItem.SyncJobItemId,fileTransferProgress, cancellationToken).ConfigureAwait(false);
-            
+            await _fileTransferManager.GetItemFileAsync(apiClient, server, localItem, jobItem.SyncJobItemId, fileTransferProgress, cancellationToken).ConfigureAwait(false);
+            progress.Report(92);
+
             var localFiles = await _localAssetManager.GetFiles(localItem).ConfigureAwait(false);
 
             // Download images
-            await GetItemImages(apiClient, server, localItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemImages(apiClient, localItem, localFiles, cancellationToken).ConfigureAwait(false);
+            progress.Report(95);
 
             // Download subtitles
-            await GetItemSubtitles(apiClient, localItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemSubtitles(apiClient, jobItem, localItem, cancellationToken).ConfigureAwait(false);
+            progress.Report(99);
 
             // Let the server know it was successfully downloaded
             await apiClient.ReportSyncJobItemTransferred(jobItem.SyncJobItemId).ConfigureAwait(false);
+            progress.Report(100);
         }
 
         private async Task GetItemImages(IApiClient apiClient,
-            ServerInfo server,
             LocalItem item,
             List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
@@ -139,7 +157,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                 // Download image
                 if (current == null)
                 {
-                    await DownloadImage(apiClient, server, item, image, cancellationToken).ConfigureAwait(false);
+                    await DownloadImage(apiClient, item, image, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -162,7 +180,6 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         private async Task DownloadImage(IApiClient apiClient,
-            ServerInfo server,
             LocalItem item,
             ImageInfo image,
             CancellationToken cancellationToken)
@@ -177,16 +194,35 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveImage(response.Content, response.ContentType, item, image, server).ConfigureAwait(false);
+                await _localAssetManager.SaveImage(response.Content, response.ContentType, item, image).ConfigureAwait(false);
             }
         }
 
         private async Task GetItemSubtitles(IApiClient apiClient,
+            SyncedItem jobItem,
             LocalItem item,
-            List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
         {
+            var hasDownloads = false;
 
+            foreach (var file in jobItem.AdditionalFiles.Where(i => i.Type == ItemFileType.Subtitles))
+            {
+                using (var response = await apiClient.GetSyncJobItemAdditionalFile(jobItem.SyncJobItemId, file.Name, cancellationToken).ConfigureAwait(false))
+                {
+                    var subtitleStream = jobItem.Item.MediaSources.First().MediaStreams.First(i => i.Type == MediaStreamType.Subtitle && i.Index == file.Index);
+                    var path = await _localAssetManager.SaveSubtitles(response, subtitleStream.Codec, item, subtitleStream.Language, subtitleStream.IsForced).ConfigureAwait(false);
+
+                    subtitleStream.Path = path;
+                }
+
+                hasDownloads = true;
+            }
+
+            // Save the changes to the item
+            if (hasDownloads)
+            {
+                await _localAssetManager.AddOrUpdate(item).ConfigureAwait(false);
+            }
         }
 
         private async Task SyncData(IApiClient apiClient,

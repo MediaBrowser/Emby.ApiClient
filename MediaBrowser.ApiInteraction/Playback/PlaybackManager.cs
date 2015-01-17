@@ -1,10 +1,13 @@
 ﻿using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Playback
@@ -29,6 +32,32 @@ namespace MediaBrowser.ApiInteraction.Playback
         }
 
         /// <summary>
+        /// Gets the selectable audio streams.
+        /// </summary>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
+        public async Task<IEnumerable<MediaStream>> GetSelectableAudioStreams(string serverId, VideoOptions options)
+        {
+            var info = await GetVideoStreamInfo(serverId, options).ConfigureAwait(false);
+
+            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+        }
+
+        /// <summary>
+        /// Gets the selectable subtitle streams.
+        /// </summary>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
+        public async Task<IEnumerable<MediaStream>> GetSelectableSubtitleStreams(string serverId, VideoOptions options)
+        {
+            var info = await GetVideoStreamInfo(serverId, options).ConfigureAwait(false);
+
+            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
+        }
+
+        /// <summary>
         /// Gets the audio stream information.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
@@ -46,7 +75,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
                 // Use the local media source, unless a specific server media source was requested
                 if (string.IsNullOrWhiteSpace(options.MediaSourceId) ||
-                    string.Equals(localMediaSource.Id, options.MediaSourceId, 
+                    string.Equals(localMediaSource.Id, options.MediaSourceId,
                     StringComparison.OrdinalIgnoreCase))
                 {
                     // Finally, check to make sure the local file is actually available at this time
