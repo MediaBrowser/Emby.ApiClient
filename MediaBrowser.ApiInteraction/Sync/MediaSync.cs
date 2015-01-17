@@ -203,6 +203,8 @@ namespace MediaBrowser.ApiInteraction.Sync
             LocalItem item,
             CancellationToken cancellationToken)
         {
+            var hasDownloads = false;
+
             foreach (var file in jobItem.AdditionalFiles.Where(i => i.Type == ItemFileType.Subtitles))
             {
                 using (var response = await apiClient.GetSyncJobItemAdditionalFile(jobItem.SyncJobItemId, file.Name, cancellationToken).ConfigureAwait(false))
@@ -212,6 +214,14 @@ namespace MediaBrowser.ApiInteraction.Sync
 
                     subtitleStream.Path = path;
                 }
+
+                hasDownloads = true;
+            }
+
+            // Save the changes to the item
+            if (hasDownloads)
+            {
+                await _localAssetManager.AddOrUpdate(item).ConfigureAwait(false);
             }
         }
 
