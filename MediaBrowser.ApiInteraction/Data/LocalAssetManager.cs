@@ -165,8 +165,7 @@ namespace MediaBrowser.ApiInteraction.Data
         public async Task SaveImage(Stream stream,
             string mimeType,
             LocalItem item,
-            ImageInfo imageInfo,
-            ServerInfo server)
+            ImageInfo imageInfo)
         {
             var path = item.LocalPath;
 
@@ -177,6 +176,44 @@ namespace MediaBrowser.ApiInteraction.Data
             path = Path.Combine(parentPath, imageFilename);
 
             await _fileRepository.SaveFile(stream, path);
+        }
+
+        public async Task<string> SaveSubtitles(Stream stream,
+            string format,
+            LocalItem item,
+            string language,
+            bool isForced)
+        {
+            var path = item.LocalPath;
+
+            var filename = GetSubtitleSaveFileName(item, language, isForced) + "." + format.ToLower();
+
+            var parentPath = _fileRepository.GetParentDirectoryPath(path);
+
+            path = Path.Combine(parentPath, filename);
+
+            await _fileRepository.SaveFile(stream, path);
+
+            return path;
+        }
+
+        private string GetSubtitleSaveFileName(LocalItem item, string language, bool isForced)
+        {
+            var path = item.LocalPath;
+
+            var name = Path.GetFileNameWithoutExtension(path);
+
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                name += "." + language.ToLower();
+            }
+
+            if (isForced)
+            {
+                name += ".foreign";
+            }
+
+            return name;
         }
 
         private string GetSaveFileName(LocalItem item, ImageInfo imageInfo)

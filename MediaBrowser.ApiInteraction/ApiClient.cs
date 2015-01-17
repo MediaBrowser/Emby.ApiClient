@@ -3012,9 +3012,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("id");
             }
 
-            var url = GetApiUrl("Sync/JobItems/" + id + "/File");
-
-            return GetStream(url, cancellationToken);
+            return GetStream(GetSyncJobItemFileUrl(id), cancellationToken);
         }
 
         public string GetSyncJobItemFileUrl(string id)
@@ -3070,6 +3068,17 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sync/Data");
 
             return PostAsync<SyncDataRequest, SyncDataResponse>(url, request, CancellationToken.None);
+        }
+
+        public Task<Stream> GetSyncJobItemAdditionalFile(string id, string name, CancellationToken cancellationToken)
+        {
+            var dict = new QueryStringDictionary { };
+
+            dict.AddIfNotNullOrEmpty("Name", name);
+
+            var url = GetApiUrl("Sync/JobItems/" + id + "/AdditionalFiles", dict);
+
+            return GetStream(url, cancellationToken);
         }
     }
 }

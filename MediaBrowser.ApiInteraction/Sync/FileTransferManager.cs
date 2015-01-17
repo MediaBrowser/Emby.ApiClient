@@ -3,15 +3,12 @@ using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    class FileTransferManager : MediaBrowser.ApiInteraction.Sync.IFileTransferManager
+    class FileTransferManager : IFileTransferManager
     {
         private readonly LocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
