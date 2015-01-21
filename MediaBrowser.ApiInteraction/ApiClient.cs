@@ -7,6 +7,7 @@ using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -165,7 +166,7 @@ namespace MediaBrowser.ApiInteraction
                 throw timeoutException;
             }
 
-            request.Url = ReplaceServerAddress(request.Url);
+            request.Url = ReplaceServerAddress(request.Url, initialConnectionMode);
 
             return await HttpClient.SendAsync(request).ConfigureAwait(false);
         }
@@ -249,7 +250,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<bool> TryConnect(string baseUrl, CancellationToken cancellationToken)
         {
-            var fullUrl = baseUrl + "/mediabrowser/system/info/public";
+            var fullUrl = baseUrl + "/system/info/public";
 
             fullUrl = AddDataFormat(fullUrl);
 
@@ -274,18 +275,9 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private string ReplaceServerAddress(string url)
+        private string ReplaceServerAddress(string url, ConnectionMode initialConnectionMode)
         {
-            var baseUrl = ServerInfo.GetAddress(ConnectionMode);
-
-            var index = url.IndexOf("/mediabrowser", StringComparison.OrdinalIgnoreCase);
-
-            if (index != -1)
-            {
-                return baseUrl.TrimEnd('/') + url.Substring(index);
-            }
-
-            return url;
+            return url.Replace(ServerInfo.GetAddress(initialConnectionMode), ServerInfo.GetAddress(ConnectionMode), StringComparison.OrdinalIgnoreCase);
         }
 
         public Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
