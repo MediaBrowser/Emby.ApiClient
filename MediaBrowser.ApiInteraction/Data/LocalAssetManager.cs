@@ -121,6 +121,8 @@ namespace MediaBrowser.ApiInteraction.Data
                 {
                     itemFile.Type = ItemFileType.Media;
                 }
+
+                itemFiles.Add(itemFile);
             }
 
             return itemFiles;
