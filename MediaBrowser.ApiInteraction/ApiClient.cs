@@ -1643,7 +1643,7 @@ namespace MediaBrowser.ApiInteraction
         /// <exception cref="System.ArgumentNullException">userId</exception>
         public async Task<AuthenticationResult> AuthenticateUserAsync(string username, string password)
         {
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrWhiteSpace(username))
             {
                 throw new ArgumentNullException("username");
             }
@@ -3071,6 +3071,46 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sync/JobItems/" + id + "/AdditionalFiles", dict);
 
             return GetStream(url, cancellationToken);
+        }
+
+        public Task CancelSyncJobItem(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("System/JobItems/" + id);
+
+            return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
+        }
+
+        public Task EnableCancelledSyncJobItem(string id)
+        {
+            var url = GetApiUrl("System/JobItems/" + id  + "/Enable");
+
+            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
+        }
+
+        public Task MarkSyncJobItemForRemoval(string id)
+        {
+            var url = GetApiUrl("System/JobItems/" + id + "/MarkForRemoval");
+
+            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
+        }
+
+        public Task QueueFailedSyncJobItemForRetry(string id)
+        {
+            var url = GetApiUrl("System/JobItems/" + id + "/Enable");
+
+            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
+        }
+
+        public Task UnmarkSyncJobItemForRemoval(string id)
+        {
+            var url = GetApiUrl("System/JobItems/" + id + "/UnmarkForRemoval");
+
+            return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
     }
 }
