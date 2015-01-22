@@ -100,7 +100,9 @@ namespace MediaBrowser.ApiInteraction.Data
 
             var itemFiles = new List<ItemFileInfo>();
 
-            foreach (var file in list)
+            var name = Path.GetFileNameWithoutExtension(item.LocalPath);
+
+            foreach (var file in list.Where(f => f.Name.Contains(name)))
             {
                 var itemFile = new ItemFileInfo
                 {
