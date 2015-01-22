@@ -137,7 +137,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             var serverImages = GetServerImages(libraryItem)
                 .ToList();
 
-            foreach (var image in localFiles)
+            foreach (var image in localFiles.Where(file => file.Type == ItemFileType.Image))
             {
                 var current = serverImages
                     .FirstOrDefault(i => i.ImageType == image.ImageType);
