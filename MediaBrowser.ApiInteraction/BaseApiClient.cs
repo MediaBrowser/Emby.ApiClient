@@ -156,7 +156,7 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                return ServerAddress;
+                return ServerAddress + "/mediabrowser";
             }
         }
 

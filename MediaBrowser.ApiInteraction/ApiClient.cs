@@ -277,7 +277,18 @@ namespace MediaBrowser.ApiInteraction
 
         private string ReplaceServerAddress(string url, ConnectionMode initialConnectionMode)
         {
-            return url.Replace(ServerInfo.GetAddress(initialConnectionMode), ServerInfo.GetAddress(ConnectionMode), StringComparison.OrdinalIgnoreCase);
+            var baseUrl = ServerInfo.GetAddress(ConnectionMode);
+
+            var index = url.IndexOf("/mediabrowser", StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                return baseUrl.TrimEnd('/') + url.Substring(index);
+            }
+
+            return url;
+
+            //return url.Replace(ServerInfo.GetAddress(initialConnectionMode), ServerInfo.GetAddress(ConnectionMode), StringComparison.OrdinalIgnoreCase);
         }
 
         public Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken))
@@ -3087,7 +3098,7 @@ namespace MediaBrowser.ApiInteraction
 
         public Task EnableCancelledSyncJobItem(string id)
         {
-            var url = GetApiUrl("System/JobItems/" + id  + "/Enable");
+            var url = GetApiUrl("System/JobItems/" + id + "/Enable");
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
