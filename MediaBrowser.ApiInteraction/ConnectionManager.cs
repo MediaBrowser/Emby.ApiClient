@@ -568,7 +568,7 @@ namespace MediaBrowser.ApiInteraction
                 CancellationToken = cancellationToken,
                 Method = "GET",
                 RequestHeaders = headers,
-                Url = url + "/system/info?format=json"
+                Url = url + "/mediabrowser/system/info?format=json"
             };
 
             try
@@ -582,7 +582,7 @@ namespace MediaBrowser.ApiInteraction
 
                 if (!string.IsNullOrEmpty(server.UserId))
                 {
-                    request.Url = url + "/users/" + server.UserId + "?format=json";
+                    request.Url = url + "/mediabrowser/users/" + server.UserId + "?format=json";
 
                     using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
                     {
@@ -603,7 +603,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<PublicSystemInfo> TryConnect(string url, int timeout, CancellationToken cancellationToken)
         {
-            url += "/system/info/public?format=json";
+            url += "/mediabrowser/system/info/public?format=json";
 
             try
             {
