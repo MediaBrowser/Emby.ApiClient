@@ -6,6 +6,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
@@ -54,6 +55,7 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStart;
         public event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStopped;
         public event EventHandler<GenericEventArgs<SessionInfoDto>> SessionEnded;
+        public event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
 
         /// <summary>
         /// The _web socket
@@ -521,6 +523,13 @@ namespace MediaBrowser.ApiInteraction
                 FireEvent(SessionEnded, this, new GenericEventArgs<SessionInfoDto>
                 {
                     Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SessionInfoDto>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "SyncJobCreated"))
+            {
+                FireEvent(SyncJobCreated, this, new GenericEventArgs<SyncJobCreationResult>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SyncJobCreationResult>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PlaybackStart"))
