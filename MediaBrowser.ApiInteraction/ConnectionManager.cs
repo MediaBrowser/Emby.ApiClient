@@ -257,6 +257,19 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<ConnectionResult> Connect(CancellationToken cancellationToken)
         {
+            if (ClientCapabilities.SupportsOfflineAccess)
+            {
+                var networkAccess = _networkConnectivity.GetNetworkStatus();
+                if (!networkAccess.IsNetworkAvailable)
+                {
+                    return new ConnectionResult
+                    {
+                        ConnectUser = ConnectUser,
+                        State = ConnectionState.OfflineSignIn
+                    };
+                }
+            }
+
             var servers = await GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
             return await Connect(servers, cancellationToken).ConfigureAwait(false);
@@ -859,6 +872,16 @@ namespace MediaBrowser.ApiInteraction
             await EnsureConnectUser(credentials, CancellationToken.None).ConfigureAwait(false);
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+        }
+
+        public Task AuthenticateOffline(UserDto user, string password)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task<List<UserDto>> GetPublicOfflineUsers()
+        {
+            throw new NotImplementedException();
         }
     }
 }
