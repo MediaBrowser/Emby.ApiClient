@@ -377,14 +377,14 @@ namespace MediaBrowser.ApiInteraction.Data
             return _fileRepository.GetFileStream(path);
         }
 
-        public async Task<List<UserDto>> GetOfflineUsers()
+        public Task SaveOfflineUser(UserDto user)
         {
-            var users = await _userRepository.GetAll().ConfigureAwait(false);
+            return _userRepository.AddOrUpdate(user.Id, user);
+        }
 
-            return users
-                .OrderByDescending(i => i.LastActivityDate ?? DateTime.MinValue)
-                .ThenBy(i => i.Name)
-                .ToList();
+        public Task DeleteOfflineUser(string id)
+        {
+            return _userRepository.Delete(id);
         }
     }
 }

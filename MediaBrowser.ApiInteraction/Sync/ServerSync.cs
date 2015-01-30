@@ -1,7 +1,10 @@
 ﻿using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,10 +17,13 @@ namespace MediaBrowser.ApiInteraction.Sync
         private readonly ILogger _logger;
         private readonly LocalAssetManager _localAssetManager;
 
-        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager, IFileTransferManager fileTransferManager)
+        private readonly ClientCapabilities _clientCapabilities;
+        
+        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager, IFileTransferManager fileTransferManager, ClientCapabilities clientCapabilities)
         {
             _connectionManager = connectionManager;
             _fileTransferManager = fileTransferManager;
+            _clientCapabilities = clientCapabilities;
             _logger = logger;
             _localAssetManager = localAssetManager;
         }
@@ -60,6 +66,11 @@ namespace MediaBrowser.ApiInteraction.Sync
             await new ContentUploader(apiClient, _logger)
                 .UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
 
+            if (_clientCapabilities.SupportsOfflineAccess)
+            {
+                await UpdateOfflineUsers(server, apiClient, cancellationToken).ConfigureAwait(false);
+            }
+
             var syncProgress = new DoubleProgress();
             syncProgress.RegisterAction(p => progress.Report((cameraUploadTotalPercentage * 100) + (p * (1 - cameraUploadTotalPercentage))));
 
@@ -70,6 +81,41 @@ namespace MediaBrowser.ApiInteraction.Sync
         private void LogNoAuthentication(ServerInfo server)
         {
             _logger.Info("Skipping sync process for server " + server.Name + ". No server authentication information available.");
+        }
+
+        private async Task UpdateOfflineUsers(ServerInfo server, IApiClient apiClient, CancellationToken cancellationToken)
+        {
+            foreach (var user in server.Users)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var deleteUser = false;
+
+                try
+                {
+                    var updated = await apiClient.GetOfflineUserAsync(user.Id).ConfigureAwait(false);
+
+                    await _localAssetManager.SaveOfflineUser(updated).ConfigureAwait(false);
+                }
+                catch (HttpException ex )
+                {
+                    _logger.ErrorException("Error getting user info", ex);
+
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        deleteUser = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting user info", ex);
+                }
+
+                if (deleteUser)
+                {
+                    await _localAssetManager.DeleteOfflineUser(user.Id).ConfigureAwait(false);
+                }
+            }
         }
     }
 }
