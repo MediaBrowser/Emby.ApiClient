@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,18 +15,15 @@ namespace MediaBrowser.ApiInteraction.Sync
         private readonly ILogger _logger;
         private readonly LocalAssetManager _localAssetManager;
         private readonly IFileTransferManager _fileTransferManager;
+        private readonly ClientCapabilities _clientCapabilities;
 
-        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager) :
-            this(connectionManager, logger, localAssetManager, new FileTransferManager(localAssetManager, logger))
-        { }
-
-
-        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager, IFileTransferManager fileTransferManager)
+        public MultiServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager userActionAssetManager, IFileTransferManager fileTransferManager, ClientCapabilities clientCapabilities)
         {
             _connectionManager = connectionManager;
             _logger = logger;
             _localAssetManager = userActionAssetManager;
             _fileTransferManager = fileTransferManager;
+            _clientCapabilities = clientCapabilities;
         }
 
         public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
@@ -58,7 +56,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                     progress.Report(totalProgress);
                 });
 
-                await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager)
+                await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager, _clientCapabilities)
                     .Sync(server, serverProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;

@@ -24,14 +24,16 @@ namespace MediaBrowser.ApiInteraction.Data
         private readonly IFileRepository _fileRepository;
         private readonly ICryptographyProvider _cryptographyProvider;
         private readonly ILogger _logger;
+        private readonly IUserRepository _userRepository;
 
-        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider, ILogger logger)
+        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider, ILogger logger, IUserRepository userRepository)
         {
             _userActionRepository = userActionRepository;
             _itemRepository = itemRepository;
             _fileRepository = fileRepository;
             _cryptographyProvider = cryptographyProvider;
             _logger = logger;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -373,6 +375,16 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task<Stream> GetFileStream(string path)
         {
             return _fileRepository.GetFileStream(path);
+        }
+
+        public Task SaveOfflineUser(UserDto user)
+        {
+            return _userRepository.AddOrUpdate(user.Id, user);
+        }
+
+        public Task DeleteOfflineUser(string id)
+        {
+            return _userRepository.Delete(id);
         }
     }
 }

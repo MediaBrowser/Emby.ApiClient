@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,6 +37,7 @@ namespace MediaBrowser.ApiInteraction
         private readonly IAsyncHttpClient _httpClient;
         private readonly Func<IClientWebSocket> _webSocketFactory;
         private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly IUserRepository _userRepository;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
 
@@ -58,7 +61,8 @@ namespace MediaBrowser.ApiInteraction
             IDevice device,
             ClientCapabilities clientCapabilities,
             ICryptographyProvider cryptographyProvider,
-            Func<IClientWebSocket> webSocketFactory = null)
+            Func<IClientWebSocket> webSocketFactory = null,
+            IUserRepository userRepository = null)
         {
             _credentialProvider = credentialProvider;
             _networkConnectivity = networkConnectivity;
@@ -68,6 +72,8 @@ namespace MediaBrowser.ApiInteraction
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
             _cryptographyProvider = cryptographyProvider;
+            _userRepository = userRepository;
+
             Device = device;
             ApplicationVersion = applicationVersion;
             ApplicationName = applicationName;
@@ -79,7 +85,7 @@ namespace MediaBrowser.ApiInteraction
             var jsonSerializer = new NewtonsoftJsonSerializer();
             _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider, applicationName, applicationVersion);
         }
-
+        
         public IJsonSerializer JsonSerializer
         {
             get { return _connectService.JsonSerializer; }
@@ -255,8 +261,60 @@ namespace MediaBrowser.ApiInteraction
             return null;
         }
 
+        private async Task<List<Tuple<ServerInfo, ServerUserInfo, UserDto>>> GetOfflineUsers(ServerCredentials credentials)
+        {
+            var list = new List<Tuple<ServerInfo, ServerUserInfo, UserDto>>();
+
+            foreach (var server in credentials.Servers)
+            {
+                foreach (var user in server.Users)
+                {
+                    if (user.IsOffline)
+                    {
+                        var userRecord = await _userRepository.Get(user.Id).ConfigureAwait(false);
+
+                        if (userRecord != null)
+                        {
+                            list.Add(new Tuple<ServerInfo, ServerUserInfo, UserDto>(server, user, userRecord));
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        private async Task<ConnectionResult> GetOfflineResult()
+        {
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            var offlineUsers = await GetOfflineUsers(credentials).ConfigureAwait(false);
+
+            var result = new ConnectionResult
+            {
+                State = ConnectionState.OfflineSignIn
+            };
+
+            // If there's only one valid offline user, log them straight in
+            if (offlineUsers.Count == 1)
+            {
+                result.State = ConnectionState.OfflineSignedIn;
+                result.OfflineUser = offlineUsers[0].Item3;
+            }
+
+            return result;
+        }
+
         public async Task<ConnectionResult> Connect(CancellationToken cancellationToken)
         {
+            if (ClientCapabilities.SupportsOfflineAccess)
+            {
+                var networkAccess = _networkConnectivity.GetNetworkStatus();
+                if (!networkAccess.IsNetworkAvailable)
+                {
+                    return await GetOfflineResult().ConfigureAwait(false);
+                }
+            }
+
             var servers = await GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
             return await Connect(servers, cancellationToken).ConfigureAwait(false);
@@ -588,6 +646,8 @@ namespace MediaBrowser.ApiInteraction
                     {
                         var localUser = JsonSerializer.DeserializeFromStream<UserDto>(stream);
 
+                        SaveUserInfoIntoCredentials(server, localUser);
+
                         OnLocalUserSignIn(localUser);
                     }
                 }
@@ -749,11 +809,21 @@ namespace MediaBrowser.ApiInteraction
             }
 
             credentials.AddOrUpdateServer(server);
+            SaveUserInfoIntoCredentials(server, result.User);
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
             EnsureWebSocketIfConfigured(apiClient);
 
             OnLocalUserSignIn(result.User);
+        }
+
+        private void SaveUserInfoIntoCredentials(ServerInfo server, UserDto user)
+        {
+            // Record user info here
+            server.AddOrUpdate(new ServerUserInfo
+            {
+                Id = user.Id
+            });
         }
 
         private void OnLocalUserSignIn(UserDto user)
@@ -857,6 +927,71 @@ namespace MediaBrowser.ApiInteraction
             credentials.ConnectUserId = result.UserId;
 
             await EnsureConnectUser(credentials, CancellationToken.None).ConfigureAwait(false);
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+        }
+
+        public async Task AuthenticateOffline(UserDto user, string password, bool rememberLogin)
+        {
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            var server = credentials.Servers.FirstOrDefault(i => string.Equals(i.Id, user.ServerId, StringComparison.Ordinal));
+
+            if (server == null)
+            {
+                throw new UnauthorizedAccessException("Server info not found.");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
+            var hash = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
+
+            hash += Device.DeviceId;
+            bytes = Encoding.UTF8.GetBytes(hash);
+            hash = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
+
+            if (!string.Equals(hash, user.OfflinePassword, StringComparison.Ordinal))
+            {
+                throw new UnauthorizedAccessException("Invalid username or password.");
+            }
+
+            server.AddOrUpdate(new ServerUserInfo
+            {
+                Id = user.Id,
+                IsOffline = rememberLogin
+            });
+
+            await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+        }
+
+        public async Task<List<UserDto>> GetOfflineUsers()
+        {
+            var users = await _userRepository.GetAll().ConfigureAwait(false);
+
+            users = users
+                .OrderByDescending(i => i.LastActivityDate ?? DateTime.MinValue)
+                .ThenBy(i => i.Name)
+                .ToList();
+
+            return users;
+        }
+
+        public async Task LogoutOffline(UserDto offlineUser)
+        {
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            foreach (var server in credentials.Servers)
+            {
+                if (string.Equals(server.Id, offlineUser.ServerId, StringComparison.Ordinal))
+                {
+                    foreach (var user in server.Users)
+                    {
+                        if (string.Equals(user.Id, offlineUser.Id, StringComparison.Ordinal))
+                        {
+                            user.IsOffline = false;
+                        }
+                    }
+                }
+            }
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
         }

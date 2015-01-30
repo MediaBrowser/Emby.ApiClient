@@ -3123,5 +3123,20 @@ namespace MediaBrowser.ApiInteraction
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
+
+        public async Task<UserDto> GetOfflineUserAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("Users/" + id + "/Offline");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<UserDto>(stream);
+            }
+        }
     }
 }
