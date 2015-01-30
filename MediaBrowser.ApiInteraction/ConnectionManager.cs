@@ -298,6 +298,7 @@ namespace MediaBrowser.ApiInteraction
             if (offlineUsers.Count == 1)
             {
                 result.State = ConnectionState.OfflineSignedIn;
+                result.OfflineUser = offlineUsers[0].Item3;
             }
 
             return result;
