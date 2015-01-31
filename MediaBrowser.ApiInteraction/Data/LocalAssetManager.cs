@@ -25,8 +25,9 @@ namespace MediaBrowser.ApiInteraction.Data
         private readonly ICryptographyProvider _cryptographyProvider;
         private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
+        private readonly IImageRepository _imageRepository;
 
-        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider, ILogger logger, IUserRepository userRepository)
+        public LocalAssetManager(IUserActionRepository userActionRepository, IItemRepository itemRepository, IFileRepository fileRepository, ICryptographyProvider cryptographyProvider, ILogger logger, IUserRepository userRepository, IImageRepository iImageRepository)
         {
             _userActionRepository = userActionRepository;
             _itemRepository = itemRepository;
@@ -34,6 +35,7 @@ namespace MediaBrowser.ApiInteraction.Data
             _cryptographyProvider = cryptographyProvider;
             _logger = logger;
             _userRepository = userRepository;
+            _imageRepository = iImageRepository;
         }
 
         /// <summary>
@@ -385,6 +387,28 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task DeleteOfflineUser(string id)
         {
             return _userRepository.Delete(id);
+        }
+
+        public async Task SaveUserImage(UserDto user, Stream stream)
+        {
+            await DeleteUserImage(user).ConfigureAwait(false);
+
+            await _imageRepository.SaveImage(user.Id, user.PrimaryImageTag, stream).ConfigureAwait(false);
+        }
+
+        public Task<Stream> GetUserImage(UserDto user)
+        {
+            return _imageRepository.GetImage(user.Id, user.PrimaryImageTag);
+        }
+
+        public Task DeleteUserImage(UserDto user)
+        {
+            return _imageRepository.DeleteImages(user.Id);
+        }
+
+        public Task<bool> HasImage(UserDto user)
+        {
+            return _imageRepository.HasImage(user.Id, user.PrimaryImageTag);
         }
     }
 }

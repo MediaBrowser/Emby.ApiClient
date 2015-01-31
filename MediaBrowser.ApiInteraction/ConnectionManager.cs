@@ -85,7 +85,7 @@ namespace MediaBrowser.ApiInteraction
             var jsonSerializer = new NewtonsoftJsonSerializer();
             _connectService = new ConnectService(jsonSerializer, _logger, _httpClient, _cryptographyProvider, applicationName, applicationVersion);
         }
-        
+
         public IJsonSerializer JsonSerializer
         {
             get { return _connectService.JsonSerializer; }
@@ -261,7 +261,7 @@ namespace MediaBrowser.ApiInteraction
             return null;
         }
 
-        private async Task<List<Tuple<ServerInfo, ServerUserInfo, UserDto>>> GetOfflineUsers(ServerCredentials credentials)
+        private async Task<List<Tuple<ServerInfo, ServerUserInfo, UserDto>>> GetOfflineUsers(ServerCredentials credentials, bool? isSignedIn)
         {
             var list = new List<Tuple<ServerInfo, ServerUserInfo, UserDto>>();
 
@@ -269,14 +269,18 @@ namespace MediaBrowser.ApiInteraction
             {
                 foreach (var user in server.Users)
                 {
-                    if (user.IsOffline)
+                    if (isSignedIn.HasValue)
                     {
-                        var userRecord = await _userRepository.Get(user.Id).ConfigureAwait(false);
-
-                        if (userRecord != null)
+                        if (user.IsSignedInOffline != isSignedIn.Value)
                         {
-                            list.Add(new Tuple<ServerInfo, ServerUserInfo, UserDto>(server, user, userRecord));
+                            continue;
                         }
+                    }
+                    var userRecord = await _userRepository.Get(user.Id).ConfigureAwait(false);
+
+                    if (userRecord != null)
+                    {
+                        list.Add(new Tuple<ServerInfo, ServerUserInfo, UserDto>(server, user, userRecord));
                     }
                 }
             }
@@ -287,7 +291,7 @@ namespace MediaBrowser.ApiInteraction
         {
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            var offlineUsers = await GetOfflineUsers(credentials).ConfigureAwait(false);
+            var offlineUsers = await GetOfflineUsers(credentials, true).ConfigureAwait(false);
 
             var result = new ConnectionResult
             {
@@ -957,7 +961,7 @@ namespace MediaBrowser.ApiInteraction
             server.AddOrUpdate(new ServerUserInfo
             {
                 Id = user.Id,
-                IsOffline = rememberLogin
+                IsSignedInOffline = rememberLogin
             });
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
@@ -965,9 +969,12 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<List<UserDto>> GetOfflineUsers()
         {
-            var users = await _userRepository.GetAll().ConfigureAwait(false);
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            users = users
+            var offlineUsers = await GetOfflineUsers(credentials, null).ConfigureAwait(false);
+
+            var users = offlineUsers
+                .Select(i => i.Item3)
                 .OrderByDescending(i => i.LastActivityDate ?? DateTime.MinValue)
                 .ThenBy(i => i.Name)
                 .ToList();
@@ -987,7 +994,7 @@ namespace MediaBrowser.ApiInteraction
                     {
                         if (string.Equals(user.Id, offlineUser.Id, StringComparison.Ordinal))
                         {
-                            user.IsOffline = false;
+                            user.IsSignedInOffline = false;
                         }
                     }
                 }
