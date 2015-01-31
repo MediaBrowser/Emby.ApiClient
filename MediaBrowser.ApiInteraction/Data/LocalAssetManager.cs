@@ -69,7 +69,7 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             return _itemRepository.Delete(item.Id);
         }
-        
+
         /// <summary>
         /// Gets all user actions by serverId
         /// </summary>
@@ -260,12 +260,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 server.Name
             };
 
-            if (item.IsType("movie"))
-            {
-                parts.Add("Movies");
-                parts.Add(item.Name);
-            }
-            else if (item.IsType("episode"))
+            if (item.IsType("episode"))
             {
                 parts.Add("TV");
                 parts.Add(item.SeriesName);
@@ -409,6 +404,156 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task<bool> HasImage(UserDto user)
         {
             return _imageRepository.HasImage(user.Id, user.PrimaryImageTag);
+        }
+
+        public async Task<List<BaseItemDto>> GetViews(UserDto user)
+        {
+            var list = new List<BaseItemDto>();
+
+            var types = await _itemRepository.GetItemTypes(user.ServerId).ConfigureAwait(false);
+
+            if (types.Contains("Audio", StringComparer.OrdinalIgnoreCase))
+            {
+                list.Add(new BaseItemDto
+                {
+                    Name = "Music",
+                    ServerId = user.ServerId,
+                    Id = "MusicView",
+                    Type = "MusicView"
+                });
+            }
+
+            if (types.Contains("Photo", StringComparer.OrdinalIgnoreCase))
+            {
+                list.Add(new BaseItemDto
+                {
+                    Name = "Photos",
+                    ServerId = user.ServerId,
+                    Id = "PhotosView",
+                    Type = "PhotosView"
+                });
+            }
+
+            return list;
+        }
+
+        public Task<List<BaseItemDto>> GetItems(UserDto user, BaseItemDto parentItem)
+        {
+            if (string.Equals(parentItem.Type, "MusicView"))
+            {
+                return GetMusicArtists(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "MusicArtist"))
+            {
+                return GetMusicAlbums(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "MusicAlbum"))
+            {
+                return GetAlbumSongs(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "PhotosView"))
+            {
+                return GetPhotoAlbums(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "PhotoAlbum"))
+            {
+                return GetPhotos(user, parentItem);
+            }
+
+            return Task.FromResult(new List<BaseItemDto>());
+        }
+
+        private async Task<List<BaseItemDto>> GetMusicArtists(UserDto user, BaseItemDto parentItem)
+        {
+            var artists = await _itemRepository.GetAlbumArtists(user.ServerId).ConfigureAwait(false);
+
+            return artists
+                .OrderBy(i => i)
+                .Select(i => new BaseItemDto
+                {
+                    Name = i,
+                    Id = i,
+                    Type = "MusicArtist",
+                    ServerId = user.ServerId
+                })
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetMusicAlbums(UserDto user, BaseItemDto parentItem)
+        {
+            var items = await _itemRepository.GetItems(new LocalItemQuery
+            {
+                AlbumArtist = parentItem.Name,
+                ServerId = user.ServerId,
+                Type = "Audio"
+            });
+
+            var dict = new Dictionary<string, BaseItemDto>();
+
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Item.AlbumId))
+                {
+                    dict[item.Item.AlbumId] = item.Item;
+                }
+            }
+
+            return dict.Values
+                .OrderBy(i => i.Album)
+                .Select(i => new BaseItemDto
+                {
+                    Name = i.Album,
+                    Id = i.AlbumId,
+                    Type = "MusicAlbum",
+                    ServerId = user.ServerId
+                })
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetAlbumSongs(UserDto user, BaseItemDto parentItem)
+        {
+            var items = await _itemRepository.GetItems(new LocalItemQuery
+            {
+                AlbumId = parentItem.Id,
+                ServerId = user.ServerId,
+                Type = "Audio"
+            });
+
+            return items
+                .Select(i => i.Item)
+                .OrderBy(i => i.SortName)
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetPhotoAlbums(UserDto user, BaseItemDto parentItem)
+        {
+            var albums = await _itemRepository.GetPhotoAlbums(user.ServerId).ConfigureAwait(false);
+
+            return albums
+                .OrderBy(i => i.Name)
+                .Select(i => new BaseItemDto
+                {
+                    Name = i.Name,
+                    Id = i.Value,
+                    Type = "PhotoAlbum",
+                    ServerId = user.ServerId
+                })
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetPhotos(UserDto user, BaseItemDto parentItem)
+        {
+            var items = await _itemRepository.GetItems(new LocalItemQuery
+            {
+                AlbumId = parentItem.Id,
+                ServerId = user.ServerId,
+                Type = "Photo"
+            });
+
+            return items
+                .Select(i => i.Item)
+                .OrderBy(i => i.SortName)
+                .ToList();
         }
     }
 }
