@@ -419,7 +419,8 @@ namespace MediaBrowser.ApiInteraction.Data
                     Name = "Music",
                     ServerId = user.ServerId,
                     Id = "MusicView",
-                    Type = "MusicView"
+                    Type = "MusicView",
+                    CollectionType = CollectionType.Music
                 });
             }
 
@@ -430,9 +431,31 @@ namespace MediaBrowser.ApiInteraction.Data
                     Name = "Photos",
                     ServerId = user.ServerId,
                     Id = "PhotosView",
-                    Type = "PhotosView"
+                    Type = "PhotosView",
+                    CollectionType = CollectionType.Photos
                 });
             }
+
+            if (types.Contains("Episodes", StringComparer.OrdinalIgnoreCase))
+            {
+                list.Add(new BaseItemDto
+                {
+                    Name = "TV",
+                    ServerId = user.ServerId,
+                    Id = "TVView",
+                    Type = "TVView",
+                    CollectionType = CollectionType.TvShows
+                });
+            }
+
+            list.Add(new BaseItemDto
+            {
+                Name = "Videos",
+                ServerId = user.ServerId,
+                Id = "VideosView",
+                Type = "VideosView",
+                CollectionType = CollectionType.HomeVideos
+            });
 
             return list;
         }
@@ -458,6 +481,14 @@ namespace MediaBrowser.ApiInteraction.Data
             if (string.Equals(parentItem.Type, "PhotoAlbum"))
             {
                 return GetPhotos(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "VideosView"))
+            {
+                return GetVideos(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "TVView"))
+            {
+                return GetVideos(user, parentItem);
             }
 
             return Task.FromResult(new List<BaseItemDto>());
@@ -488,24 +519,34 @@ namespace MediaBrowser.ApiInteraction.Data
                 Type = "Audio"
             });
 
-            var dict = new Dictionary<string, BaseItemDto>();
+            var dict = new Dictionary<string, List<BaseItemDto>>();
 
             foreach (var item in items)
             {
                 if (!string.IsNullOrWhiteSpace(item.Item.AlbumId))
                 {
-                    dict[item.Item.AlbumId] = item.Item;
+                    List<BaseItemDto> subItems;
+                    if (!dict.TryGetValue(item.Item.AlbumId, out subItems))
+                    {
+                        subItems = new List<BaseItemDto>();
+                        dict[item.Item.AlbumId] = subItems;
+                    }
+                    subItems.Add(item.Item);
                 }
             }
 
-            return dict.Values
-                .OrderBy(i => i.Album)
+            return dict
+                .OrderBy(i => i.Value[0].Album)
                 .Select(i => new BaseItemDto
                 {
-                    Name = i.Album,
-                    Id = i.AlbumId,
+                    Name = i.Value[0].Album,
+                    Id = i.Key,
                     Type = "MusicAlbum",
-                    ServerId = user.ServerId
+                    ServerId = user.ServerId,
+                    SongCount = i.Value.Count,
+                    ChildCount = i.Value.Count,
+                    Genres = i.Value.SelectMany(m => m.Genres).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(m => m).ToList(),
+                    Artists = i.Value.SelectMany(m => m.Artists).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(m => m).ToList()
                 })
                 .ToList();
         }
@@ -516,7 +557,7 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 AlbumId = parentItem.Id,
                 ServerId = user.ServerId,
-                Type = "Audio"
+                MediaType = "Audio"
             });
 
             return items
@@ -547,7 +588,24 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 AlbumId = parentItem.Id,
                 ServerId = user.ServerId,
-                Type = "Photo"
+                MediaType = "Video",
+                ExcludeTypes = new[] { "Episode" }
+            });
+
+            return items
+                .Select(i => i.Item)
+                .OrderBy(i => i.SortName)
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetVideos(UserDto user, BaseItemDto parentItem)
+        {
+            var items = await _itemRepository.GetItems(new LocalItemQuery
+            {
+                AlbumId = parentItem.Id,
+                ServerId = user.ServerId,
+                MediaType = "Video",
+                ExcludeTypes = new[] { "Episode" }
             });
 
             return items
