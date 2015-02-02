@@ -61,7 +61,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetTvShows(string serverId);
+        Task<List<NameValuePair>> GetTvShows(string serverId);
 
         /// <summary>
         /// Gets a list of unique photo albums, by Id

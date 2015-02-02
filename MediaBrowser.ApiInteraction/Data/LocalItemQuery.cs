@@ -6,7 +6,7 @@ namespace MediaBrowser.ApiInteraction.Data
         public string ServerId { get; set; }
         public string AlbumArtist { get; set; }
         public string AlbumId { get; set; }
-        public string SeriesName { get; set; }
+        public string SeriesId { get; set; }
         public string Type { get; set; }
         public string MediaType { get; set; }
         public string[] ExcludeTypes { get; set; }

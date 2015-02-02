@@ -607,11 +607,11 @@ namespace MediaBrowser.ApiInteraction.Data
             var shows = await _itemRepository.GetTvShows(user.ServerId).ConfigureAwait(false);
 
             return shows
-                .OrderBy(i => i)
+                .OrderBy(i => i.Name)
                 .Select(i => new BaseItemDto
                 {
-                    Name = i,
-                    Id = i,
+                    Name = i.Name,
+                    Id = i.Value,
                     Type = "TVShow",
                     ServerId = user.ServerId
                 })
@@ -622,7 +622,7 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             var items = await _itemRepository.GetItems(new LocalItemQuery
             {
-                SeriesName = parentItem.Id,
+                SeriesId = parentItem.Id,
                 ServerId = user.ServerId,
                 MediaType = "Episode"
             });
