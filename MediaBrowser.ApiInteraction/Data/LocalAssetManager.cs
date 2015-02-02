@@ -624,7 +624,8 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 SeriesId = parentItem.Id,
                 ServerId = user.ServerId,
-                MediaType = "Episode"
+                MediaType = "Video",
+                Type = "Episode"
             });
 
             return items
@@ -637,7 +638,6 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             var items = await _itemRepository.GetItems(new LocalItemQuery
             {
-                AlbumId = parentItem.Id,
                 ServerId = user.ServerId,
                 MediaType = "Video",
                 ExcludeTypes = new[] { "Episode" }
