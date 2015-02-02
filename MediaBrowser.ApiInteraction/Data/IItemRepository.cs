@@ -57,6 +57,13 @@ namespace MediaBrowser.ApiInteraction.Data
         Task<List<string>> GetAlbumArtists(string serverId);
 
         /// <summary>
+        /// Gets a list of unique TvShows values
+        /// </summary>
+        /// <param name="serverId">The server identifier.</param>
+        /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
+        Task<List<string>> GetTvShows(string serverId);
+
+        /// <summary>
         /// Gets a list of unique photo albums, by Id
         /// Name = Album property
         /// Value = AlbumId property

@@ -436,7 +436,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 });
             }
 
-            if (types.Contains("Episodes", StringComparer.OrdinalIgnoreCase))
+            if (types.Contains("Episode", StringComparer.OrdinalIgnoreCase))
             {
                 list.Add(new BaseItemDto
                 {
@@ -488,7 +488,11 @@ namespace MediaBrowser.ApiInteraction.Data
             }
             if (string.Equals(parentItem.Type, "TVView"))
             {
-                return GetVideos(user, parentItem);
+                return GetTvShows(user, parentItem);
+            }
+            if (string.Equals(parentItem.Type, "TVShow"))
+            {
+                return GetTvEpisodes(user, parentItem);
             }
 
             return Task.FromResult(new List<BaseItemDto>());
@@ -590,6 +594,37 @@ namespace MediaBrowser.ApiInteraction.Data
                 ServerId = user.ServerId,
                 MediaType = "Video",
                 ExcludeTypes = new[] { "Episode" }
+            });
+
+            return items
+                .Select(i => i.Item)
+                .OrderBy(i => i.SortName)
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetTvShows(UserDto user, BaseItemDto parentItem)
+        {
+            var shows = await _itemRepository.GetTvShows(user.ServerId).ConfigureAwait(false);
+
+            return shows
+                .OrderBy(i => i)
+                .Select(i => new BaseItemDto
+                {
+                    Name = i,
+                    Id = i,
+                    Type = "TVShow",
+                    ServerId = user.ServerId
+                })
+                .ToList();
+        }
+
+        private async Task<List<BaseItemDto>> GetTvEpisodes(UserDto user, BaseItemDto parentItem)
+        {
+            var items = await _itemRepository.GetItems(new LocalItemQuery
+            {
+                SeriesName = parentItem.Id,
+                ServerId = user.ServerId,
+                MediaType = "Episode"
             });
 
             return items
