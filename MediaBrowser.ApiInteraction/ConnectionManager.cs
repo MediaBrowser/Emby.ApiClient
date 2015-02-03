@@ -826,7 +826,8 @@ namespace MediaBrowser.ApiInteraction
             // Record user info here
             server.AddOrUpdate(new ServerUserInfo
             {
-                Id = user.Id
+                Id = user.Id,
+                IsSignedInOffline = true
             });
         }
 
@@ -878,6 +879,11 @@ namespace MediaBrowser.ApiInteraction
                 server.AccessToken = null;
                 server.UserId = null;
                 server.ExchangeToken = null;
+
+                foreach (var user in server.Users)
+                {
+                    user.IsSignedInOffline = false;
+                }
             }
 
             credentials.Servers = servers;
