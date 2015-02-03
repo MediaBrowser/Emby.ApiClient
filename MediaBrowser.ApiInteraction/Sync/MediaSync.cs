@@ -229,33 +229,6 @@ namespace MediaBrowser.ApiInteraction.Sync
             ServerInfo serverInfo,
             CancellationToken cancellationToken)
         {
-            var actions = await _localAssetManager.GetUserActions(serverInfo.Id).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var actionList = actions
-                .OrderBy(i => i.Date)
-                .ToList();
-
-            _logger.Debug("Reporting {0} offline actions to server {1}",
-                actionList.Count,
-                serverInfo.Id);
-
-            if (actionList.Count > 0)
-            {
-                await apiClient.ReportOfflineActions(actionList).ConfigureAwait(false);
-            }
-
-            foreach (var action in actionList)
-            {
-                await _localAssetManager.Delete(action).ConfigureAwait(false);
-            }
-        }
-
-        private async Task ReportOfflineActions(IApiClient apiClient,
-            ServerInfo serverInfo,
-            CancellationToken cancellationToken)
-        {
             var localIds = await _localAssetManager.GetServerItemIds(serverInfo.Id).ConfigureAwait(false);
 
             var result = await apiClient.SyncData(new SyncDataRequest
@@ -277,6 +250,46 @@ namespace MediaBrowser.ApiInteraction.Sync
                 {
                     _logger.ErrorException("Error deleting item from device. Id: {0}", ex, itemIdToRemove);
                 }
+            }
+
+            foreach (var item in result.ItemUserAccess)
+            {
+                var itemid = item.Key;
+
+                var localItem = await _localAssetManager.GetLocalItem(serverInfo.Id, itemid).ConfigureAwait(false);
+
+                if (!localItem.UserIdsWithAccess.SequenceEqual(item.Value, StringComparer.OrdinalIgnoreCase))
+                {
+                    localItem.UserIdsWithAccess = item.Value;
+                    await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task ReportOfflineActions(IApiClient apiClient,
+            ServerInfo serverInfo,
+            CancellationToken cancellationToken)
+        {
+            var actions = await _localAssetManager.GetUserActions(serverInfo.Id).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var actionList = actions
+                .OrderBy(i => i.Date)
+                .ToList();
+
+            _logger.Debug("Reporting {0} offline actions to server {1}",
+                actionList.Count,
+                serverInfo.Id);
+
+            if (actionList.Count > 0)
+            {
+                await apiClient.ReportOfflineActions(actionList).ConfigureAwait(false);
+            }
+
+            foreach (var action in actionList)
+            {
+                await _localAssetManager.Delete(action).ConfigureAwait(false);
             }
         }
 
