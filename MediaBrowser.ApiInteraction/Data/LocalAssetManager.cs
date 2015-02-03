@@ -525,7 +525,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
             var dict = new Dictionary<string, List<BaseItemDto>>();
 
-            foreach (var item in items)
+            foreach (var item in FilterByUserAccess(items, user))
             {
                 if (!string.IsNullOrWhiteSpace(item.Item.AlbumId))
                 {
@@ -564,7 +564,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 MediaType = "Audio"
             });
 
-            return items
+            return FilterByUserAccess(items, user)
                 .Select(i => i.Item)
                 .OrderBy(i => i.SortName)
                 .ToList();
@@ -596,7 +596,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 ExcludeTypes = new[] { "Episode" }
             });
 
-            return items
+            return FilterByUserAccess(items, user)
                 .Select(i => i.Item)
                 .OrderBy(i => i.SortName)
                 .ToList();
@@ -628,7 +628,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 Type = "Episode"
             });
 
-            return items
+            return FilterByUserAccess(items, user)
                 .Select(i => i.Item)
                 .OrderBy(i => i.SortName)
                 .ToList();
@@ -643,10 +643,15 @@ namespace MediaBrowser.ApiInteraction.Data
                 ExcludeTypes = new[] { "Episode" }
             });
 
-            return items
+            return FilterByUserAccess(items, user)
                 .Select(i => i.Item)
                 .OrderBy(i => i.SortName)
                 .ToList();
+        }
+
+        private IEnumerable<LocalItem> FilterByUserAccess(IEnumerable<LocalItem> items, UserDto user)
+        {
+            return items.Where(i => i.UserIdsWithAccess.Contains(user.Id, StringComparer.OrdinalIgnoreCase));
         }
     }
 }
