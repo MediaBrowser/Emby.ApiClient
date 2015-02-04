@@ -36,11 +36,11 @@ namespace MediaBrowser.ApiInteraction.Sync
             await ReportOfflineActions(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
             progress.Report(1);
 
-            await SyncData(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
+            await SyncData(apiClient, serverInfo, false, cancellationToken).ConfigureAwait(false);
             progress.Report(2);
 
             // Do the data sync twice so the server knows what was removed from the device
-            await SyncData(apiClient, serverInfo, cancellationToken).ConfigureAwait(false);
+            await SyncData(apiClient, serverInfo, true, cancellationToken).ConfigureAwait(false);
             progress.Report(3);
 
             var innerProgress = new DoubleProgress();
@@ -227,6 +227,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task SyncData(IApiClient apiClient,
             ServerInfo serverInfo,
+            bool syncUserItemAccess,
             CancellationToken cancellationToken)
         {
             var localIds = await _localAssetManager.GetServerItemIds(serverInfo.Id).ConfigureAwait(false);
@@ -234,7 +235,8 @@ namespace MediaBrowser.ApiInteraction.Sync
             var result = await apiClient.SyncData(new SyncDataRequest
             {
                 TargetId = apiClient.DeviceId,
-                LocalItemIds = localIds
+                LocalItemIds = localIds,
+                OfflineUserIds = serverInfo.Users.Select(i => i.Id).ToList()
 
             }).ConfigureAwait(false);
 
@@ -252,16 +254,19 @@ namespace MediaBrowser.ApiInteraction.Sync
                 }
             }
 
-            foreach (var item in result.ItemUserAccess)
+            if (syncUserItemAccess)
             {
-                var itemid = item.Key;
-
-                var localItem = await _localAssetManager.GetLocalItem(serverInfo.Id, itemid).ConfigureAwait(false);
-
-                if (!localItem.UserIdsWithAccess.SequenceEqual(item.Value, StringComparer.OrdinalIgnoreCase))
+                foreach (var item in result.ItemUserAccess)
                 {
-                    localItem.UserIdsWithAccess = item.Value;
-                    await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
+                    var itemid = item.Key;
+
+                    var localItem = await _localAssetManager.GetLocalItem(serverInfo.Id, itemid).ConfigureAwait(false);
+
+                    if (!localItem.UserIdsWithAccess.SequenceEqual(item.Value, StringComparer.OrdinalIgnoreCase))
+                    {
+                        localItem.UserIdsWithAccess = item.Value;
+                        await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
+                    }
                 }
             }
         }

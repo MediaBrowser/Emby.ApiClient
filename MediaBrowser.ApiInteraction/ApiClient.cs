@@ -2983,10 +2983,15 @@ namespace MediaBrowser.ApiInteraction
         {
             var dict = new QueryStringDictionary { };
 
-            dict.AddIfNotNull("IsCompleted", query.IsCompleted);
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("SyncNewContent", query.SyncNewContent);
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
+
+            if (query.Statuses.Count > 0)
+            {
+                dict.Add("Statuses", string.Join(",", query.Statuses.Select(i => i.ToString()).ToArray()));
+            }
 
             var url = GetApiUrl("Sync/Jobs", dict);
 
