@@ -56,6 +56,7 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStopped;
         public event EventHandler<GenericEventArgs<SessionInfoDto>> SessionEnded;
         public event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
 
         /// <summary>
         /// The _web socket
@@ -530,6 +531,13 @@ namespace MediaBrowser.ApiInteraction
                 FireEvent(SyncJobCreated, this, new GenericEventArgs<SyncJobCreationResult>
                 {
                     Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SyncJobCreationResult>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "SyncJobCancelled"))
+            {
+                FireEvent(SyncJobCancelled, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<SyncJob>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "PlaybackStart"))
