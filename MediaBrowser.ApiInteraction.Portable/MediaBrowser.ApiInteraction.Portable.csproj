@@ -71,6 +71,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\Data\LocalAssetManager.cs">
       <Link>Data\LocalAssetManager.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Data\LocalItemInfo.cs">
+      <Link>Data\LocalItemInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Data\LocalItemQuery.cs">
       <Link>Data\LocalItemQuery.cs</Link>
     </Compile>
