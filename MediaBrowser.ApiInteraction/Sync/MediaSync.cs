@@ -30,6 +30,13 @@ namespace MediaBrowser.ApiInteraction.Sync
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
+            var systemInfo = await apiClient.GetSystemInfoAsync(cancellationToken).ConfigureAwait(false);
+            if (!systemInfo.SupportsSync)
+            {
+                _logger.Debug("Skipping MediaSync because server does not support it.");
+                return;
+            }
+
             _logger.Debug("Beginning media sync process with server Id: {0}", serverInfo.Id);
 
             // First report actions to the server that occurred while offline
