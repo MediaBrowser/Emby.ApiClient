@@ -488,7 +488,7 @@ namespace MediaBrowser.ApiInteraction.Data
             }
             if (string.Equals(parentItem.Type, "TVView"))
             {
-                return GetTvShows(user, parentItem);
+                return GetTvSeries(user, parentItem);
             }
             if (string.Equals(parentItem.Type, "TVShow"))
             {
@@ -576,12 +576,23 @@ namespace MediaBrowser.ApiInteraction.Data
 
             return albums
                 .OrderBy(i => i.Name)
-                .Select(i => new BaseItemDto
+                .Select(i =>
                 {
-                    Name = i.Name,
-                    Id = i.Value,
-                    Type = "PhotoAlbum",
-                    ServerId = user.ServerId
+                    var item = new BaseItemDto
+                    {
+                        Name = i.Name,
+                        Id = i.Id,
+                        Type = "PhotoAlbum",
+                        ServerId = i.ServerId,
+                        ImageTags = new Dictionary<ImageType,string>()  
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(i.PrimaryImageTag))
+                    {
+                        item.ImageTags[ImageType.Primary] = i.PrimaryImageTag;
+                    }
+
+                    return item;
                 })
                 .ToList();
         }
@@ -602,18 +613,29 @@ namespace MediaBrowser.ApiInteraction.Data
                 .ToList();
         }
 
-        private async Task<List<BaseItemDto>> GetTvShows(UserDto user, BaseItemDto parentItem)
+        private async Task<List<BaseItemDto>> GetTvSeries(UserDto user, BaseItemDto parentItem)
         {
-            var shows = await _itemRepository.GetTvShows(user.ServerId, user.Id).ConfigureAwait(false);
+            var shows = await _itemRepository.GetTvSeries(user.ServerId, user.Id).ConfigureAwait(false);
 
             return shows
                 .OrderBy(i => i.Name)
-                .Select(i => new BaseItemDto
+                .Select(i =>
                 {
-                    Name = i.Name,
-                    Id = i.Value,
-                    Type = "TVShow",
-                    ServerId = user.ServerId
+                    var item = new BaseItemDto
+                    {
+                        Name = i.Name,
+                        Id = i.Id,
+                        Type = "Series",
+                        ServerId = i.ServerId,
+                        ImageTags = new Dictionary<ImageType, string>()
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(i.PrimaryImageTag))
+                    {
+                        item.ImageTags[ImageType.Primary] = i.PrimaryImageTag;
+                    }
+
+                    return item;
                 })
                 .ToList();
         }

@@ -81,6 +81,7 @@
     <Compile Include="Data\IItemRepository.cs" />
     <Compile Include="Data\IUserActionRepository.cs" />
     <Compile Include="Data\IUserRepository.cs" />
+    <Compile Include="Data\LocalItemInfo.cs" />
     <Compile Include="Data\LocalItemQuery.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="Net\HttpHeaders.cs" />

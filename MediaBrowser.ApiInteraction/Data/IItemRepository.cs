@@ -62,21 +62,25 @@ namespace MediaBrowser.ApiInteraction.Data
         Task<List<string>> GetAlbumArtists(string serverId, string userId);
 
         /// <summary>
-        /// Gets a list of unique TvShows values
+        /// Gets a list of unique series, by id
+        /// Name = Album property
+        /// Id = SeriesId property
+        /// PrimaryImageTag = SeriesPrimaryImageTag
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<NameValuePair>> GetTvShows(string serverId, string userId);
+        /// <returns>Task&lt;List&lt;LocalItemInfo&gt;&gt;.</returns>
+        Task<List<LocalItemInfo>> GetTvSeries(string serverId, string userId);
 
         /// <summary>
         /// Gets a list of unique photo albums, by Id
         /// Name = Album property
-        /// Value = AlbumId property
+        /// Id = AlbumId property
+        /// PrimaryImageTag = AlbumPrimaryImageTag
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        /// <returns>Task&lt;List&lt;NameValuePair&gt;&gt;.</returns>
-        Task<List<NameValuePair>> GetPhotoAlbums(string serverId, string userId);
+        /// <returns>Task&lt;List&lt;LocalItemInfo&gt;&gt;.</returns>
+        Task<List<LocalItemInfo>> GetPhotoAlbums(string serverId, string userId);
     }
 }
