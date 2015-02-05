@@ -683,7 +683,17 @@ namespace MediaBrowser.ApiInteraction.Data
 
         private IEnumerable<LocalItem> FilterByUserAccess(IEnumerable<LocalItem> items, UserDto user)
         {
-            return items.Where(i => i.UserIdsWithAccess.Contains(user.Id, StringComparer.OrdinalIgnoreCase));
+            return items.Where(i =>
+            {
+                var result = i.UserIdsWithAccess.Contains(user.Id, StringComparer.OrdinalIgnoreCase);
+
+                if (!result)
+                {
+                    _logger.Debug("Offline item {0} is blocked from user {1}", i.Item.Name, user.Name);
+                }
+
+                return result;
+            });
         }
     }
 }
