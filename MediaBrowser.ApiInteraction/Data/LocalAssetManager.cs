@@ -391,6 +391,11 @@ namespace MediaBrowser.ApiInteraction.Data
             await _imageRepository.SaveImage(user.Id, user.PrimaryImageTag, stream).ConfigureAwait(false);
         }
 
+        public Task SaveItemImage(string itemId, string imageId, Stream stream)
+        {
+            return _imageRepository.SaveImage(itemId, imageId, stream);
+        }
+
         public Task<Stream> GetUserImage(UserDto user)
         {
             return _imageRepository.GetImage(user.Id, user.PrimaryImageTag);
@@ -404,6 +409,11 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task<bool> HasImage(UserDto user)
         {
             return _imageRepository.HasImage(user.Id, user.PrimaryImageTag);
+        }
+
+        public Task<bool> HasImage(string itemId, string imageId)
+        {
+            return _imageRepository.HasImage(itemId, imageId);
         }
 
         public async Task<List<BaseItemDto>> GetViews(UserDto user)
@@ -584,7 +594,7 @@ namespace MediaBrowser.ApiInteraction.Data
                         Id = i.Id,
                         Type = "PhotoAlbum",
                         ServerId = i.ServerId,
-                        ImageTags = new Dictionary<ImageType,string>()  
+                        ImageTags = new Dictionary<ImageType, string>()
                     };
 
                     if (!string.IsNullOrWhiteSpace(i.PrimaryImageTag))
