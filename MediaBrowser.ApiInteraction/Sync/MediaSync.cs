@@ -109,7 +109,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             var localItem = _localAssetManager.CreateLocalItem(libraryItem, server, jobItem.OriginalFileName);
 
-            // Download item file
+            // Create db record
             await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);
 
             var fileTransferProgress = new DoubleProgress();

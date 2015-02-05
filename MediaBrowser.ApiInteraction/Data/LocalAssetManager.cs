@@ -410,7 +410,7 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             var list = new List<BaseItemDto>();
 
-            var types = await _itemRepository.GetItemTypes(user.ServerId).ConfigureAwait(false);
+            var types = await _itemRepository.GetItemTypes(user.ServerId, user.Id).ConfigureAwait(false);
 
             if (types.Contains("Audio", StringComparer.OrdinalIgnoreCase))
             {
@@ -500,7 +500,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         private async Task<List<BaseItemDto>> GetMusicArtists(UserDto user, BaseItemDto parentItem)
         {
-            var artists = await _itemRepository.GetAlbumArtists(user.ServerId).ConfigureAwait(false);
+            var artists = await _itemRepository.GetAlbumArtists(user.ServerId, user.Id).ConfigureAwait(false);
 
             return artists
                 .OrderBy(i => i)
@@ -572,7 +572,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         private async Task<List<BaseItemDto>> GetPhotoAlbums(UserDto user, BaseItemDto parentItem)
         {
-            var albums = await _itemRepository.GetPhotoAlbums(user.ServerId).ConfigureAwait(false);
+            var albums = await _itemRepository.GetPhotoAlbums(user.ServerId, user.Id).ConfigureAwait(false);
 
             return albums
                 .OrderBy(i => i.Name)
@@ -604,7 +604,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         private async Task<List<BaseItemDto>> GetTvShows(UserDto user, BaseItemDto parentItem)
         {
-            var shows = await _itemRepository.GetTvShows(user.ServerId).ConfigureAwait(false);
+            var shows = await _itemRepository.GetTvShows(user.ServerId, user.Id).ConfigureAwait(false);
 
             return shows
                 .OrderBy(i => i.Name)

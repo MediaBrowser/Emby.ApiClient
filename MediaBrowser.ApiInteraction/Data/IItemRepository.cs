@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Data
 {
+    /// <summary>
+    /// Interface IItemRepository
+    /// </summary>
     public interface IItemRepository
     {
         /// <summary>
@@ -39,8 +42,9 @@ namespace MediaBrowser.ApiInteraction.Data
         /// Queries all items for a server Id and returns a list of unique item types.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetItemTypes(string serverId);
+        Task<List<string>> GetItemTypes(string serverId, string userId);
 
         /// <summary>
         /// Gets the items.
@@ -53,15 +57,17 @@ namespace MediaBrowser.ApiInteraction.Data
         /// Gets a list of unique AlbumArtist values
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetAlbumArtists(string serverId);
+        Task<List<string>> GetAlbumArtists(string serverId, string userId);
 
         /// <summary>
         /// Gets a list of unique TvShows values
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<NameValuePair>> GetTvShows(string serverId);
+        Task<List<NameValuePair>> GetTvShows(string serverId, string userId);
 
         /// <summary>
         /// Gets a list of unique photo albums, by Id
@@ -69,7 +75,8 @@ namespace MediaBrowser.ApiInteraction.Data
         /// Value = AlbumId property
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;NameValuePair&gt;&gt;.</returns>
-        Task<List<NameValuePair>> GetPhotoAlbums(string serverId);
+        Task<List<NameValuePair>> GetPhotoAlbums(string serverId, string userId);
     }
 }
