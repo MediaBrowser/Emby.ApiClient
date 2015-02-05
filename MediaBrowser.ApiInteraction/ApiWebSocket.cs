@@ -58,6 +58,7 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
         public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
         public event EventHandler<GenericEventArgs<List<SyncJob>>> SyncJobsUpdated;
+        public event EventHandler<GenericEventArgs<CompleteSyncJobInfo>> SyncJobUpdated;
 
         /// <summary>
         /// The _web socket
@@ -330,6 +331,21 @@ namespace MediaBrowser.ApiInteraction
             return SendWebSocketMessage("SyncJobsStop", string.Empty);
         }
 
+        public Task StartReceivingSyncJobUpdates(int intervalMs, string jobId)
+        {
+            var options = new List<string>();
+            options.Add(intervalMs.ToString(CultureInfo.InvariantCulture));
+            options.Add(intervalMs.ToString(CultureInfo.InvariantCulture));
+            options.Add(jobId ?? string.Empty);
+
+            return SendWebSocketMessage("SyncJobStart", string.Join(",", options.ToArray()));
+        }
+
+        public Task StopReceivingSyncJobUpdates(int intervalMs)
+        {
+            return SendWebSocketMessage("SyncJobStop", string.Empty);
+        }
+
         /// <summary>
         /// Timers the callback.
         /// </summary>
@@ -534,6 +550,13 @@ namespace MediaBrowser.ApiInteraction
                 FireEvent(SyncJobsUpdated, this, new GenericEventArgs<List<SyncJob>>
                 {
                     Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<List<SyncJob>>>(json).Data
+                });
+            }
+            else if (string.Equals(messageType, "SyncJob"))
+            {
+                FireEvent(SyncJobUpdated, this, new GenericEventArgs<CompleteSyncJobInfo>
+                {
+                    Argument = JsonSerializer.DeserializeFromString<WebSocketMessage<CompleteSyncJobInfo>>(json).Data
                 });
             }
             else if (string.Equals(messageType, "UserDataChanged"))
