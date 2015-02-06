@@ -5,7 +5,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,10 +118,8 @@ namespace MediaBrowser.ApiInteraction.Sync
             await _fileTransferManager.GetItemFileAsync(apiClient, server, localItem, jobItem.SyncJobItemId, fileTransferProgress, cancellationToken).ConfigureAwait(false);
             progress.Report(92);
 
-            var localFiles = await _localAssetManager.GetFiles(localItem).ConfigureAwait(false);
-
             // Download images
-            await GetItemImages(apiClient, localItem, localFiles, cancellationToken).ConfigureAwait(false);
+            await GetItemImages(apiClient, localItem, cancellationToken).ConfigureAwait(false);
             progress.Report(95);
 
             // Download subtitles
@@ -136,69 +133,38 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task GetItemImages(IApiClient apiClient,
             LocalItem item,
-            List<ItemFileInfo> localFiles,
             CancellationToken cancellationToken)
         {
             var libraryItem = item.Item;
 
-            var serverImages = GetServerImages(libraryItem)
-                .ToList();
-
-            foreach (var image in localFiles.Where(file => file.Type == ItemFileType.Image))
+            if (libraryItem.HasPrimaryImage)
             {
-                var current = serverImages
-                    .FirstOrDefault(i => i.ImageType == image.ImageType);
-
-                // Image not on server anymore (or has been changed)
-                if (current == null)
-                {
-                    await _localAssetManager.DeleteFile(image.Path);
-                }
+                await DownloadImage(apiClient, item.ServerId, libraryItem.Id, libraryItem.ImageTags[ImageType.Primary], ImageType.Primary, cancellationToken)
+                        .ConfigureAwait(false);
             }
 
-            foreach (var image in serverImages)
+            // Container images
+            if (!string.IsNullOrWhiteSpace(libraryItem.SeriesPrimaryImageTag))
             {
-                var current = localFiles
-                    .FirstOrDefault(i => i.ImageType == image.ImageType);
-
-                // Download image
-                if (current == null)
-                {
-                    await DownloadImage(apiClient, item, image, cancellationToken).ConfigureAwait(false);
-                }
+                await DownloadImage(apiClient, item.ServerId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, ImageType.Primary, cancellationToken)
+                        .ConfigureAwait(false);
             }
 
-            await DownloadContainerImages(apiClient, libraryItem, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task DownloadContainerImages(IApiClient apiClient,
-            BaseItemDto item,
-            CancellationToken cancellationToken)
-        {
-            if (item.IsType("Episode"))
+            if (!string.IsNullOrWhiteSpace(libraryItem.AlbumPrimaryImageTag))
             {
-                if (!string.IsNullOrWhiteSpace(item.SeriesPrimaryImageTag))
-                {
-                    await DownloadContainerImage(apiClient, item.SeriesId, item.SeriesPrimaryImageTag, cancellationToken)
-                            .ConfigureAwait(false);
-                }
-            }
-            else if (item.IsType("photo"))
-            {
-                if (!string.IsNullOrWhiteSpace(item.AlbumPrimaryImageTag))
-                {
-                    await DownloadContainerImage(apiClient, item.AlbumId, item.AlbumPrimaryImageTag, cancellationToken)
-                            .ConfigureAwait(false);
-                }
+                await DownloadImage(apiClient, item.ServerId, libraryItem.AlbumId, libraryItem.AlbumPrimaryImageTag, ImageType.Primary, cancellationToken)
+                        .ConfigureAwait(false);
             }
         }
 
-        private async Task DownloadContainerImage(IApiClient apiClient,
+        private async Task DownloadImage(IApiClient apiClient,
+            string serverId,
             string itemId,
             string imageTag,
+            ImageType imageType,
             CancellationToken cancellationToken)
         {
-            var hasImage = await _localAssetManager.HasImage(itemId, imageTag).ConfigureAwait(false);
+            var hasImage = await _localAssetManager.HasImage(serverId, itemId, imageTag).ConfigureAwait(false);
 
             if (hasImage)
             {
@@ -207,49 +173,13 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             var url = apiClient.GetImageUrl(itemId, new ImageOptions
             {
-                ImageType = ImageType.Primary,
+                ImageType = imageType,
                 Tag = imageTag
             });
 
             using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveItemImage(itemId, imageTag, response.Content).ConfigureAwait(false);
-            }
-        }
-
-        private IEnumerable<ImageInfo> GetServerImages(BaseItemDto item)
-        {
-            var list = new List<ImageInfo>();
-
-            if (item.HasPrimaryImage)
-            {
-                list.Add(new ImageInfo
-                {
-                    ImageIndex = 0,
-                    ImageTag = item.ImageTags[ImageType.Primary],
-                    ImageType = ImageType.Primary
-                });
-            }
-
-            return list;
-        }
-
-        private async Task DownloadImage(IApiClient apiClient,
-            LocalItem item,
-            ImageInfo image,
-            CancellationToken cancellationToken)
-        {
-            var libraryItem = item.Item;
-
-            var url = apiClient.GetImageUrl(libraryItem, new ImageOptions
-            {
-                ImageIndex = image.ImageIndex,
-                ImageType = image.ImageType
-            });
-
-            using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
-            {
-                await _localAssetManager.SaveImage(response.Content, response.ContentType, item, image).ConfigureAwait(false);
+                await _localAssetManager.SaveItemImage(serverId, itemId, imageTag, response.Content).ConfigureAwait(false);
             }
         }
 
