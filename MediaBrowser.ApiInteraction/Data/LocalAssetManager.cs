@@ -525,6 +525,7 @@ namespace MediaBrowser.ApiInteraction.Data
                     ServerId = user.ServerId,
                     SongCount = i.Value.Count,
                     ChildCount = i.Value.Count,
+                    AlbumPrimaryImageTag = i.Value[0].AlbumPrimaryImageTag,
                     Genres = i.Value.SelectMany(m => m.Genres).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(m => m).ToList(),
                     Artists = i.Value.SelectMany(m => m.Artists).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(m => m).ToList()
                 })
