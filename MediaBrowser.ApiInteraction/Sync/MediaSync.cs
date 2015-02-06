@@ -139,30 +139,32 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             if (libraryItem.HasPrimaryImage)
             {
-                await DownloadImage(apiClient, libraryItem.Id, libraryItem.ImageTags[ImageType.Primary], cancellationToken)
+                await DownloadImage(apiClient, item.ServerId, libraryItem.Id, libraryItem.ImageTags[ImageType.Primary], ImageType.Primary, cancellationToken)
                         .ConfigureAwait(false);
             }
 
             // Container images
             if (!string.IsNullOrWhiteSpace(libraryItem.SeriesPrimaryImageTag))
             {
-                await DownloadImage(apiClient, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, cancellationToken)
+                await DownloadImage(apiClient, item.ServerId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, ImageType.Primary, cancellationToken)
                         .ConfigureAwait(false);
             }
 
             if (!string.IsNullOrWhiteSpace(libraryItem.AlbumPrimaryImageTag))
             {
-                await DownloadImage(apiClient, libraryItem.AlbumId, libraryItem.AlbumPrimaryImageTag, cancellationToken)
+                await DownloadImage(apiClient, item.ServerId, libraryItem.AlbumId, libraryItem.AlbumPrimaryImageTag, ImageType.Primary, cancellationToken)
                         .ConfigureAwait(false);
             }
         }
 
         private async Task DownloadImage(IApiClient apiClient,
+            string serverId,
             string itemId,
             string imageTag,
+            ImageType imageType,
             CancellationToken cancellationToken)
         {
-            var hasImage = await _localAssetManager.HasImage(itemId, imageTag).ConfigureAwait(false);
+            var hasImage = await _localAssetManager.HasImage(serverId, itemId, imageTag).ConfigureAwait(false);
 
             if (hasImage)
             {
@@ -171,13 +173,13 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             var url = apiClient.GetImageUrl(itemId, new ImageOptions
             {
-                ImageType = ImageType.Primary,
+                ImageType = imageType,
                 Tag = imageTag
             });
 
             using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveItemImage(itemId, imageTag, response.Content).ConfigureAwait(false);
+                await _localAssetManager.SaveItemImage(serverId, itemId, imageTag, response.Content).ConfigureAwait(false);
             }
         }
 

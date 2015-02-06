@@ -334,12 +334,7 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             await DeleteUserImage(user).ConfigureAwait(false);
 
-            await _imageRepository.SaveImage(user.Id, user.PrimaryImageTag, stream).ConfigureAwait(false);
-        }
-
-        public Task SaveItemImage(string itemId, string imageId, Stream stream)
-        {
-            return _imageRepository.SaveImage(itemId, imageId, stream);
+            await _imageRepository.SaveImage(GetImageRepositoryId(user.ServerId, user.Id), user.PrimaryImageTag, stream).ConfigureAwait(false);
         }
 
         public Task<Stream> GetUserImage(UserDto user)
@@ -349,17 +344,42 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task DeleteUserImage(UserDto user)
         {
-            return _imageRepository.DeleteImages(user.Id);
+            return _imageRepository.DeleteImages(GetImageRepositoryId(user.ServerId, user.Id));
         }
 
         public Task<bool> HasImage(UserDto user)
         {
-            return _imageRepository.HasImage(user.Id, user.PrimaryImageTag);
+            return _imageRepository.HasImage(GetImageRepositoryId(user.ServerId, user.Id), user.PrimaryImageTag);
         }
 
-        public Task<bool> HasImage(string itemId, string imageId)
+        public Task SaveItemImage(string serverId, string itemId, string imageId, Stream stream)
         {
-            return _imageRepository.HasImage(itemId, imageId);
+            return _imageRepository.SaveImage(GetImageRepositoryId(serverId, itemId), imageId, stream);
+        }
+
+        public Task<bool> HasImage(string serverId, string itemId, string imageId)
+        {
+            return _imageRepository.HasImage(GetImageRepositoryId(serverId, itemId), imageId);
+        }
+
+        public Task<Stream> GetImage(string serverId, string itemId, string imageId)
+        {
+            return _imageRepository.GetImage(GetImageRepositoryId(serverId, itemId), imageId);
+        }
+
+        private string GetImageRepositoryId(string serverId, string itemId)
+        {
+            return GetLocalId(serverId, itemId);
+        }
+
+        public Task<bool> HasImage(BaseItemDto item, string imageId)
+        {
+            return _imageRepository.HasImage(GetImageRepositoryId(item.ServerId, item.Id), imageId);
+        }
+
+        public Task<Stream> GetImage(BaseItemDto item, string imageId)
+        {
+            return _imageRepository.GetImage(GetImageRepositoryId(item.ServerId, item.Id), imageId);
         }
 
         public async Task<List<BaseItemDto>> GetViews(UserDto user)
