@@ -167,6 +167,8 @@ namespace MediaBrowser.ApiInteraction.Sync
                     await DownloadImage(apiClient, item, image, cancellationToken).ConfigureAwait(false);
                 }
             }
+
+            await DownloadContainerImages(apiClient, libraryItem, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task DownloadContainerImages(IApiClient apiClient,
