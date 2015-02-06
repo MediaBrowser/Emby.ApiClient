@@ -500,7 +500,7 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 return GetTvSeries(user, parentItem);
             }
-            if (string.Equals(parentItem.Type, "TVShow"))
+            if (string.Equals(parentItem.Type, "Series"))
             {
                 return GetTvEpisodes(user, parentItem);
             }
