@@ -114,16 +114,11 @@ namespace MediaBrowser.ApiInteraction.Data
                     Name = file.Name
                 };
 
-                if (IsImageFile(file.Name))
-                {
-                    itemFile.Type = ItemFileType.Image;
-                    itemFile.ImageType = GetImageType(file.Name);
-                }
-                else if (IsSubtitleFile(file.Name))
+                if (IsSubtitleFile(file.Name))
                 {
                     itemFile.Type = ItemFileType.Subtitles;
                 }
-                else
+                else if (!IsImageFile(file.Name))
                 {
                     itemFile.Type = ItemFileType.Media;
                 }
@@ -151,16 +146,6 @@ namespace MediaBrowser.ApiInteraction.Data
         }
 
         /// <summary>
-        /// Gets the type of the image.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>ImageType.</returns>
-        private ImageType GetImageType(string filename)
-        {
-            return ImageType.Primary;
-        }
-
-        /// <summary>
         /// Deletes the specified file.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -168,22 +153,6 @@ namespace MediaBrowser.ApiInteraction.Data
         public Task DeleteFile(string path)
         {
             return _fileRepository.DeleteFile(path);
-        }
-
-        public async Task SaveImage(Stream stream,
-            string mimeType,
-            LocalItem item,
-            ImageInfo imageInfo)
-        {
-            var path = item.LocalPath;
-
-            var imageFilename = GetSaveFileName(item, imageInfo) + GetSaveExtension(mimeType);
-
-            var parentPath = _fileRepository.GetParentDirectoryPath(path);
-
-            path = Path.Combine(parentPath, imageFilename);
-
-            await _fileRepository.SaveFile(stream, path);
         }
 
         public async Task<string> SaveSubtitles(Stream stream,
@@ -222,29 +191,6 @@ namespace MediaBrowser.ApiInteraction.Data
             }
 
             return name;
-        }
-
-        private string GetSaveFileName(LocalItem item, ImageInfo imageInfo)
-        {
-            var path = item.LocalPath;
-
-            var libraryItem = item.Item;
-
-            var name = Path.GetFileNameWithoutExtension(path);
-
-            if (libraryItem.IsType("episode"))
-            {
-                name += "-thumb";
-            }
-
-            // TODO: Handle other image types
-
-            return name;
-        }
-
-        private string GetSaveExtension(string mimeType)
-        {
-            return MimeTypes.ToExtension(mimeType);
         }
 
         public Task SaveMedia(Stream stream, LocalItem localItem, ServerInfo server)
