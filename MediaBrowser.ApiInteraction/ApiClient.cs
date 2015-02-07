@@ -3101,6 +3101,18 @@ namespace MediaBrowser.ApiInteraction
             return GetStream(url, cancellationToken);
         }
 
+        public Task CancelSyncJob(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            var url = GetApiUrl("Sync/Jobs/" + id);
+
+            return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
+        }
+
         public Task CancelSyncJobItem(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -3108,35 +3120,35 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("id");
             }
 
-            var url = GetApiUrl("System/JobItems/" + id);
+            var url = GetApiUrl("Sync/JobItems/" + id);
 
             return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
         }
 
         public Task EnableCancelledSyncJobItem(string id)
         {
-            var url = GetApiUrl("System/JobItems/" + id + "/Enable");
+            var url = GetApiUrl("Sync/JobItems/" + id + "/Enable");
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
 
         public Task MarkSyncJobItemForRemoval(string id)
         {
-            var url = GetApiUrl("System/JobItems/" + id + "/MarkForRemoval");
+            var url = GetApiUrl("Sync/JobItems/" + id + "/MarkForRemoval");
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
 
         public Task QueueFailedSyncJobItemForRetry(string id)
         {
-            var url = GetApiUrl("System/JobItems/" + id + "/Enable");
+            var url = GetApiUrl("Sync/JobItems/" + id + "/Enable");
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
 
         public Task UnmarkSyncJobItemForRemoval(string id)
         {
-            var url = GetApiUrl("System/JobItems/" + id + "/UnmarkForRemoval");
+            var url = GetApiUrl("Sync/JobItems/" + id + "/UnmarkForRemoval");
 
             return PostAsync<EmptyRequestResult>(url, new QueryStringDictionary(), CancellationToken.None);
         }
