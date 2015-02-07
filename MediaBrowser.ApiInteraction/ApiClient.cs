@@ -2964,6 +2964,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
+            dict.AddIfNotNull("AddMetadata", query.AddMetadata);
 
             if (query.Statuses.Count > 0)
             {
