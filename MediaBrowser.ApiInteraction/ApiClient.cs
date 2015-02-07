@@ -3155,10 +3155,13 @@ namespace MediaBrowser.ApiInteraction
                 dict.AddIfNotNullOrEmpty("Category", category.Value.ToString());
             }
 
-            var list = itemIds.ToList();
-            if (list.Count > 0)
+            if (itemIds != null)
             {
-                dict.Add("ItemIds", list);
+                var list = itemIds.ToList();
+                if (list.Count > 0)
+                {
+                    dict.Add("ItemIds", list);
+                }
             }
 
             var url = GetApiUrl("Sync/Options", dict);
