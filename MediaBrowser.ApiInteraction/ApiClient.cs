@@ -7,7 +7,6 @@ using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -3141,6 +3140,35 @@ namespace MediaBrowser.ApiInteraction
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
                 return DeserializeFromStream<UserDto>(stream);
+            }
+        }
+
+        public async Task<SyncOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null)
+        {
+            var dict = new QueryStringDictionary();
+
+            dict.AddIfNotNullOrEmpty("UserId", userId);
+            dict.AddIfNotNullOrEmpty("ParentId", parentId);
+
+            if (category.HasValue)
+            {
+                dict.AddIfNotNullOrEmpty("Category", category.Value.ToString());
+            }
+
+            if (itemIds != null)
+            {
+                var list = itemIds.ToList();
+                if (list.Count > 0)
+                {
+                    dict.Add("ItemIds", list);
+                }
+            }
+
+            var url = GetApiUrl("Sync/Options", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SyncOptions>(stream);
             }
         }
     }

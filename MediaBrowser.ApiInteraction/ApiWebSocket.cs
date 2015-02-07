@@ -326,7 +326,7 @@ namespace MediaBrowser.ApiInteraction
             return SendWebSocketMessage("SyncJobsStart", string.Join(",", options.ToArray()));
         }
 
-        public Task StopReceivingSyncJobsUpdates(int intervalMs)
+        public Task StopReceivingSyncJobsUpdates()
         {
             return SendWebSocketMessage("SyncJobsStop", string.Empty);
         }
@@ -341,7 +341,7 @@ namespace MediaBrowser.ApiInteraction
             return SendWebSocketMessage("SyncJobStart", string.Join(",", options.ToArray()));
         }
 
-        public Task StopReceivingSyncJobUpdates(int intervalMs)
+        public Task StopReceivingSyncJobUpdates()
         {
             return SendWebSocketMessage("SyncJobStop", string.Empty);
         }

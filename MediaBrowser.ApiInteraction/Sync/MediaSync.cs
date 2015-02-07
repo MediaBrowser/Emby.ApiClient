@@ -144,12 +144,22 @@ namespace MediaBrowser.ApiInteraction.Sync
             }
 
             // Container images
+
+            // Series Primary
             if (!string.IsNullOrWhiteSpace(libraryItem.SeriesPrimaryImageTag))
             {
                 await DownloadImage(apiClient, item.ServerId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, ImageType.Primary, cancellationToken)
                         .ConfigureAwait(false);
             }
 
+            // Series Thumb
+            if (!string.IsNullOrWhiteSpace(libraryItem.SeriesThumbImageTag))
+            {
+                await DownloadImage(apiClient, item.ServerId, libraryItem.SeriesId, libraryItem.SeriesThumbImageTag, ImageType.Thumb, cancellationToken)
+                        .ConfigureAwait(false);
+            }
+
+            // Album Primary
             if (!string.IsNullOrWhiteSpace(libraryItem.AlbumPrimaryImageTag))
             {
                 await DownloadImage(apiClient, item.ServerId, libraryItem.AlbumId, libraryItem.AlbumPrimaryImageTag, ImageType.Primary, cancellationToken)
