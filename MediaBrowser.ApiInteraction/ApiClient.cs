@@ -3143,7 +3143,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SyncOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null)
+        public async Task<SyncDialogOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null)
         {
             var dict = new QueryStringDictionary();
 
@@ -3168,7 +3168,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<SyncOptions>(stream);
+                return DeserializeFromStream<SyncDialogOptions>(stream);
             }
         }
     }
