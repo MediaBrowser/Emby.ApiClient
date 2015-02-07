@@ -2956,6 +2956,18 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SyncJobRequest, SyncJob>(url, request, CancellationToken.None);
         }
 
+        public Task UpdateSyncJob(SyncJob job)
+        {
+            if (job == null)
+            {
+                throw new ArgumentNullException("job");
+            }
+
+            var url = GetApiUrl("Sync/Jobs/" + job.Id);
+
+            return PostAsync<SyncJob, EmptyRequestResult>(url, job, CancellationToken.None);
+        }
+
         public async Task<QueryResult<SyncJobItem>> GetSyncJobItems(SyncJobItemQuery query)
         {
             var dict = new QueryStringDictionary { };
