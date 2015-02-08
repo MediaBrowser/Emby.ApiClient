@@ -200,17 +200,33 @@ namespace MediaBrowser.ApiInteraction.Sync
         {
             var hasDownloads = false;
 
+            var mediaSource = jobItem.Item.MediaSources.FirstOrDefault();
+
+            if (mediaSource == null)
+            {
+                _logger.Error("Cannot download subtitles because video has no media source info.");
+                return;
+            }
+
             foreach (var file in jobItem.AdditionalFiles.Where(i => i.Type == ItemFileType.Subtitles))
             {
-                using (var response = await apiClient.GetSyncJobItemAdditionalFile(jobItem.SyncJobItemId, file.Name, cancellationToken).ConfigureAwait(false))
+                var subtitleStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Subtitle && i.Index == file.Index);
+
+                if (subtitleStream != null)
                 {
-                    var subtitleStream = jobItem.Item.MediaSources.First().MediaStreams.First(i => i.Type == MediaStreamType.Subtitle && i.Index == file.Index);
-                    var path = await _localAssetManager.SaveSubtitles(response, subtitleStream.Codec, item, subtitleStream.Language, subtitleStream.IsForced).ConfigureAwait(false);
+                    using (var response = await apiClient.GetSyncJobItemAdditionalFile(jobItem.SyncJobItemId, file.Name, cancellationToken).ConfigureAwait(false))
+                    {
+                        var path = await _localAssetManager.SaveSubtitles(response, subtitleStream.Codec, item, subtitleStream.Language, subtitleStream.IsForced).ConfigureAwait(false);
 
-                    subtitleStream.Path = path;
+                        subtitleStream.Path = path;
+                    }
+
+                    hasDownloads = true;
                 }
-
-                hasDownloads = true;
+                else
+                {
+                    _logger.Error("Cannot download subtitles because matching stream info wasn't found.");
+                }
             }
 
             // Save the changes to the item
