@@ -5,7 +5,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
 using System;
@@ -424,14 +423,19 @@ namespace MediaBrowser.ApiInteraction.Data
                 });
             }
 
-            list.Add(new BaseItemDto
+            if (types.Contains("Video", StringComparer.OrdinalIgnoreCase) ||
+                types.Contains("Movie", StringComparer.OrdinalIgnoreCase) ||
+                types.Contains("MusicVideo", StringComparer.OrdinalIgnoreCase))
             {
-                Name = "Videos",
-                ServerId = user.ServerId,
-                Id = "VideosView",
-                Type = "VideosView",
-                CollectionType = CollectionType.HomeVideos
-            });
+                list.Add(new BaseItemDto
+                {
+                    Name = "Videos",
+                    ServerId = user.ServerId,
+                    Id = "VideosView",
+                    Type = "VideosView",
+                    CollectionType = CollectionType.HomeVideos
+                });
+            }
 
             return list;
         }
