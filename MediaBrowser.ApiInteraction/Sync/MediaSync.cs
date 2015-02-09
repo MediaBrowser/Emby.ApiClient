@@ -88,7 +88,14 @@ namespace MediaBrowser.ApiInteraction.Sync
                     progress.Report(totalProgress);
                 });
 
-                await GetItem(apiClient, server, jobItem, innerProgress, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await GetItem(apiClient, server, jobItem, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error syncing new media", ex);
+                }
 
                 numComplete++;
                 startingPercent = numComplete;
