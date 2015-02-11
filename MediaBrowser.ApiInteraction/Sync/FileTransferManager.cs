@@ -10,10 +10,10 @@ namespace MediaBrowser.ApiInteraction.Sync
 {
     class FileTransferManager : IFileTransferManager
     {
-        private readonly LocalAssetManager _localAssetManager;
+        private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
 
-        internal FileTransferManager(LocalAssetManager localAssetManager, ILogger logger)
+        internal FileTransferManager(ILocalAssetManager localAssetManager, ILogger logger)
         {
             _localAssetManager = localAssetManager;
             _logger = logger;

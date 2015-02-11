@@ -62,6 +62,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\Data\IItemRepository.cs">
       <Link>Data\IItemRepository.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Data\ILocalAssetManager.cs">
+      <Link>Data\ILocalAssetManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Data\IUserActionRepository.cs">
       <Link>Data\IUserActionRepository.cs</Link>
     </Compile>

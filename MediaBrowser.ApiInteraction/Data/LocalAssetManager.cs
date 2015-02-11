@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Data
 {
-    public class LocalAssetManager
+    public class LocalAssetManager : ILocalAssetManager
     {
         private readonly IUserActionRepository _userActionRepository;
         private readonly IItemRepository _itemRepository;

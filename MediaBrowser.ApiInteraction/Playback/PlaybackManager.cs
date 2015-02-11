@@ -14,7 +14,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 {
     public class PlaybackManager
     {
-        private readonly LocalAssetManager _localAssetManager;
+        private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
         private readonly IDevice _device;
 
@@ -24,7 +24,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <param name="localAssetManager">The local asset manager.</param>
         /// <param name="device">The device.</param>
         /// <param name="logger">The logger.</param>
-        public PlaybackManager(LocalAssetManager localAssetManager, IDevice device, ILogger logger)
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger)
         {
             _localAssetManager = localAssetManager;
             _device = device;

@@ -79,10 +79,12 @@
     <Compile Include="Data\IFileRepository.cs" />
     <Compile Include="Data\IImageRepository.cs" />
     <Compile Include="Data\IItemRepository.cs" />
+    <Compile Include="Data\ILocalAssetManager.cs" />
     <Compile Include="Data\IUserActionRepository.cs" />
     <Compile Include="Data\IUserRepository.cs" />
     <Compile Include="Data\LocalItemInfo.cs" />
     <Compile Include="Data\LocalItemQuery.cs" />
+    <Compile Include="Data\NullAssetManager.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="Net\HttpHeaders.cs" />
     <Compile Include="Net\HttpRequest.cs" />

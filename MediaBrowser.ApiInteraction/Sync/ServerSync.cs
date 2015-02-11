@@ -17,11 +17,11 @@ namespace MediaBrowser.ApiInteraction.Sync
         private readonly IConnectionManager _connectionManager;
         private readonly IFileTransferManager _fileTransferManager;
         private readonly ILogger _logger;
-        private readonly LocalAssetManager _localAssetManager;
+        private readonly ILocalAssetManager _localAssetManager;
 
         private readonly ClientCapabilities _clientCapabilities;
 
-        public ServerSync(IConnectionManager connectionManager, ILogger logger, LocalAssetManager localAssetManager, IFileTransferManager fileTransferManager, ClientCapabilities clientCapabilities)
+        public ServerSync(IConnectionManager connectionManager, ILogger logger, ILocalAssetManager localAssetManager, IFileTransferManager fileTransferManager, ClientCapabilities clientCapabilities)
         {
             _connectionManager = connectionManager;
             _fileTransferManager = fileTransferManager;

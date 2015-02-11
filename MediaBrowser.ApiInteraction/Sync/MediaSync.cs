@@ -14,10 +14,10 @@ namespace MediaBrowser.ApiInteraction.Sync
     public class MediaSync
     {
         private readonly IFileTransferManager _fileTransferManager;
-        private readonly LocalAssetManager _localAssetManager;
+        private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
 
-        public MediaSync(LocalAssetManager localAssetManager, ILogger logger, IFileTransferManager fileTransferManager)
+        public MediaSync(ILocalAssetManager localAssetManager, ILogger logger, IFileTransferManager fileTransferManager)
         {
             _localAssetManager = localAssetManager;
             _logger = logger;
