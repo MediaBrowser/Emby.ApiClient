@@ -80,6 +80,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\Data\LocalItemQuery.cs">
       <Link>Data\LocalItemQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Data\NullAssetManager.cs">
+      <Link>Data\NullAssetManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\ICredentialProvider.cs">
       <Link>ICredentialProvider.cs</Link>
     </Compile>

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
+using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
@@ -50,6 +51,7 @@ namespace MediaBrowser.ApiInteraction
 
         public ClientCapabilities Capabilities { get; private set; }
         private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ILocalAssetManager _localAssetManager = new NullAssetManager();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiClient" /> class.
@@ -97,6 +99,30 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiClient" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="serverAddress">The server address.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="device">The device.</param>
+        /// <param name="applicationVersion">The application version.</param>
+        /// <param name="capabilities">The capabilities.</param>
+        /// <param name="cryptographyProvider">The cryptography provider.</param>
+        /// <param name="localAssetManager">The local asset manager.</param>
+        public ApiClient(ILogger logger,
+            string serverAddress,
+            string clientName,
+            IDevice device,
+            string applicationVersion,
+            ClientCapabilities capabilities,
+            ICryptographyProvider cryptographyProvider,
+            ILocalAssetManager localAssetManager)
+            : this(logger, serverAddress, clientName, device, applicationVersion, capabilities, cryptographyProvider)
+        {
+            _localAssetManager = localAssetManager;
         }
 
         private void CreateHttpClient(ILogger logger)
@@ -2737,7 +2763,23 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ItemsResult>(stream);
+                var result = DeserializeFromStream<ItemsResult>(stream);
+
+                var serverInfo = ServerInfo;
+                if (serverInfo != null)
+                {
+                    var offlineView = await GetOfflineView(serverInfo.Id, userId).ConfigureAwait(false);
+
+                    if (offlineView != null)
+                    {
+                        var list = result.Items.ToList();
+                        list.Add(offlineView);
+                        result.Items = list.ToArray();
+                        result.TotalRecordCount = list.Count;
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -2772,6 +2814,24 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<BaseItemDto[]>(stream);
             }
+        }
+
+        private async Task<BaseItemDto> GetOfflineView(string serverId, string userId)
+        {
+            var views = await _localAssetManager.GetViews(serverId, userId).ConfigureAwait(false);
+
+            if (views.Count > 0)
+            {
+                return new BaseItemDto
+                {
+                    Name = "Offline",
+                    ServerId = serverId,
+                    Id = "OfflineView",
+                    Type = "OfflineView"
+                };
+            }
+
+            return null;
         }
 
         public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)

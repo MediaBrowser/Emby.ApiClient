@@ -29,7 +29,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<IEnumerable<UserAction>> GetUserActions(string serverId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<IEnumerable<UserAction>>(new List<UserAction>());
         }
 
         public Task AddOrUpdate(LocalItem item)
@@ -39,12 +39,12 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<List<ItemFileInfo>> GetFiles(LocalItem item)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new List<ItemFileInfo>());
         }
 
         public Task DeleteFile(string path)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         public Task<string> SaveSubtitles(Stream stream, string format, LocalItem item, string language, bool isForced)
@@ -84,12 +84,12 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<Stream> GetFileStream(StreamInfo info)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Stream>(null);
         }
 
         public Task<Stream> GetFileStream(string path)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Stream>(null);
         }
 
         public Task SaveOfflineUser(UserDto user)
@@ -109,7 +109,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<Stream> GetUserImage(UserDto user)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Stream>(null);
         }
 
         public Task DeleteUserImage(UserDto user)
@@ -119,7 +119,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<bool> HasImage(UserDto user)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(false);
         }
 
         public Task SaveItemImage(string serverId, string itemId, string imageId, Stream stream)
@@ -129,32 +129,37 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<bool> HasImage(string serverId, string itemId, string imageId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(false);
         }
 
         public Task<Stream> GetImage(string serverId, string itemId, string imageId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Stream>(null);
         }
 
         public Task<bool> HasImage(BaseItemDto item, string imageId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(false);
         }
 
         public Task<Stream> GetImage(BaseItemDto item, string imageId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Stream>(null);
         }
 
-        public Task<List<BaseItemDto>> GetViews(UserDto user)
+        public Task<List<BaseItemDto>> GetViews(string serverId, string userId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new List<BaseItemDto>());
         }
 
         public Task<List<BaseItemDto>> GetItems(UserDto user, BaseItemDto parentItem)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new List<BaseItemDto>());
+        }
+
+        public Task<UserDto> GetUser(string id)
+        {
+            return Task.FromResult<UserDto>(null);
         }
     }
 }

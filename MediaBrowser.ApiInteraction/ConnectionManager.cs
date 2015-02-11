@@ -37,7 +37,7 @@ namespace MediaBrowser.ApiInteraction
         private readonly IAsyncHttpClient _httpClient;
         private readonly Func<IClientWebSocket> _webSocketFactory;
         private readonly ICryptographyProvider _cryptographyProvider;
-        private readonly IUserRepository _userRepository;
+        private readonly ILocalAssetManager _localAssetManager;
 
         public Dictionary<string, IApiClient> ApiClients { get; private set; }
 
@@ -62,7 +62,7 @@ namespace MediaBrowser.ApiInteraction
             ClientCapabilities clientCapabilities,
             ICryptographyProvider cryptographyProvider,
             Func<IClientWebSocket> webSocketFactory = null,
-            IUserRepository userRepository = null)
+            ILocalAssetManager localAssetManager = null)
         {
             _credentialProvider = credentialProvider;
             _networkConnectivity = networkConnectivity;
@@ -72,7 +72,7 @@ namespace MediaBrowser.ApiInteraction
             ClientCapabilities = clientCapabilities;
             _webSocketFactory = webSocketFactory;
             _cryptographyProvider = cryptographyProvider;
-            _userRepository = userRepository;
+            _localAssetManager = localAssetManager;
 
             Device = device;
             ApplicationVersion = applicationVersion;
@@ -108,7 +108,7 @@ namespace MediaBrowser.ApiInteraction
                 var address = server.GetAddress(connectionMode);
 
                 apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion,
-                    ClientCapabilities, _cryptographyProvider)
+                    ClientCapabilities, _cryptographyProvider, _localAssetManager)
                 {
                     JsonSerializer = JsonSerializer
                 };
@@ -276,7 +276,8 @@ namespace MediaBrowser.ApiInteraction
                             continue;
                         }
                     }
-                    var userRecord = await _userRepository.Get(user.Id).ConfigureAwait(false);
+
+                    var userRecord = await _localAssetManager.GetUser(user.Id).ConfigureAwait(false);
 
                     if (userRecord != null)
                     {

@@ -204,9 +204,10 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <summary>
         /// Gets the views.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;BaseItemDto&gt;&gt;.</returns>
-        Task<List<BaseItemDto>> GetViews(UserDto user);
+        Task<List<BaseItemDto>> GetViews(string serverId, string userId);
         /// <summary>
         /// Gets the items.
         /// </summary>
@@ -214,5 +215,11 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <param name="parentItem">The parent item.</param>
         /// <returns>Task&lt;List&lt;BaseItemDto&gt;&gt;.</returns>
         Task<List<BaseItemDto>> GetItems(UserDto user, BaseItemDto parentItem);
+        /// <summary>
+        /// Gets the user.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task&lt;UserDto&gt;.</returns>
+        Task<UserDto> GetUser(string id);
     }
 }

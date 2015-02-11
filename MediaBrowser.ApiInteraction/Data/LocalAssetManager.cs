@@ -341,6 +341,11 @@ namespace MediaBrowser.ApiInteraction.Data
             return _imageRepository.GetImage(user.Id, user.PrimaryImageTag);
         }
 
+        public Task<UserDto> GetUser(string id)
+        {
+            return _userRepository.Get(id);
+        }
+
         public Task DeleteUserImage(UserDto user)
         {
             return _imageRepository.DeleteImages(GetImageRepositoryId(user.ServerId, user.Id));
@@ -381,18 +386,18 @@ namespace MediaBrowser.ApiInteraction.Data
             return _imageRepository.GetImage(GetImageRepositoryId(item.ServerId, item.Id), imageId);
         }
 
-        public async Task<List<BaseItemDto>> GetViews(UserDto user)
+        public async Task<List<BaseItemDto>> GetViews(string serverId, string userId)
         {
             var list = new List<BaseItemDto>();
 
-            var types = await _itemRepository.GetItemTypes(user.ServerId, user.Id).ConfigureAwait(false);
+            var types = await _itemRepository.GetItemTypes(serverId, userId).ConfigureAwait(false);
 
             if (types.Contains("Audio", StringComparer.OrdinalIgnoreCase))
             {
                 list.Add(new BaseItemDto
                 {
                     Name = "Music",
-                    ServerId = user.ServerId,
+                    ServerId = serverId,
                     Id = "MusicView",
                     Type = "MusicView",
                     CollectionType = CollectionType.Music
@@ -404,7 +409,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 list.Add(new BaseItemDto
                 {
                     Name = "Photos",
-                    ServerId = user.ServerId,
+                    ServerId = serverId,
                     Id = "PhotosView",
                     Type = "PhotosView",
                     CollectionType = CollectionType.Photos
@@ -416,7 +421,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 list.Add(new BaseItemDto
                 {
                     Name = "TV",
-                    ServerId = user.ServerId,
+                    ServerId = serverId,
                     Id = "TVView",
                     Type = "TVView",
                     CollectionType = CollectionType.TvShows
@@ -430,7 +435,7 @@ namespace MediaBrowser.ApiInteraction.Data
                 list.Add(new BaseItemDto
                 {
                     Name = "Videos",
-                    ServerId = user.ServerId,
+                    ServerId = serverId,
                     Id = "VideosView",
                     Type = "VideosView",
                     CollectionType = CollectionType.HomeVideos
