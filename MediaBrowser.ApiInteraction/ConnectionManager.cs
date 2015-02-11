@@ -952,14 +952,9 @@ namespace MediaBrowser.ApiInteraction
                 throw new UnauthorizedAccessException("Server info not found.");
             }
 
-            var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
-            var hash = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
+            var hash = GetSha1(GetSha1(password) + Device.DeviceId);
 
-            hash += Device.DeviceId;
-            bytes = Encoding.UTF8.GetBytes(hash);
-            hash = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
-
-            if (!string.Equals(hash, user.OfflinePassword, StringComparison.Ordinal))
+            if (!string.Equals(hash, user.OfflinePassword, StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException("Invalid username or password.");
             }
@@ -971,6 +966,12 @@ namespace MediaBrowser.ApiInteraction
             });
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
+        }
+
+        private string GetSha1(string value)
+        {
+            var bytes = Encoding.UTF8.GetBytes(value ?? string.Empty);
+            return BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
         }
 
         public async Task<List<UserDto>> GetOfflineUsers()
