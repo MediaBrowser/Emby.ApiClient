@@ -32,6 +32,16 @@ namespace MediaBrowser.ApiInteraction.Playback
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlaybackManager"/> class.
+        /// </summary>
+        /// <param name="device">The device.</param>
+        /// <param name="logger">The logger.</param>
+        public PlaybackManager(IDevice device, ILogger logger)
+            : this(new NullAssetManager(), device, logger)
+        {
+        }
+        
+        /// <summary>
         /// Gets the selectable audio streams.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>

@@ -2824,7 +2824,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 return new BaseItemDto
                 {
-                    Name = "Offline",
+                    Name = "AnyTime",
                     ServerId = serverId,
                     Id = "OfflineView",
                     Type = "OfflineView"

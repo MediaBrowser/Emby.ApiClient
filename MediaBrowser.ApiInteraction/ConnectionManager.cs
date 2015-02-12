@@ -953,7 +953,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new UnauthorizedAccessException("Server info not found.");
             }
 
-            var hash = GetSha1(GetSha1(password) + Device.DeviceId);
+            var hash = GetSha1((GetSha1(password) + Device.DeviceId).ToLower());
 
             if (!string.Equals(hash, user.OfflinePassword, StringComparison.OrdinalIgnoreCase))
             {
