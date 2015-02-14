@@ -107,8 +107,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 var address = server.GetAddress(connectionMode);
 
-                apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion,
-                    ClientCapabilities, _cryptographyProvider, _localAssetManager)
+                apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion, _cryptographyProvider, _localAssetManager)
                 {
                     JsonSerializer = JsonSerializer
                 };
@@ -132,14 +131,29 @@ namespace MediaBrowser.ApiInteraction
 
         void apiClient_Authenticated(object sender, GenericEventArgs<AuthenticationResult> e)
         {
-            OnAuthenticated(sender as IApiClient, e.Argument, SaveLocalCredentials);
+            OnAuthenticated(sender as IApiClient, e.Argument, new ConnectionOptions(), SaveLocalCredentials);
         }
 
-        private void EnsureWebSocketIfConfigured(IApiClient apiClient)
+        private async void AfterConnected(IApiClient apiClient, ConnectionOptions options)
         {
-            if (_webSocketFactory != null)
+            if (options.ReportCapabilities)
             {
-                ((ApiClient)apiClient).OpenWebSocket(_webSocketFactory);
+                try
+                {
+                    await apiClient.ReportCapabilities(ClientCapabilities).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error reporting capabilities", ex);
+                }
+            }
+
+            if (options.EnableWebSocket)
+            {
+                if (_webSocketFactory != null)
+                {
+                    ((ApiClient)apiClient).OpenWebSocket(_webSocketFactory);
+                }
             }
         }
 
@@ -518,9 +532,9 @@ namespace MediaBrowser.ApiInteraction
 
             ((ApiClient)result.ApiClient).EnableAutomaticNetworking(server, connectionMode, _networkConnectivity);
 
-            if (result.State == ConnectionState.SignedIn && options.EnableWebSocket)
+            if (result.State == ConnectionState.SignedIn)
             {
-                EnsureWebSocketIfConfigured(result.ApiClient);
+                AfterConnected(result.ApiClient, options);
             }
 
             CurrentApiClient = result.ApiClient;
@@ -794,6 +808,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async void OnAuthenticated(IApiClient apiClient,
             AuthenticationResult result,
+            ConnectionOptions options,
             bool saveCredentials)
         {
             var server = ((ApiClient)apiClient).ServerInfo;
@@ -817,7 +832,7 @@ namespace MediaBrowser.ApiInteraction
             SaveUserInfoIntoCredentials(server, result.User);
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
 
-            EnsureWebSocketIfConfigured(apiClient);
+            AfterConnected(apiClient, options);
 
             OnLocalUserSignIn(result.User);
         }
@@ -953,7 +968,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new UnauthorizedAccessException("Server info not found.");
             }
 
-            var hash = GetSha1((GetSha1(password) + Device.DeviceId).ToLower());
+            var hash = GetSha1((GetSha1(password) + user.OfflinePasswordSalt).ToLower());
 
             if (!string.Equals(hash, user.OfflinePassword, StringComparison.OrdinalIgnoreCase))
             {

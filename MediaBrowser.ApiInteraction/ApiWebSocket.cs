@@ -160,15 +160,6 @@ namespace MediaBrowser.ApiInteraction
                     Logger.ErrorException("Error sending identity message", ex);
                 }
 
-                try
-                {
-                    await ReportCapabilities(Capabilities).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error reporting capabilities", ex);
-                }
-
                 _hasPerformedPostConnectionRequests = true;
                 OnConnected();
             }

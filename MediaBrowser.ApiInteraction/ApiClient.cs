@@ -49,7 +49,6 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The HTTP client.</value>
         protected IAsyncHttpClient HttpClient { get; private set; }
 
-        public ClientCapabilities Capabilities { get; private set; }
         private readonly ICryptographyProvider _cryptographyProvider;
         private readonly ILocalAssetManager _localAssetManager = new NullAssetManager();
 
@@ -59,17 +58,14 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="logger">The logger.</param>
         /// <param name="serverAddress">The server address.</param>
         /// <param name="accessToken">The access token.</param>
-        /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
         public ApiClient(ILogger logger,
             string serverAddress,
             string accessToken,
-            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, accessToken)
         {
             CreateHttpClient(logger);
-            Capabilities = capabilities;
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
@@ -83,19 +79,16 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="clientName">Name of the client.</param>
         /// <param name="device">The device.</param>
         /// <param name="applicationVersion">The application version.</param>
-        /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
         public ApiClient(ILogger logger,
             string serverAddress,
             string clientName,
             IDevice device,
             string applicationVersion,
-            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider)
             : base(logger, new NewtonsoftJsonSerializer(), serverAddress, clientName, device, applicationVersion)
         {
             CreateHttpClient(logger);
-            Capabilities = capabilities;
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
@@ -109,7 +102,6 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="clientName">Name of the client.</param>
         /// <param name="device">The device.</param>
         /// <param name="applicationVersion">The application version.</param>
-        /// <param name="capabilities">The capabilities.</param>
         /// <param name="cryptographyProvider">The cryptography provider.</param>
         /// <param name="localAssetManager">The local asset manager.</param>
         public ApiClient(ILogger logger,
@@ -117,10 +109,9 @@ namespace MediaBrowser.ApiInteraction
             string clientName,
             IDevice device,
             string applicationVersion,
-            ClientCapabilities capabilities,
             ICryptographyProvider cryptographyProvider,
             ILocalAssetManager localAssetManager)
-            : this(logger, serverAddress, clientName, device, applicationVersion, capabilities, cryptographyProvider)
+            : this(logger, serverAddress, clientName, device, applicationVersion, cryptographyProvider)
         {
             _localAssetManager = localAssetManager;
         }

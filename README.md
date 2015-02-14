@@ -31,6 +31,9 @@ This is an example of connecting to a single server using a fixed, predictable a
 
 			var authResult = await AuthenticateUserAsync("username", passwordHash);
 
+			// Report capabilities after authentication
+			await ApiClient.ReportCapabilities(capabilities);
+
 			// RemoteLoggedOut indicates the user was logged out remotely by the server
 			ApiClient.RemoteLoggedOut += ApiClient_RemoteLoggedOut;
 
@@ -70,6 +73,9 @@ If your app is some kind of service or utility (e.g. Sickbeard), you should cons
 			var capabilities = new ClientCapabilities();
 
 			var client = new ApiClient(logger, "http://localhost:8096", "0123456789", capabilities, cryptoProvider);
+
+			// Report capabilities
+			await ApiClient.ReportCapabilities(capabilities);
 
 			// RemoteLoggedOut indicates the access token was revoked remotely by the server
 			ApiClient.RemoteLoggedOut += ApiClient_RemoteLoggedOut;
