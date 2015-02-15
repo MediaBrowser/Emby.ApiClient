@@ -236,7 +236,7 @@ namespace MediaBrowser.ApiInteraction
 				new Tuple<string,ConnectionMode>(ServerInfo.RemoteAddress, ConnectionMode.Remote)
 			};
 
-            if (!networkStatus.GetIsLocalNetworkAvailable())
+            if (!networkStatus.GetIsAnyLocalNetworkAvailable())
             {
                 urlList.Reverse();
             }
@@ -649,6 +649,10 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary { };
 
+            dict.AddIfNotNull("StartIndex", query.StartIndex);
+            dict.AddIfNotNull("Limit", query.Limit);
+
+            dict.AddIfNotNullOrEmpty("StartItemId", query.StartItemId);
             dict.AddIfNotNull("Season", query.SeasonNumber);
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 

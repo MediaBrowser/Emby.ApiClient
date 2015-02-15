@@ -163,7 +163,7 @@ namespace MediaBrowser.ApiInteraction
 
             _logger.Debug("{0} servers in saved credentials", credentials.Servers.Count);
 
-            if (_networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable())
+            if (_networkConnectivity.GetNetworkStatus().GetIsAnyLocalNetworkAvailable())
             {
                 foreach (var server in await FindServers(cancellationToken).ConfigureAwait(false))
                 {
@@ -416,7 +416,7 @@ namespace MediaBrowser.ApiInteraction
                 tests.Insert(0, server.LastConnectionMode.Value);
             }
 
-            var isLocalNetworkAvailable = _networkConnectivity.GetNetworkStatus().GetIsLocalNetworkAvailable();
+            var isLocalNetworkAvailable = _networkConnectivity.GetNetworkStatus().GetIsAnyLocalNetworkAvailable();
 
             // Kick off wake on lan on a separate thread (if applicable)
             var sendWakeOnLan = server.WakeOnLanInfos.Count > 0 && isLocalNetworkAvailable;

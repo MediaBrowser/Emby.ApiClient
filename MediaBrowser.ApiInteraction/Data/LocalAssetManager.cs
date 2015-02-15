@@ -311,7 +311,7 @@ namespace MediaBrowser.ApiInteraction.Data
 
         public Task<Stream> GetFileStream(StreamInfo info)
         {
-            return GetFileStream(info.ToUrl(null));
+            return GetFileStream(info.ToUrl(null, null));
         }
 
         public Task<Stream> GetFileStream(string path)

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using MediaBrowser.Model.ApiClient;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction
@@ -29,22 +30,5 @@ namespace MediaBrowser.ApiInteraction
         /// </summary>
         /// <returns>NetworkStatus.</returns>
         NetworkStatus GetNetworkStatus();
-    }
-
-    public class NetworkStatus
-    {
-        public bool IsNetworkAvailable { get; set; }
-        public bool? IsLocalNetworkAvailable { get; set; }
-        public bool? IsRemoteNetworkAvailable { get; set; }
-
-        public bool GetIsLocalNetworkAvailable()
-        {
-            return IsLocalNetworkAvailable.HasValue ? IsLocalNetworkAvailable.Value : IsNetworkAvailable;
-        }
-
-        public bool GetIsRemoteNetworkAvailable()
-        {
-            return IsRemoteNetworkAvailable.HasValue ? IsRemoteNetworkAvailable.Value : IsNetworkAvailable;
-        }
     }
 }
