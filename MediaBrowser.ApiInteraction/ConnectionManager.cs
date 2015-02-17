@@ -762,7 +762,7 @@ namespace MediaBrowser.ApiInteraction
 
         public IApiClient GetApiClient(string serverId)
         {
-            return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase)) ?? CurrentApiClient;
+            return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken)
