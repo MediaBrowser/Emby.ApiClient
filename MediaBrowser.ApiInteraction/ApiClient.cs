@@ -2761,7 +2761,7 @@ namespace MediaBrowser.ApiInteraction
                 var result = DeserializeFromStream<ItemsResult>(stream);
 
                 var serverInfo = ServerInfo;
-                if (serverInfo != null)
+                if (serverInfo != null && _localAssetManager != null)
                 {
                     var offlineView = await GetOfflineView(serverInfo.Id, userId).ConfigureAwait(false);
 
