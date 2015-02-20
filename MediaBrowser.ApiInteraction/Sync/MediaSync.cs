@@ -43,10 +43,6 @@ namespace MediaBrowser.ApiInteraction.Sync
             progress.Report(1);
 
             await SyncData(apiClient, serverInfo, false, cancellationToken).ConfigureAwait(false);
-            progress.Report(2);
-
-            // Do the data sync twice so the server knows what was removed from the device
-            await SyncData(apiClient, serverInfo, true, cancellationToken).ConfigureAwait(false);
             progress.Report(3);
 
             var innerProgress = new DoubleProgress();
@@ -58,6 +54,9 @@ namespace MediaBrowser.ApiInteraction.Sync
             });
             await GetNewMedia(apiClient, serverInfo, innerProgress, cancellationToken);
             progress.Report(100);
+
+            // Do the data sync twice so the server knows what was removed from the device
+            await SyncData(apiClient, serverInfo, true, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task GetNewMedia(IApiClient apiClient,
