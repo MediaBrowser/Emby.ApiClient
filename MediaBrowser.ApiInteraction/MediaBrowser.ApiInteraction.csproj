@@ -106,6 +106,7 @@
     <Compile Include="Sync\IFileTransferManager.cs" />
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiServerSync.cs" />
+    <Compile Include="Sync\OfflineUserSync.cs" />
     <Compile Include="Sync\ServerSync.cs" />
     <Compile Include="WebSocket\ClientWebSocketFactory.cs" />
     <Compile Include="WebSocket\NativeClientWebSocket.cs" />
