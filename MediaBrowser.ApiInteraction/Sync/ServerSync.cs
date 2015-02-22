@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         private readonly ILocalAssetManager _localAssetManager;
 
         private readonly ClientCapabilities _clientCapabilities;
+        private static readonly Dictionary<string, SemaphoreSlim> SemaphoreLocks = new Dictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
 
         public ServerSync(IConnectionManager connectionManager, ILogger logger, ILocalAssetManager localAssetManager, IFileTransferManager fileTransferManager, ClientCapabilities clientCapabilities)
         {
@@ -31,6 +33,37 @@ namespace MediaBrowser.ApiInteraction.Sync
         }
 
         public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var semaphore = GetLock(server.Id);
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await SyncInternal(server, progress, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private static SemaphoreSlim GetLock(string serverId)
+        {
+            SemaphoreSlim semaphore;
+
+            if (SemaphoreLocks.TryGetValue(serverId, out semaphore))
+            {
+                return semaphore;
+            }
+
+            semaphore = new SemaphoreSlim(1, 1);
+            SemaphoreLocks[serverId] = semaphore;
+
+            return semaphore;
+        }
+
+        private async Task SyncInternal(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(server.AccessToken) && string.IsNullOrWhiteSpace(server.ExchangeToken))
             {
