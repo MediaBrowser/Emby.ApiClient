@@ -76,7 +76,6 @@ namespace MediaBrowser.ApiInteraction
         private IDisposable _ensureTimer;
 
         private int _keepAliveTimerMs;
-        private bool _hasPerformedPostConnectionRequests = false;
 
         /// <summary>
         /// Creates the specified logger.
@@ -115,8 +114,6 @@ namespace MediaBrowser.ApiInteraction
         {
             if (!IsWebSocketOpenOrConnecting)
             {
-                _hasPerformedPostConnectionRequests = false;
-
                 var url = GetWebSocketUrl(ApiUrl);
 
                 try
@@ -145,24 +142,20 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            if (!_hasPerformedPostConnectionRequests)
+            try
             {
-                try
-                {
-                    var idMessage = GetIdentificationMessage();
+                var idMessage = GetIdentificationMessage();
 
-                    Logger.Info("Sending web socket identification message {0}", idMessage);
+                Logger.Info("Sending web socket identification message {0}", idMessage);
 
-                    await SendWebSocketMessage("Identity", idMessage).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error sending identity message", ex);
-                }
-
-                _hasPerformedPostConnectionRequests = true;
-                OnConnected();
+                await SendWebSocketMessage("Identity", idMessage).ConfigureAwait(false);
             }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error sending identity message", ex);
+            }
+
+            OnConnected();
         }
 
         /// <summary>

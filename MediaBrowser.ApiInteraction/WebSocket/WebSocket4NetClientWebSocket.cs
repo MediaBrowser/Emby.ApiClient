@@ -130,7 +130,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
         {
-            return Task.Run(() => _socket.Send(bytes, 0, bytes.Length));
+            return Task.Run(() => _socket.Send(bytes, 0, bytes.Length), cancellationToken);
         }
 
         /// <summary>
