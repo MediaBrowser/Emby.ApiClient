@@ -2176,6 +2176,11 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNull("Limit", query.Limit);
+            dict.AddIfNotNull("IsFavorite", query.IsFavorite);
+            dict.AddIfNotNull("IsLiked", query.IsLiked);
+            dict.AddIfNotNull("IsDisliked", query.IsDisliked);
+            dict.AddIfNotNull("EnableFavoriteSorting", query.EnableFavoriteSorting);
+
 
             if (query.ChannelType.HasValue)
             {
