@@ -520,7 +520,11 @@ namespace MediaBrowser.ApiInteraction
             }
 
             credentials.AddOrUpdateServer(server);
-            server.DateLastAccessed = DateTime.UtcNow;
+
+            if (options.UpdateDateLastAccessed)
+            {
+                server.DateLastAccessed = DateTime.UtcNow;
+            }
             server.LastConnectionMode = connectionMode;
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
@@ -815,7 +819,10 @@ namespace MediaBrowser.ApiInteraction
 
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
-            server.DateLastAccessed = DateTime.UtcNow;
+            if (options.UpdateDateLastAccessed)
+            {
+                server.DateLastAccessed = DateTime.UtcNow;
+            }
 
             if (saveCredentials)
             {
