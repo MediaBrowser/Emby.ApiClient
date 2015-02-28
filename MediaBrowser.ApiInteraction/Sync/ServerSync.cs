@@ -72,7 +72,8 @@ namespace MediaBrowser.ApiInteraction.Sync
             var result = await _connectionManager.Connect(server, new ConnectionOptions
             {
                 EnableWebSocket = false,
-                ReportCapabilities = false
+                ReportCapabilities = false,
+                UpdateDateLastAccessed = false
 
             }, cancellationToken).ConfigureAwait(false);
 

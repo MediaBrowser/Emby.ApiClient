@@ -184,10 +184,11 @@ namespace MediaBrowser.ApiInteraction
                 }
 
                 // Remove old servers
-                credentials.Servers = credentials.Servers
+                var newServerList = credentials.Servers
                     .Where(i => string.IsNullOrWhiteSpace(i.ExchangeToken) ||
-                        connectServers.Any(c => string.Equals(c.Id, i.Id, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
+                        connectServers.Any(c => string.Equals(c.Id, i.Id, StringComparison.OrdinalIgnoreCase)));
+
+                credentials.Servers = RemoveDuplicates(newServerList);
             }
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
@@ -909,7 +910,7 @@ namespace MediaBrowser.ApiInteraction
                 }
             }
 
-            credentials.Servers = servers;
+            credentials.Servers = RemoveDuplicates(servers);
             credentials.ConnectAccessToken = null;
             credentials.ConnectUserId = null;
 
@@ -924,6 +925,26 @@ namespace MediaBrowser.ApiInteraction
                     ConnectUserSignOut(this, EventArgs.Empty);
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes the duplicates.
+        /// </summary>
+        /// <param name="servers">The servers.</param>
+        /// <returns>List&lt;ServerInfo&gt;.</returns>
+        private List<ServerInfo> RemoveDuplicates(IEnumerable<ServerInfo> servers)
+        {
+            var list = new List<ServerInfo>();
+
+            foreach (var server in servers)
+            {
+                if (!list.Any(i => string.Equals(i.Id, server.Id, StringComparison.OrdinalIgnoreCase)))
+                {
+                    list.Add(server);
+                }
+            }
+
+            return list;
         }
 
         public async Task LoginToConnect(string username, string password)

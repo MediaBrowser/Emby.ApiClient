@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Sync;
+﻿using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
