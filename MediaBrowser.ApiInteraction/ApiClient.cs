@@ -43,6 +43,8 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
         public event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
 
+        public bool EnableWebSocketProgressReporting { get; set; }
+
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -1471,7 +1473,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("info");
             }
 
-            if (IsWebSocketConnected)
+            if (EnableWebSocketProgressReporting && IsWebSocketConnected)
             {
                 return SendWebSocketMessage("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
             }
