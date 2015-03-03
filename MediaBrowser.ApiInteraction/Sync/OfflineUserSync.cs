@@ -5,6 +5,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         public async Task UpdateOfflineUsers(ServerInfo server, IApiClient apiClient, CancellationToken cancellationToken)
         {
-            foreach (var user in server.Users)
+            foreach (var user in server.Users.ToList())
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -94,13 +95,13 @@ namespace MediaBrowser.ApiInteraction.Sync
 
                     using (var stream = await apiClient.GetImageStreamAsync(imageUrl, cancellationToken).ConfigureAwait(false))
                     {
-                        await _localAssetManager.SaveUserImage(user, stream).ConfigureAwait(false);
+                        await _localAssetManager.SaveImage(user, stream).ConfigureAwait(false);
                     }
                 }
             }
             else
             {
-                await _localAssetManager.DeleteUserImage(user).ConfigureAwait(false);
+                await _localAssetManager.DeleteImage(user).ConfigureAwait(false);
             }
         }
     }

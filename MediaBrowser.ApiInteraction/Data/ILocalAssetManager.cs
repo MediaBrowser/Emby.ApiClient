@@ -146,19 +146,19 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <param name="user">The user.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>Task.</returns>
-        Task SaveUserImage(UserDto user, Stream stream);
+        Task SaveImage(UserDto user, Stream stream);
         /// <summary>
         /// Gets the user image.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
-        Task<Stream> GetUserImage(UserDto user);
+        Task<Stream> GetImage(UserDto user);
         /// <summary>
         /// Deletes the user image.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task DeleteUserImage(UserDto user);
+        Task DeleteImage(UserDto user);
         /// <summary>
         /// Determines whether the specified user has image.
         /// </summary>
@@ -172,7 +172,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <param name="imageId">The image identifier.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>Task.</returns>
-        Task SaveItemImage(string serverId, string itemId, string imageId, Stream stream);
+        Task SaveImage(string serverId, string itemId, string imageId, Stream stream);
         /// <summary>
         /// Determines whether the specified server identifier has image.
         /// </summary>

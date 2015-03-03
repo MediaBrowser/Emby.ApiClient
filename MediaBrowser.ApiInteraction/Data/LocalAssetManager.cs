@@ -329,14 +329,14 @@ namespace MediaBrowser.ApiInteraction.Data
             return _userRepository.Delete(id);
         }
 
-        public async Task SaveUserImage(UserDto user, Stream stream)
+        public async Task SaveImage(UserDto user, Stream stream)
         {
-            await DeleteUserImage(user).ConfigureAwait(false);
+            await DeleteImage(user).ConfigureAwait(false);
 
             await _imageRepository.SaveImage(GetImageRepositoryId(user.ServerId, user.Id), user.PrimaryImageTag, stream).ConfigureAwait(false);
         }
 
-        public Task<Stream> GetUserImage(UserDto user)
+        public Task<Stream> GetImage(UserDto user)
         {
             return _imageRepository.GetImage(user.Id, user.PrimaryImageTag);
         }
@@ -346,7 +346,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return _userRepository.Get(id);
         }
 
-        public Task DeleteUserImage(UserDto user)
+        public Task DeleteImage(UserDto user)
         {
             return _imageRepository.DeleteImages(GetImageRepositoryId(user.ServerId, user.Id));
         }
@@ -356,7 +356,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return _imageRepository.HasImage(GetImageRepositoryId(user.ServerId, user.Id), user.PrimaryImageTag);
         }
 
-        public Task SaveItemImage(string serverId, string itemId, string imageId, Stream stream)
+        public Task SaveImage(string serverId, string itemId, string imageId, Stream stream)
         {
             return _imageRepository.SaveImage(GetImageRepositoryId(serverId, itemId), imageId, stream);
         }

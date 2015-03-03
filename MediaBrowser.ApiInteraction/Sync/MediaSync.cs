@@ -189,7 +189,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             using (var response = await apiClient.GetResponse(url, cancellationToken).ConfigureAwait(false))
             {
-                await _localAssetManager.SaveItemImage(serverId, itemId, imageTag, response.Content).ConfigureAwait(false);
+                await _localAssetManager.SaveImage(serverId, itemId, imageTag, response.Content).ConfigureAwait(false);
             }
         }
 

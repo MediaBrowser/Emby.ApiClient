@@ -102,17 +102,17 @@ namespace MediaBrowser.ApiInteraction.Data
             return Task.FromResult(true);
         }
 
-        public Task SaveUserImage(UserDto user, Stream stream)
+        public Task SaveImage(UserDto user, Stream stream)
         {
             return Task.FromResult(true);
         }
 
-        public Task<Stream> GetUserImage(UserDto user)
+        public Task<Stream> GetImage(UserDto user)
         {
             return Task.FromResult<Stream>(null);
         }
 
-        public Task DeleteUserImage(UserDto user)
+        public Task DeleteImage(UserDto user)
         {
             return Task.FromResult(true);
         }
@@ -122,7 +122,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return Task.FromResult(false);
         }
 
-        public Task SaveItemImage(string serverId, string itemId, string imageId, Stream stream)
+        public Task SaveImage(string serverId, string itemId, string imageId, Stream stream)
         {
             return Task.FromResult(true);
         }
