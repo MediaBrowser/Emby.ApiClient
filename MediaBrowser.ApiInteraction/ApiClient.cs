@@ -71,6 +71,7 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
+            EnableWebSocketProgressReporting = true;
         }
 
         /// <summary>
@@ -94,6 +95,7 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
+            EnableWebSocketProgressReporting = true;
         }
 
         /// <summary>

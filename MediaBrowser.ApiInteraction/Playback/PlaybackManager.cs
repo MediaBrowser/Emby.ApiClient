@@ -40,7 +40,7 @@ namespace MediaBrowser.ApiInteraction.Playback
             : this(new NullAssetManager(), device, logger)
         {
         }
-        
+
         /// <summary>
         /// Gets the selectable audio streams.
         /// </summary>
@@ -49,7 +49,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
         public async Task<IEnumerable<MediaStream>> GetSelectableAudioStreams(string serverId, VideoOptions options)
         {
-            var info = await GetVideoStreamInfo(serverId, options).ConfigureAwait(false);
+            var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
             return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
         }
@@ -62,7 +62,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
         public async Task<IEnumerable<MediaStream>> GetSelectableSubtitleStreams(string serverId, VideoOptions options)
         {
-            var info = await GetVideoStreamInfo(serverId, options).ConfigureAwait(false);
+            var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
             return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
         }
@@ -72,8 +72,10 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="options">The options.</param>
+        /// <param name="isOffline">if set to <c>true</c> [is offline].</param>
+        /// <param name="apiClient">The API client.</param>
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
-        public async Task<StreamInfo> GetAudioStreamInfo(string serverId, AudioOptions options)
+        public async Task<StreamInfo> GetAudioStreamInfo(string serverId, AudioOptions options, bool isOffline, IApiClient apiClient)
         {
             var streamBuilder = new StreamBuilder();
 
@@ -110,8 +112,22 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="options">The options.</param>
+        /// <param name="isOffline">if set to <c>true</c> [is offline].</param>
+        /// <param name="apiClient">The API client.</param>
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
-        public async Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options)
+        public async Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options, bool isOffline, IApiClient apiClient)
+        {
+            if (!isOffline)
+            {
+                var mediaInfo = await apiClient.GetLiveMediaInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+
+                options.MediaSources = mediaInfo.MediaSources;
+            }
+
+            return await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
+        }
+
+        private async Task<StreamInfo> GetVideoStreamInfoInternal(string serverId, VideoOptions options)
         {
             var streamBuilder = new StreamBuilder();
 
