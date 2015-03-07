@@ -121,6 +121,11 @@ namespace MediaBrowser.ApiInteraction.Playback
             {
                 var mediaInfo = await apiClient.GetLiveMediaInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
 
+                if (mediaInfo.ErrorCode.HasValue)
+                {
+                    throw new PlaybackException { ErrorCode = mediaInfo.ErrorCode.Value };
+                }
+
                 options.MediaSources = mediaInfo.MediaSources;
             }
 
