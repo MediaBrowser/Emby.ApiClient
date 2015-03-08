@@ -3232,21 +3232,21 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<SyncDialogOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null)
+        public async Task<SyncDialogOptions> GetSyncOptions(SyncJobRequest jobInfo)
         {
             var dict = new QueryStringDictionary();
 
-            dict.AddIfNotNullOrEmpty("UserId", userId);
-            dict.AddIfNotNullOrEmpty("ParentId", parentId);
+            dict.AddIfNotNullOrEmpty("UserId", jobInfo.UserId);
+            dict.AddIfNotNullOrEmpty("ParentId", jobInfo.ParentId);
 
-            if (category.HasValue)
+            if (jobInfo.Category.HasValue)
             {
-                dict.AddIfNotNullOrEmpty("Category", category.Value.ToString());
+                dict.AddIfNotNullOrEmpty("Category", jobInfo.Category.Value.ToString());
             }
 
-            if (itemIds != null)
+            if (jobInfo.ItemIds != null)
             {
-                var list = itemIds.ToList();
+                var list = jobInfo.ItemIds.ToList();
                 if (list.Count > 0)
                 {
                     dict.Add("ItemIds", list);
