@@ -133,29 +133,14 @@ namespace MediaBrowser.ApiInteraction
                     socket.Closed += _currentWebSocket_Closed;
 
                     ReplaceSocket(socket);
+
+                    OnConnected();
                 }
                 catch (Exception ex)
                 {
                     Logger.ErrorException("Error connecting to {0}", ex, url);
-
-                    return;
                 }
             }
-
-            try
-            {
-                var idMessage = GetIdentificationMessage();
-
-                Logger.Info("Sending web socket identification message {0}", idMessage);
-
-                await SendWebSocketMessage("Identity", idMessage).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error sending identity message", ex);
-            }
-
-            OnConnected();
         }
 
         /// <summary>
@@ -259,11 +244,11 @@ namespace MediaBrowser.ApiInteraction
         {
             StopEnsureConnectionTimer();
 
-            #if PORTABLE
+#if PORTABLE
             _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
-            #else
+#else
             _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
-            #endif
+#endif
         }
 
         /// <summary>
@@ -378,7 +363,12 @@ namespace MediaBrowser.ApiInteraction
         /// <returns>System.String.</returns>
         protected string GetWebSocketUrl(string serverAddress)
         {
-            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:");
+            if (string.IsNullOrWhiteSpace(AccessToken))
+            {
+                throw new ArgumentException("Cannot open web socket without an access token.");
+            }
+
+            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:") + "?api_key=" + AccessToken;
         }
 
         /// <summary>
@@ -713,8 +703,11 @@ namespace MediaBrowser.ApiInteraction
 
         private bool IsWebSocketOpenOrConnecting
         {
-            get { return _currentWebSocket != null && 
-                (_currentWebSocket.State == WebSocketState.Open || _currentWebSocket.State == WebSocketState.Connecting); }
+            get
+            {
+                return _currentWebSocket != null &&
+                    (_currentWebSocket.State == WebSocketState.Open || _currentWebSocket.State == WebSocketState.Connecting);
+            }
         }
 
         /// <summary>
