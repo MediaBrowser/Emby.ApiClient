@@ -27,7 +27,7 @@ This is an example of connecting to a single server using a fixed, predictable a
 			// If using the portable class library you'll need to supply your own ICryptographyProvider implementation.
 			var cryptoProvider = new CryptographyProvider();
 			
-			var client = new ApiClient(logger, "http://localhost:8096", "My client name", device, capabilities, cryptoProvider);
+			var client = new ApiClient(logger, "http://localhost:8096", "My client name", device, cryptoProvider);
 
 			var authResult = await AuthenticateUserAsync("username", passwordHash);
 
