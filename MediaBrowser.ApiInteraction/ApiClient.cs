@@ -43,8 +43,6 @@ namespace MediaBrowser.ApiInteraction
         public event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
         public event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
 
-        public bool EnableWebSocketProgressReporting { get; set; }
-
         /// <summary>
         /// Gets the HTTP client.
         /// </summary>
@@ -71,7 +69,6 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
-            EnableWebSocketProgressReporting = true;
         }
 
         /// <summary>
@@ -95,7 +92,6 @@ namespace MediaBrowser.ApiInteraction
             _cryptographyProvider = cryptographyProvider;
 
             ResetHttpHeaders();
-            EnableWebSocketProgressReporting = true;
         }
 
         /// <summary>
@@ -1475,7 +1471,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("info");
             }
 
-            if (EnableWebSocketProgressReporting && IsWebSocketConnected)
+            if (IsWebSocketConnected)
             {
                 return SendWebSocketMessage("ReportPlaybackProgress", JsonSerializer.SerializeToString(info));
             }
