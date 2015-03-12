@@ -51,12 +51,12 @@ namespace MediaBrowser.ApiInteraction.Playback
         }
 
         /// <summary>
-        /// Gets the selectable audio streams.
+        /// Gets the pre playback selectable audio streams.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="options">The options.</param>
         /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
-        public async Task<IEnumerable<MediaStream>> GetSelectableAudioStreams(string serverId, VideoOptions options)
+        public async Task<IEnumerable<MediaStream>> GetPrePlaybackSelectableAudioStreams(string serverId, VideoOptions options)
         {
             var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
@@ -64,18 +64,39 @@ namespace MediaBrowser.ApiInteraction.Playback
         }
 
         /// <summary>
-        /// Gets the selectable subtitle streams.
+        /// Gets the pre playback selectable subtitle streams.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="options">The options.</param>
         /// <returns>Task&lt;IEnumerable&lt;MediaStream&gt;&gt;.</returns>
-        public async Task<IEnumerable<MediaStream>> GetSelectableSubtitleStreams(string serverId, VideoOptions options)
+        public async Task<IEnumerable<MediaStream>> GetPrePlaybackSelectableSubtitleStreams(string serverId, VideoOptions options)
         {
             var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
             return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
         }
 
+
+        /// <summary>
+        /// Gets the in playback selectable audio streams.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
+        public IEnumerable<MediaStream> GetInPlaybackSelectableAudioStreams(StreamInfo info)
+        {
+            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+        }
+
+        /// <summary>
+        /// Gets the in playback selectable subtitle streams.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
+        public IEnumerable<MediaStream> GetInPlaybackSelectableSubtitleStreams(StreamInfo info)
+        {
+            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
+        }
+        
         /// <summary>
         /// Gets the audio stream information.
         /// </summary>
