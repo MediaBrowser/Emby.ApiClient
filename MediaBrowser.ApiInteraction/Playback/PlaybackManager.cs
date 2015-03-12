@@ -207,13 +207,13 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// Reports playback progress
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="streamInfo">The stream information.</param>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="isOffline">if set to <c>true</c> [is offline].</param>
-        /// <param name="isVideo">if set to <c>true</c> [is video].</param>
         /// <param name="apiClient">The current apiClient. It can be null if offline</param>
         /// <returns>Task.</returns>
-        public async Task ReportPlaybackStopped(PlaybackStopInfo info, string serverId, string userId, bool isOffline, bool isVideo, IApiClient apiClient)
+        public async Task ReportPlaybackStopped(PlaybackStopInfo info, StreamInfo streamInfo, string serverId, string userId, bool isOffline, IApiClient apiClient)
         {
             if (isOffline)
             {
@@ -241,7 +241,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                 _logger.ErrorException("Error in ReportPlaybackStoppedAsync", ex);
             }
 
-            if (isVideo)
+            if (streamInfo.MediaType == DlnaProfileType.Video)
             {
                 await apiClient.StopTranscodingProcesses(_device.DeviceId).ConfigureAwait(false);
             }
