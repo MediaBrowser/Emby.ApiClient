@@ -60,7 +60,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
-            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+            return info.GetSelectableAudioStreams();
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             var info = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
-            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
+            return info.GetSelectableSubtitleStreams();
         }
 
 
@@ -84,7 +84,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         public IEnumerable<MediaStream> GetInPlaybackSelectableAudioStreams(StreamInfo info)
         {
-            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+            return info.GetSelectableAudioStreams();
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         public IEnumerable<MediaStream> GetInPlaybackSelectableSubtitleStreams(StreamInfo info)
         {
-            return info.MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Subtitle);
+            return info.GetSelectableSubtitleStreams();
         }
         
         /// <summary>
