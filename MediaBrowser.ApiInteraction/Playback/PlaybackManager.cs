@@ -17,6 +17,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
         private readonly IDevice _device;
+        private readonly ILocalPlayer _localPlayer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlaybackManager" /> class.
@@ -24,20 +25,28 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <param name="localAssetManager">The local asset manager.</param>
         /// <param name="device">The device.</param>
         /// <param name="logger">The logger.</param>
-        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger)
+        /// <param name="localPlayer">The local player.</param>
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, ILocalPlayer localPlayer)
         {
             _localAssetManager = localAssetManager;
             _device = device;
             _logger = logger;
+            _localPlayer = localPlayer;
         }
 
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger)
+            : this(localAssetManager, device, logger, new NullLocalPlayer())
+        {
+        }
+        
         /// <summary>
-        /// Initializes a new instance of the <see cref="PlaybackManager"/> class.
+        /// Initializes a new instance of the <see cref="PlaybackManager" /> class.
         /// </summary>
         /// <param name="device">The device.</param>
         /// <param name="logger">The logger.</param>
-        public PlaybackManager(IDevice device, ILogger logger)
-            : this(new NullAssetManager(), device, logger)
+        /// <param name="localPlayer">The local player.</param>
+        public PlaybackManager(IDevice device, ILogger logger, ILocalPlayer localPlayer)
+            : this(new NullAssetManager(), device, logger, localPlayer)
         {
         }
 
@@ -77,7 +86,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
         public async Task<StreamInfo> GetAudioStreamInfo(string serverId, AudioOptions options, bool isOffline, IApiClient apiClient)
         {
-            var streamBuilder = new StreamBuilder();
+            var streamBuilder = new StreamBuilder(_localPlayer);
 
             var localItem = await _localAssetManager.GetLocalItem(serverId, options.ItemId);
 
@@ -134,7 +143,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
         private async Task<StreamInfo> GetVideoStreamInfoInternal(string serverId, VideoOptions options)
         {
-            var streamBuilder = new StreamBuilder();
+            var streamBuilder = new StreamBuilder(_localPlayer);
 
             var localItem = await _localAssetManager.GetLocalItem(serverId, options.ItemId);
 

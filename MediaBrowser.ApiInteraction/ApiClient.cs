@@ -3256,5 +3256,27 @@ namespace MediaBrowser.ApiInteraction
                 return DeserializeFromStream<SyncDialogOptions>(stream);
             }
         }
+
+        public async Task<List<RecommendationDto>> GetMovieRecommendations(MovieRecommendationQuery query)
+        {
+            var dict = new QueryStringDictionary();
+
+            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
+            dict.AddIfNotNullOrEmpty("ParentId", query.ParentId);
+            dict.AddIfNotNull("ItemLimit", query.ItemLimit);
+            dict.AddIfNotNull("CategoryLimit", query.CategoryLimit);
+
+            if (query.Fields != null)
+            {
+                dict.Add("fields", query.Fields.Select(f => f.ToString()));
+            }
+
+            var url = GetApiUrl("Movies/Recommendations", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<List<RecommendationDto>>(stream);
+            }
+        }
     }
 }
