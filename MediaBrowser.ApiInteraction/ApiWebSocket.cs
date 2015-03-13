@@ -133,6 +133,15 @@ namespace MediaBrowser.ApiInteraction
                     socket.OnReceive = OnMessageReceived;
                     socket.Closed += _currentWebSocket_Closed;
 
+                    //try
+                    //{
+                    //    await SendWebSocketMessage("Identity", GetIdentificationMessage()).ConfigureAwait(false);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Logger.ErrorException("Error sending identity message", ex);
+                    //}
+
                     ReplaceSocket(socket);
 
                     OnConnected();
@@ -369,7 +378,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentException("Cannot open web socket without an access token.");
             }
 
-            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:") + "?api_key=" + AccessToken;
+            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:") + "?api_key=" + AccessToken + "&deviceId=" + DeviceId;
         }
 
         /// <summary>

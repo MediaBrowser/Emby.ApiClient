@@ -380,12 +380,11 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("CollapseBoxSetItems", query.CollapseBoxSetItems);
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres, "|");
-            dict.AddIfNotNull("Genres", query.AllGenres, "|");
             dict.AddIfNotNull("Ids", query.Ids);
             dict.AddIfNotNull("Studios", query.Studios, "|");
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
-            dict.AddIfNotNull("Artists", query.Artists);
+            dict.AddIfNotNull("ArtistIds", query.ArtistIds);
 
             dict.AddIfNotNull("IsPlayed", query.IsPlayed);
             dict.AddIfNotNull("IsInBoxSet", query.IsInBoxSet);
@@ -543,41 +542,6 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return GetApiUrl(type + "/" + query.Id + "/InstantMix", dict);
-        }
-
-        /// <summary>
-        /// Gets the instant mix by name URL.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="type">The type.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// query
-        /// or
-        /// type
-        /// </exception>
-        protected string GetInstantMixByNameUrl(SimilarItemsByNameQuery query, string type)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            var dict = new QueryStringDictionary { };
-
-            dict.AddIfNotNull("Limit", query.Limit);
-            dict.AddIfNotNullOrEmpty("UserId", query.UserId);
-
-            if (query.Fields != null)
-            {
-                dict.Add("fields", query.Fields.Select(f => f.ToString()));
-            }
-
-            return GetApiUrl(type + "/" + GetSlugName(query.Name) + "/InstantMix", dict);
         }
 
         /// <summary>
@@ -855,7 +819,7 @@ namespace MediaBrowser.ApiInteraction
 
             options.Tag = item.PrimaryImageTag;
 
-            return GetPersonImageUrl(item.Name, options);
+            return GetImageUrl(item.Id, options);
         }
 
         /// <summary>
@@ -882,38 +846,6 @@ namespace MediaBrowser.ApiInteraction
             }
 
             return item.ImageTags[options.ImageType];
-        }
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="name">The name of the person</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public string GetPersonImageUrl(string name, ImageOptions options)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var url = "Persons/" + GetSlugName(name) + "/Images/" + options.ImageType;
-
-            return GetImageUrl(url, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="year">The year.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        public string GetYearImageUrl(int year, ImageOptions options)
-        {
-            var url = "Years/" + year + "/Images/" + options.ImageType;
-
-            return GetImageUrl(url, options, new QueryStringDictionary());
         }
 
         /// <summary>
@@ -969,44 +901,6 @@ namespace MediaBrowser.ApiInteraction
             }
 
             var url = "GameGenres/" + GetSlugName(name) + "/Images/" + options.ImageType;
-
-            return GetImageUrl(url, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public string GetStudioImageUrl(string name, ImageOptions options)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var url = "Studios/" + GetSlugName(name) + "/Images/" + options.ImageType;
-
-            return GetImageUrl(url, options, new QueryStringDictionary());
-        }
-
-        /// <summary>
-        /// Gets the artist image URL.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">name</exception>
-        public string GetArtistImageUrl(string name, ImageOptions options)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var url = "Artists/" + GetSlugName(name) + "/Images/" + options.ImageType;
 
             return GetImageUrl(url, options, new QueryStringDictionary());
         }
