@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.ApiClient;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,6 +7,11 @@ namespace MediaBrowser.ApiInteraction
 {
     public interface INetworkConnection
     {
+        /// <summary>
+        /// Occurs when [network changed].
+        /// </summary>
+        event EventHandler<EventArgs> NetworkChanged;
+            
         /// <summary>
         /// Sends the wake on lan.
         /// </summary>

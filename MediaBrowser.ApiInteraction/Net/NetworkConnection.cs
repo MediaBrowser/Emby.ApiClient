@@ -16,8 +16,30 @@ namespace MediaBrowser.ApiInteraction.Net
         public NetworkConnection(ILogger logger)
         {
             _logger = logger;
+            NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
         }
 
+        private void OnNetworkChange()
+        {
+            if (NetworkChanged != null)
+            {
+                NetworkChanged(this, EventArgs.Empty);
+            }
+        }
+
+        void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            OnNetworkChange();
+        }
+
+        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            OnNetworkChange();
+        }
+
+        public event EventHandler<EventArgs> NetworkChanged;
+        
         public Task SendWakeOnLan(string macAddress, string ipAddress, int port, CancellationToken cancellationToken)
         {
             return SendWakeOnLan(macAddress, new IPEndPoint(IPAddress.Parse(ipAddress), port), cancellationToken);

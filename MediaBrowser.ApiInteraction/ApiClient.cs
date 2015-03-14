@@ -2891,7 +2891,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId)
+        public async Task<LiveMediaInfoResult> GetPlaybackInfo(string itemId, string userId)
         {
             var dict = new QueryStringDictionary { };
 

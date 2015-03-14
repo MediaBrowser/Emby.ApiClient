@@ -7,7 +7,6 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Playback
@@ -149,7 +148,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             if (!isOffline)
             {
-                var mediaInfo = await apiClient.GetLiveMediaInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+                var mediaInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
 
                 if (mediaInfo.ErrorCode.HasValue)
                 {

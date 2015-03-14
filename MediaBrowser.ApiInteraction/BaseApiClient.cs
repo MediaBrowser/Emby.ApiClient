@@ -381,7 +381,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("MediaTypes", query.MediaTypes);
             dict.AddIfNotNull("Genres", query.Genres, "|");
             dict.AddIfNotNull("Ids", query.Ids);
-            dict.AddIfNotNull("Studios", query.Studios, "|");
+            dict.AddIfNotNull("StudioIds", query.StudioIds, "|");
             dict.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
             dict.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
             dict.AddIfNotNull("ArtistIds", query.ArtistIds);
