@@ -10,6 +10,6 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attemps to discover the server within a local network
         /// </summary>
-        Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken);
+        Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.ApiInteraction.Data;
+using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Playback
 {
-    public class PlaybackManager
+    public class PlaybackManager : IPlaybackManager
     {
         private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
@@ -33,19 +34,8 @@ namespace MediaBrowser.ApiInteraction.Playback
             _localPlayer = localPlayer;
         }
 
-        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger)
-            : this(localAssetManager, device, logger, new NullLocalPlayer())
-        {
-        }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PlaybackManager" /> class.
-        /// </summary>
-        /// <param name="device">The device.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="localPlayer">The local player.</param>
-        public PlaybackManager(IDevice device, ILogger logger, ILocalPlayer localPlayer)
-            : this(new NullAssetManager(), device, logger, localPlayer)
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, INetworkConnection network, IAsyncHttpClient httpClient)
+            : this(localAssetManager, device, logger, new PortablePlayer(network, httpClient))
         {
         }
 
@@ -75,7 +65,6 @@ namespace MediaBrowser.ApiInteraction.Playback
             return info.GetSelectableSubtitleStreams();
         }
 
-
         /// <summary>
         /// Gets the in playback selectable audio streams.
         /// </summary>
@@ -95,6 +84,15 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             return info.GetSelectableSubtitleStreams();
         }
+
+        /// <summary>
+        /// Gets the stream builder.
+        /// </summary>
+        /// <returns>StreamBuilder.</returns>
+        private StreamBuilder GetStreamBuilder()
+        {
+            return new StreamBuilder(_localPlayer);
+        }
         
         /// <summary>
         /// Gets the audio stream information.
@@ -106,7 +104,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
         public async Task<StreamInfo> GetAudioStreamInfo(string serverId, AudioOptions options, bool isOffline, IApiClient apiClient)
         {
-            var streamBuilder = new StreamBuilder(_localPlayer);
+            var streamBuilder = GetStreamBuilder();
 
             var localItem = await _localAssetManager.GetLocalItem(serverId, options.ItemId);
 
@@ -163,7 +161,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
         private async Task<StreamInfo> GetVideoStreamInfoInternal(string serverId, VideoOptions options)
         {
-            var streamBuilder = new StreamBuilder(_localPlayer);
+            var streamBuilder = GetStreamBuilder();
 
             var localItem = await _localAssetManager.GetLocalItem(serverId, options.ItemId);
 

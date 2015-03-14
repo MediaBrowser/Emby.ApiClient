@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class ServerSync
+    public class ServerSync : IServerSync
     {
         private readonly IConnectionManager _connectionManager;
         private readonly IFileTransferManager _fileTransferManager;
@@ -28,7 +28,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             _localAssetManager = localAssetManager;
         }
 
-        public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var semaphore = GetLock(server.Id);
 

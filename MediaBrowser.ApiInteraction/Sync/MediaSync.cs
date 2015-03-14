@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class MediaSync
+    public class MediaSync : IMediaSync
     {
         private readonly IFileTransferManager _fileTransferManager;
         private readonly ILocalAssetManager _localAssetManager;
@@ -27,7 +27,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         public async Task Sync(IApiClient apiClient,
             ServerInfo serverInfo,
             IProgress<double> progress,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.Debug("Beginning media sync process with server Id: {0}", serverInfo.Id);
 

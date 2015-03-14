@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class OfflineUserSync
+    public class OfflineUserSync : IOfflineUserSync
     {
         private readonly ILogger _logger;
         private readonly ILocalAssetManager _localAssetManager;
@@ -23,7 +23,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             _logger = logger;
         }
 
-        public async Task UpdateOfflineUsers(ServerInfo server, IApiClient apiClient, CancellationToken cancellationToken)
+        public async Task UpdateOfflineUsers(ServerInfo server, IApiClient apiClient, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (var user in server.Users.ToList())
             {

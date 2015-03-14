@@ -90,8 +90,11 @@
     <Compile Include="Net\HttpWebRequestFactory.cs" />
     <Compile Include="Net\IAsyncHttpClient.cs" />
     <Compile Include="ICredentialProvider.cs" />
-    <Compile Include="Playback\DefaultLocalPlayer.cs" />
+    <Compile Include="Playback\BaseLocalPlayer.cs" />
+    <Compile Include="Playback\LocalPlayer.cs" />
+    <Compile Include="Playback\IPlaybackManager.cs" />
     <Compile Include="Playback\PlaybackManager.cs" />
+    <Compile Include="Playback\PortablePlayer.cs" />
     <Compile Include="Sync\ContentUploader.cs" />
     <Compile Include="INetworkConnection.cs" />
     <Compile Include="IServerLocator.cs" />
@@ -103,6 +106,10 @@
     <Compile Include="Data\LocalAssetManager.cs" />
     <Compile Include="Sync\FileTransferManager.cs" />
     <Compile Include="Sync\IFileTransferManager.cs" />
+    <Compile Include="Sync\IMediaSync.cs" />
+    <Compile Include="Sync\IMultiServerSync.cs" />
+    <Compile Include="Sync\IOfflineUserSync.cs" />
+    <Compile Include="Sync\IServerSync.cs" />
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiServerSync.cs" />
     <Compile Include="Sync\OfflineUserSync.cs" />

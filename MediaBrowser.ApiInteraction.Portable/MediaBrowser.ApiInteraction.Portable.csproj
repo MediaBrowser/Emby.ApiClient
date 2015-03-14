@@ -104,8 +104,17 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\NewtonsoftJsonSerializer.cs">
       <Link>NewtonsoftJsonSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Playback\BaseLocalPlayer.cs">
+      <Link>Playback\BaseLocalPlayer.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Playback\IPlaybackManager.cs">
+      <Link>Playback\IPlaybackManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Playback\PlaybackManager.cs">
       <Link>Playback\PlaybackManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Playback\PortablePlayer.cs">
+      <Link>Playback\PortablePlayer.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\PortableHttpWebRequestFactory.cs">
       <Link>PortableHttpWebRequestFactory.cs</Link>
@@ -124,6 +133,18 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IFileTransferManager.cs">
       <Link>Sync\IFileTransferManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IMediaSync.cs">
+      <Link>Sync\IMediaSync.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IMultiServerSync.cs">
+      <Link>Sync\IMultiServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IOfflineUserSync.cs">
+      <Link>Sync\IOfflineUserSync.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IServerSync.cs">
+      <Link>Sync\IServerSync.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\MediaSync.cs">
       <Link>Sync\MediaSync.cs</Link>

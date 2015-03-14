@@ -141,7 +141,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, string accessToken, CancellationToken cancellationToken)
+        public async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, string accessToken, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrWhiteSpace(accessToken))
             {
@@ -189,7 +189,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ConnectUserServer[]> GetServers(string userId, string accessToken, CancellationToken cancellationToken)
+        public async Task<ConnectUserServer[]> GetServers(string userId, string accessToken, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrWhiteSpace(userId))
             {

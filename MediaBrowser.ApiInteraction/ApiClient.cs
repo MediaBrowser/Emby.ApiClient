@@ -2853,7 +2853,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task UploadFile(Stream stream, LocalFileInfo file, CancellationToken cancellationToken)
+        public async Task UploadFile(Stream stream, LocalFileInfo file, CancellationToken cancellationToken = default(CancellationToken))
         {
             var dict = new QueryStringDictionary { };
 
@@ -2996,7 +2996,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<EmptyRequestResult>(url, new Dictionary<string, string>());
         }
 
-        public Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken)
+        public Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -3061,7 +3061,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<SyncDataRequest, SyncDataResponse>(url, request, CancellationToken.None);
         }
 
-        public Task<Stream> GetSyncJobItemAdditionalFile(string id, string name, CancellationToken cancellationToken)
+        public Task<Stream> GetSyncJobItemAdditionalFile(string id, string name, CancellationToken cancellationToken = default(CancellationToken))
         {
             var dict = new QueryStringDictionary { };
 

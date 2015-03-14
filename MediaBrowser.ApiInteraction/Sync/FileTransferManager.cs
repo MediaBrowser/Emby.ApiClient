@@ -24,7 +24,7 @@ namespace MediaBrowser.ApiInteraction.Sync
                                       LocalItem item,
                                       string syncJobItemId,
                                       IProgress<double> transferProgress,
-                                      CancellationToken cancellationToken)
+                                      CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.Debug("Downloading media with Id {0} to local repository", item.Item.Id);
 

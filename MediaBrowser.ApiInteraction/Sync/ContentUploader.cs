@@ -18,7 +18,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             _logger = logger;
         }
 
-        public async Task UploadImages(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task UploadImages(IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var device = _apiClient.Device;
 

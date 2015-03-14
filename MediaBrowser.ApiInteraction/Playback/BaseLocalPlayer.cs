@@ -2,19 +2,18 @@
 using MediaBrowser.Model.Dlna;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace MediaBrowser.ApiInteraction.Playback
 {
-    public class DefaultLocalPlayer : ILocalPlayer, IDisposable
+    public abstract class BaseLocalPlayer : ILocalPlayer, IDisposable
     {
-        private readonly INetworkConnection _network;
-        private readonly IAsyncHttpClient _httpClient;
+        protected readonly INetworkConnection Network;
+        protected readonly IAsyncHttpClient HttpClient;
 
-        public DefaultLocalPlayer(INetworkConnection network, IAsyncHttpClient httpClient)
+        protected BaseLocalPlayer(INetworkConnection network, IAsyncHttpClient httpClient)
         {
-            _network = network;
-            _httpClient = httpClient;
+            Network = network;
+            HttpClient = httpClient;
             network.NetworkChanged += network_NetworkChanged;
         }
 
@@ -23,15 +22,8 @@ namespace MediaBrowser.ApiInteraction.Playback
             ClearUrlTestResultCache();
         }
 
-        public bool CanAccessFile(string path)
-        {
-            return File.Exists(path);
-        }
-
-        public bool CanAccessDirectory(string path)
-        {
-            return Directory.Exists(path);
-        }
+        public abstract bool CanAccessFile(string path);
+        public abstract bool CanAccessDirectory(string path);
 
         public virtual bool CanAccessUrl(string url, bool requiresCustomRequestHeaders)
         {
@@ -55,7 +47,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                 if (_results.TryGetValue(url, out result))
                 {
                     var timespan = DateTime.UtcNow - result.Date;
-                    if (timespan <= TimeSpan.FromMinutes(3))
+                    if (timespan <= TimeSpan.FromMinutes(120))
                     {
                         return result.Success;
                     }
@@ -78,7 +70,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             try
             {
-                using (var response = _httpClient.GetResponse(new HttpRequest
+                using (var response = HttpClient.GetResponse(new HttpRequest
                 {
                     Url = url,
                     Method = "HEAD",
@@ -118,7 +110,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
         public void Dispose()
         {
-            _network.NetworkChanged += network_NetworkChanged;
+            Network.NetworkChanged += network_NetworkChanged;
         }
     }
 }
