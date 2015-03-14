@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class MediaSync
+    public class MediaSync : IMediaSync
     {
         private readonly IFileTransferManager _fileTransferManager;
         private readonly ILocalAssetManager _localAssetManager;

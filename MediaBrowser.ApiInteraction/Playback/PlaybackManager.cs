@@ -7,12 +7,11 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Playback
 {
-    public class PlaybackManager
+    public class PlaybackManager : IPlaybackManager
     {
         private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;

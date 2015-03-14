@@ -104,6 +104,9 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\NewtonsoftJsonSerializer.cs">
       <Link>NewtonsoftJsonSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Playback\IPlaybackManager.cs">
+      <Link>Playback\IPlaybackManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Playback\PlaybackManager.cs">
       <Link>Playback\PlaybackManager.cs</Link>
     </Compile>
@@ -124,6 +127,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IFileTransferManager.cs">
       <Link>Sync\IFileTransferManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IMediaSync.cs">
+      <Link>Sync\IMediaSync.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\MediaSync.cs">
       <Link>Sync\MediaSync.cs</Link>
