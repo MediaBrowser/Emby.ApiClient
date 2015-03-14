@@ -34,8 +34,8 @@ namespace MediaBrowser.ApiInteraction.Playback
             _localPlayer = localPlayer;
         }
 
-        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, INetworkConnection network, IAsyncHttpClient httpClient)
-            : this(localAssetManager, device, logger, new PortablePlayer(network, httpClient))
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, INetworkConnection network)
+            : this(localAssetManager, device, logger, new PortablePlayer(network, AsyncHttpClientFactory.Create(logger)))
         {
         }
 
