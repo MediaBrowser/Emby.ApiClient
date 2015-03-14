@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class OfflineUserSync
+    public class OfflineUserSync : IOfflineUserSync
     {
         private readonly ILogger _logger;
         private readonly ILocalAssetManager _localAssetManager;

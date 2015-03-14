@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
-    public class MultiServerSync
+    public class MultiServerSync : IMultiServerSync
     {
         private readonly IConnectionManager _connectionManager;
         private readonly ILogger _logger;

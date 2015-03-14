@@ -131,6 +131,15 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IMediaSync.cs">
       <Link>Sync\IMediaSync.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IMultiServerSync.cs">
+      <Link>Sync\IMultiServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IOfflineUserSync.cs">
+      <Link>Sync\IOfflineUserSync.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Sync\IServerSync.cs">
+      <Link>Sync\IServerSync.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Sync\MediaSync.cs">
       <Link>Sync\MediaSync.cs</Link>
     </Compile>
