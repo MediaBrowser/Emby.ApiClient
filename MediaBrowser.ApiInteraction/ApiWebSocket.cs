@@ -229,7 +229,7 @@ namespace MediaBrowser.ApiInteraction
         /// <param name="context">An optional, client-specific value indicating the area or section being browsed</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken)
+        public Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context, CancellationToken cancellationToken = default(CancellationToken))
         {
             var vals = new List<string>
                 {

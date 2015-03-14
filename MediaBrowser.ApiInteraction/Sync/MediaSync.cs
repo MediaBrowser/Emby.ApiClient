@@ -27,7 +27,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         public async Task Sync(IApiClient apiClient,
             ServerInfo serverInfo,
             IProgress<double> progress,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.Debug("Beginning media sync process with server Id: {0}", serverInfo.Id);
 

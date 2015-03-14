@@ -26,14 +26,14 @@ namespace MediaBrowser.ApiInteraction.Sync
             _clientCapabilities = clientCapabilities;
         }
 
-        public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var servers = await _connectionManager.GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
             await Sync(servers, progress, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task Sync(List<ServerInfo> servers, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(List<ServerInfo> servers, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var numComplete = 0;
             double startingPercent = 0;

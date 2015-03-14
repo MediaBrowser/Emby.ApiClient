@@ -61,7 +61,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConnectAsync(string url, CancellationToken cancellationToken)
+        public async Task ConnectAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
@@ -145,7 +145,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken = default(CancellationToken))
         {
             await _sendResource.WaitAsync(cancellationToken).ConfigureAwait(false);
 

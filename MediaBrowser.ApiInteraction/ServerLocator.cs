@@ -28,7 +28,7 @@ namespace MediaBrowser.ApiInteraction
             _logger = logger;
         }
 
-        public Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken)
+        public Task<List<ServerDiscoveryInfo>> FindServers(int timeoutMs, CancellationToken cancellationToken = default(CancellationToken))
         {
             var taskCompletionSource = new TaskCompletionSource<List<ServerDiscoveryInfo>>();
             var serversFound = new ConcurrentBag<ServerDiscoveryInfo>();

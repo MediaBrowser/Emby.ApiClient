@@ -28,7 +28,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             _localAssetManager = localAssetManager;
         }
 
-        public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var semaphore = GetLock(server.Id);
 

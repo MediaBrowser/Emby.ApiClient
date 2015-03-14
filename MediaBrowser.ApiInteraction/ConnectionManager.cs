@@ -157,7 +157,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken)
+        public async Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken = default(CancellationToken))
         {
             var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
 
@@ -324,7 +324,7 @@ namespace MediaBrowser.ApiInteraction
             return result;
         }
 
-        public async Task<ConnectionResult> Connect(CancellationToken cancellationToken)
+        public async Task<ConnectionResult> Connect(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (ClientCapabilities.SupportsOfflineAccess)
             {
@@ -393,12 +393,12 @@ namespace MediaBrowser.ApiInteraction
         /// <summary>
         /// Attempts to connect to a server
         /// </summary>
-        public Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken)
+        public Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Connect(server, new ConnectionOptions(), cancellationToken);
         }
 
-        public async Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken)
+        public async Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken = default(CancellationToken))
         {
             var result = new ConnectionResult
             {
@@ -552,7 +552,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken)
+        public Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken = default(CancellationToken))
         {
             var client = (ApiClient)apiClient;
             return Connect(client.ServerInfo, cancellationToken);
@@ -770,7 +770,7 @@ namespace MediaBrowser.ApiInteraction
             return ApiClients.Values.OfType<ApiClient>().FirstOrDefault(i => string.Equals(i.ServerInfo.Id, serverId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken)
+        public async Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken = default(CancellationToken))
         {
             address = NormalizeAddress(address);
 

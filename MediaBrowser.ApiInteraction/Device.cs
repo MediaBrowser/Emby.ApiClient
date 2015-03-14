@@ -42,7 +42,7 @@ namespace MediaBrowser.ApiInteraction
             return new List<LocalFileInfo>();
         }
 
-        public Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken)
+        public Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken = default(CancellationToken))
         {
             return apiClient.UploadFile(File.OpenRead(file.Id), file, cancellationToken);
         }

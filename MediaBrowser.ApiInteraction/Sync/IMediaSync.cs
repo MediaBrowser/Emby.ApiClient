@@ -10,6 +10,6 @@ namespace MediaBrowser.ApiInteraction.Sync
         Task Sync(IApiClient apiClient,
             ServerInfo serverInfo,
             IProgress<double> progress,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

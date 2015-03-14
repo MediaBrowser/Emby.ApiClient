@@ -18,12 +18,12 @@ namespace MediaBrowser.ApiInteraction.Net
             _logger = logger;
         }
 
-        public Task SendWakeOnLan(string macAddress, string ipAddress, int port, CancellationToken cancellationToken)
+        public Task SendWakeOnLan(string macAddress, string ipAddress, int port, CancellationToken cancellationToken = default(CancellationToken))
         {
             return SendWakeOnLan(macAddress, new IPEndPoint(IPAddress.Parse(ipAddress), port), cancellationToken);
         }
 
-        public Task SendWakeOnLan(string macAddress, int port, CancellationToken cancellationToken)
+        public Task SendWakeOnLan(string macAddress, int port, CancellationToken cancellationToken = default(CancellationToken))
         {
             return SendWakeOnLan(macAddress, new IPEndPoint(IPAddress.Broadcast, port), cancellationToken);
         }
