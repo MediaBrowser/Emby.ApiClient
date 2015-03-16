@@ -1033,5 +1033,12 @@ namespace MediaBrowser.ApiInteraction
 
             await _credentialProvider.SaveServerCredentials(credentials).ConfigureAwait(false);
         }
+
+        public async Task<ServerInfo> GetServerInfo(string id)
+        {
+            var credentials = await _credentialProvider.GetServerCredentials().ConfigureAwait(false);
+
+            return credentials.Servers.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

@@ -61,9 +61,11 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task SyncInternal(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            _logger.Debug("Beginning ServerSync with server {0}, Id {1}", server.Name, server.Id);
+            
             if (string.IsNullOrWhiteSpace(server.AccessToken) && string.IsNullOrWhiteSpace(server.ExchangeToken))
             {
-                LogNoAuthentication(server);
+                _logger.Info("Skipping sync process for server " + server.Name + ". No server authentication information available.");
                 progress.Report(100);
                 return;
             }
@@ -84,7 +86,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             }
             else
             {
-                LogNoAuthentication(server);
+                _logger.Info("Skipping sync process for server " + server.Name + ". ConnectionManager returned a state of {0}", result.State.ToString());
                 progress.Report(100);
             }
         }
@@ -109,11 +111,6 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             await new MediaSync(_localAssetManager, _logger, _fileTransferManager)
                 .Sync(apiClient, server, uploadProgress, cancellationToken).ConfigureAwait(false);
-        }
-
-        private void LogNoAuthentication(ServerInfo server)
-        {
-            _logger.Info("Skipping sync process for server " + server.Name + ". No server authentication information available.");
         }
     }
 }

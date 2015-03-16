@@ -2324,9 +2324,9 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 
-            if (query.ChannelIdList != null)
+            if (query.ChannelIds != null)
             {
-                dict.Add("ChannelIds", string.Join(",", query.ChannelIdList));
+                dict.Add("ChannelIds", string.Join(",", query.ChannelIds));
             }
 
             // TODO: This endpoint supports POST if the query string is too long

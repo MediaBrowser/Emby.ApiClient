@@ -40,6 +40,8 @@ namespace MediaBrowser.ApiInteraction.Sync
                 percentPerServer /= servers.Count;
             }
 
+            _logger.Debug("Beginning MultiServerSync with {0} servers", servers.Count);
+
             foreach (var server in servers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -53,8 +55,16 @@ namespace MediaBrowser.ApiInteraction.Sync
                     progress.Report(totalProgress);
                 });
 
+                // Grab the latest info from the connection manager about that server
+                var serverInfo = await _connectionManager.GetServerInfo(server.Id).ConfigureAwait(false);
+
+                if (serverInfo == null)
+                {
+                    serverInfo = server;
+                }
+
                 await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager, _connectionManager.ClientCapabilities)
-                    .Sync(server, serverProgress, cancellationToken).ConfigureAwait(false);
+                    .Sync(serverInfo, serverProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 startingPercent = numComplete;

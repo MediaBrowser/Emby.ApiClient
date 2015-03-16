@@ -241,6 +241,8 @@ namespace MediaBrowser.ApiInteraction.Sync
             bool syncUserItemAccess,
             CancellationToken cancellationToken)
         {
+            _logger.Debug("Beginning SyncData with server {0}", serverInfo.Name);
+            
             var localIds = await _localAssetManager.GetServerItemIds(serverInfo.Id).ConfigureAwait(false);
 
             var result = await apiClient.SyncData(new SyncDataRequest
@@ -311,6 +313,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
         private async Task RemoveItem(string serverId, string itemId)
         {
+            _logger.Debug("Removing item. ServerId: {0}, ItemId: {1}", serverId, itemId);
             var localItem = await _localAssetManager.GetLocalItem(serverId, itemId);
 
             if (localItem == null)
