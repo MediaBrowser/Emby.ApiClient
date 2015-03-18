@@ -389,7 +389,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("IsPlayed", query.IsPlayed);
             dict.AddIfNotNull("IsInBoxSet", query.IsInBoxSet);
 
-            dict.AddIfNotNullOrEmpty("Person", query.Person);
+            dict.AddIfNotNull("PersonIds", query.PersonIds);
             dict.AddIfNotNull("PersonTypes", query.PersonTypes);
 
             dict.AddIfNotNull("Years", query.Years);

@@ -2949,7 +2949,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
             dict.AddIfNotNull("AddMetadata", query.AddMetadata);
 
-            if (query.Statuses.Count > 0)
+            if (query.Statuses.Length > 0)
             {
                 dict.Add("Statuses", string.Join(",", query.Statuses.Select(i => i.ToString()).ToArray()));
             }
@@ -2971,7 +2971,7 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("SyncNewContent", query.SyncNewContent);
             dict.AddIfNotNullOrEmpty("TargetId", query.TargetId);
 
-            if (query.Statuses.Count > 0)
+            if (query.Statuses.Length > 0)
             {
                 dict.Add("Statuses", string.Join(",", query.Statuses.Select(i => i.ToString()).ToArray()));
             }
@@ -3145,6 +3145,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNullOrEmpty("UserId", jobInfo.UserId);
             dict.AddIfNotNullOrEmpty("ParentId", jobInfo.ParentId);
+            dict.AddIfNotNullOrEmpty("TargetId", jobInfo.TargetId);
 
             if (jobInfo.Category.HasValue)
             {
@@ -3154,6 +3155,36 @@ namespace MediaBrowser.ApiInteraction
             if (jobInfo.ItemIds != null)
             {
                 var list = jobInfo.ItemIds.ToList();
+                if (list.Count > 0)
+                {
+                    dict.Add("ItemIds", list);
+                }
+            }
+
+            var url = GetApiUrl("Sync/Options", dict);
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<SyncDialogOptions>(stream);
+            }
+        }
+
+        public async Task<SyncDialogOptions> GetSyncOptions(SyncJob jobInfo)
+        {
+            var dict = new QueryStringDictionary();
+
+            dict.AddIfNotNullOrEmpty("UserId", jobInfo.UserId);
+            dict.AddIfNotNullOrEmpty("ParentId", jobInfo.ParentId);
+            dict.AddIfNotNullOrEmpty("TargetId", jobInfo.TargetId);
+
+            if (jobInfo.Category.HasValue)
+            {
+                dict.AddIfNotNullOrEmpty("Category", jobInfo.Category.Value.ToString());
+            }
+
+            if (jobInfo.RequestedItemIds != null)
+            {
+                var list = jobInfo.RequestedItemIds.ToList();
                 if (list.Count > 0)
                 {
                     dict.Add("ItemIds", list);
