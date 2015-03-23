@@ -289,14 +289,21 @@ namespace MediaBrowser.ApiInteraction.Playback
                 _logger.ErrorException("Error in ReportPlaybackStoppedAsync", ex);
             }
 
-            if (streamInfo.MediaType == DlnaProfileType.Video)
-            {
-                await StopStranscoding(streamInfo, apiClient).ConfigureAwait(false);
-            }
+            await StopStranscoding(streamInfo, apiClient).ConfigureAwait(false);
         }
 
         private async Task StopStranscoding(StreamInfo streamInfo, IApiClient apiClient)
         {
+            if (streamInfo.MediaType != DlnaProfileType.Video)
+            {
+                return;
+            }
+
+            if (streamInfo.PlayMethod != PlayMethod.Transcode)
+            {
+                return;    
+            }
+
             var streamId = streamInfo.PlaybackInfo == null
                 ? null
                 : streamInfo.PlaybackInfo.StreamId;
