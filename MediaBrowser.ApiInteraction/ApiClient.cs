@@ -1575,6 +1575,8 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
+        internal Func<IApiClient, AuthenticationResult,Task> OnAuthenticated { get; set; }
+
         /// <summary>
         /// Authenticates a user and returns the result
         /// </summary>
@@ -1605,9 +1607,9 @@ namespace MediaBrowser.ApiInteraction
 
             SetAuthenticationInfo(result.AccessToken, result.User.Id);
 
-            if (Authenticated != null)
+            if (OnAuthenticated != null)
             {
-                Authenticated(this, new GenericEventArgs<AuthenticationResult>(result));
+                await OnAuthenticated(this, result).ConfigureAwait(false);
             }
 
             return result;
