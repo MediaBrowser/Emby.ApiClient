@@ -60,6 +60,16 @@ namespace MediaBrowser.ApiInteraction.Playback
         Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options, bool isOffline, IApiClient apiClient);
 
         /// <summary>
+        /// Changes the video stream.
+        /// </summary>
+        /// <param name="currentInfo">The current information.</param>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="apiClient">The API client.</param>
+        /// <returns>Task&lt;StreamInfo&gt;.</returns>
+        Task<StreamInfo> ChangeVideoStream(StreamInfo currentInfo, string serverId, VideoOptions options, IApiClient apiClient);
+
+        /// <summary>
         /// Reports playback start
         /// </summary>
         /// <param name="info">The information.</param>
