@@ -110,7 +110,7 @@ namespace MediaBrowser.ApiInteraction
                 apiClient = new ApiClient(_logger, address, ApplicationName, Device, ApplicationVersion, _cryptographyProvider, _localAssetManager)
                 {
                     JsonSerializer = JsonSerializer,
-                    OnAuthenticated = apiClientOnAuthenticated
+                    OnAuthenticated = ApiClientOnAuthenticated
                 };
 
                 ApiClients[server.Id] = apiClient;
@@ -128,7 +128,7 @@ namespace MediaBrowser.ApiInteraction
             return apiClient;
         }
 
-        Task apiClientOnAuthenticated(IApiClient apiClient, AuthenticationResult result)
+        private Task ApiClientOnAuthenticated(IApiClient apiClient, AuthenticationResult result)
         {
             return OnAuthenticated(apiClient, result, new ConnectionOptions(), SaveLocalCredentials);
         }

@@ -2599,11 +2599,12 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task StopTranscodingProcesses(string deviceId)
+        public Task StopTranscodingProcesses(string deviceId, string streamId)
         {
             var queryString = new QueryStringDictionary();
 
             queryString.Add("DeviceId", DeviceId);
+            queryString.AddIfNotNullOrEmpty("StreamId", streamId);
             var url = GetApiUrl("Videos/ActiveEncodings", queryString);
 
             return SendAsync(new HttpRequest

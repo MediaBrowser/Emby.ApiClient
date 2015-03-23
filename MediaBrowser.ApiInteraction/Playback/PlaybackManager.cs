@@ -4,6 +4,7 @@ using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
@@ -93,7 +94,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             return new StreamBuilder(_localPlayer);
         }
-        
+
         /// <summary>
         /// Gets the audio stream information.
         /// </summary>
@@ -135,6 +136,29 @@ namespace MediaBrowser.ApiInteraction.Playback
         }
 
         /// <summary>
+        /// Changes the video stream.
+        /// </summary>
+        /// <param name="currentInfo">The current information.</param>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="apiClient">The API client.</param>
+        /// <returns>Task&lt;StreamInfo&gt;.</returns>
+        /// <exception cref="MediaBrowser.Model.Dlna.PlaybackException"></exception>
+        public async Task<StreamInfo> ChangeVideoStream(StreamInfo currentInfo, string serverId, VideoOptions options, IApiClient apiClient)
+        {
+            await StopStranscoding(currentInfo, apiClient).ConfigureAwait(false);
+
+            if (currentInfo.PlaybackInfo != null)
+            {
+                options.MediaSources = currentInfo.PlaybackInfo.MediaSources;
+            }
+          
+            var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
+            streamInfo.PlaybackInfo = currentInfo.PlaybackInfo;
+            return streamInfo;
+        }
+
+        /// <summary>
         /// Gets the video stream information.
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
@@ -144,19 +168,25 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
         public async Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options, bool isOffline, IApiClient apiClient)
         {
+            LiveMediaInfoResult playbackInfo = null;
+
             if (!isOffline)
             {
-                var mediaInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+                playbackInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
 
-                if (mediaInfo.ErrorCode.HasValue)
+                if (playbackInfo.ErrorCode.HasValue)
                 {
-                    throw new PlaybackException { ErrorCode = mediaInfo.ErrorCode.Value };
+                    throw new PlaybackException { ErrorCode = playbackInfo.ErrorCode.Value };
                 }
 
-                options.MediaSources = mediaInfo.MediaSources;
+                options.MediaSources = playbackInfo.MediaSources;
             }
 
-            return await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
+            var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
+
+            streamInfo.PlaybackInfo = playbackInfo;
+
+            return streamInfo;
         }
 
         private async Task<StreamInfo> GetVideoStreamInfoInternal(string serverId, VideoOptions options)
@@ -261,7 +291,23 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                await apiClient.StopTranscodingProcesses(_device.DeviceId).ConfigureAwait(false);
+                await StopStranscoding(streamInfo, apiClient).ConfigureAwait(false);
+            }
+        }
+
+        private async Task StopStranscoding(StreamInfo streamInfo, IApiClient apiClient)
+        {
+            var streamId = streamInfo.PlaybackInfo == null
+                ? null
+                : streamInfo.PlaybackInfo.StreamId;
+
+            try
+            {
+                await apiClient.StopTranscodingProcesses(_device.DeviceId, streamId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in StopStranscoding", ex);
             }
         }
     }
