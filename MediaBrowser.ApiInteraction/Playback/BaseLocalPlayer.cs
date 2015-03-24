@@ -110,7 +110,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
         public void Dispose()
         {
-            Network.NetworkChanged += network_NetworkChanged;
+            Network.NetworkChanged -= network_NetworkChanged;
         }
     }
 }

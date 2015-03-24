@@ -58,7 +58,7 @@ namespace MediaBrowser.ApiInteraction.Data
         /// <param name="serverId">The server identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetAlbumArtists(string serverId, string userId);
+        Task<List<LocalItemInfo>> GetAlbumArtists(string serverId, string userId);
 
         /// <summary>
         /// Gets a list of unique series, by id

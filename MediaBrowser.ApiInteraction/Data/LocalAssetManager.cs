@@ -488,13 +488,24 @@ namespace MediaBrowser.ApiInteraction.Data
             var artists = await _itemRepository.GetAlbumArtists(user.ServerId, user.Id).ConfigureAwait(false);
 
             return artists
-                .OrderBy(i => i)
-                .Select(i => new BaseItemDto
+                .OrderBy(i => i.Name)
+                .Select(i =>
                 {
-                    Name = i,
-                    Id = i,
-                    Type = "MusicArtist",
-                    ServerId = user.ServerId
+                    var item = new BaseItemDto
+                    {
+                        Name = i.Name,
+                        Id = i.Id,
+                        Type = "MusicArtist",
+                        ServerId = i.ServerId,
+                        ImageTags = new Dictionary<ImageType, string>()
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(i.PrimaryImageTag))
+                    {
+                        item.ImageTags[ImageType.Primary] = i.PrimaryImageTag;
+                    }
+
+                    return item;
                 })
                 .ToList();
         }
@@ -589,8 +600,7 @@ namespace MediaBrowser.ApiInteraction.Data
             {
                 AlbumId = parentItem.Id,
                 ServerId = user.ServerId,
-                MediaType = "Video",
-                ExcludeTypes = new[] { "Episode" }
+                MediaType = "Photo"
             });
 
             return FilterByUserAccess(items, user)
