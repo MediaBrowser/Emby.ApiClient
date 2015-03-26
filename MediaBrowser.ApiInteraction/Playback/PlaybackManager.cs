@@ -132,7 +132,9 @@ namespace MediaBrowser.ApiInteraction.Playback
                 }
             }
 
-            return streamBuilder.BuildAudioItem(options);
+            var streamInfo = streamBuilder.BuildAudioItem(options);
+            EnsureSuccess(streamInfo);
+            return streamInfo;
         }
 
         /// <summary>
@@ -168,7 +170,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task&lt;StreamInfo&gt;.</returns>
         public async Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options, bool isOffline, IApiClient apiClient)
         {
-            LiveMediaInfoResult playbackInfo = null;
+            PlaybackInfoResponse playbackInfo = null;
 
             if (!isOffline)
             {
@@ -218,7 +220,20 @@ namespace MediaBrowser.ApiInteraction.Playback
                 }
             }
 
-            return streamBuilder.BuildVideoItem(options);
+            var streamInfo = streamBuilder.BuildVideoItem(options);
+            EnsureSuccess(streamInfo);
+            return streamInfo;
+        }
+
+        private void EnsureSuccess(StreamInfo info)
+        {
+            if (info == null)
+            {
+                throw new PlaybackException
+                {
+                    ErrorCode = PlaybackErrorCode.NoCompatibleStream
+                };
+            }
         }
 
         /// <summary>

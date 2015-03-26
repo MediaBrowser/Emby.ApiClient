@@ -514,7 +514,7 @@ namespace MediaBrowser.ApiInteraction.Data
         {
             var items = await _itemRepository.GetItems(new LocalItemQuery
             {
-                AlbumArtist = parentItem.Name,
+                AlbumArtistId = parentItem.Id,
                 ServerId = user.ServerId,
                 Type = "Audio"
             });

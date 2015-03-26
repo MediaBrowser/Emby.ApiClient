@@ -2894,7 +2894,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<LiveMediaInfoResult> GetPlaybackInfo(string itemId, string userId)
+        public async Task<PlaybackInfoResponse> GetPlaybackInfo(string itemId, string userId)
         {
             var dict = new QueryStringDictionary { };
 
@@ -2904,7 +2904,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
-                return DeserializeFromStream<LiveMediaInfoResult>(stream);
+                return DeserializeFromStream<PlaybackInfoResponse>(stream);
             }
         }
 
