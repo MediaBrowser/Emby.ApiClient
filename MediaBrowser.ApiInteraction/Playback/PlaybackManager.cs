@@ -108,7 +108,6 @@ namespace MediaBrowser.ApiInteraction.Playback
             var streamBuilder = GetStreamBuilder();
 
             var localItem = await _localAssetManager.GetLocalItem(serverId, options.ItemId);
-
             if (localItem != null)
             {
                 var localMediaSource = localItem.Item.MediaSources[0];
@@ -131,9 +130,23 @@ namespace MediaBrowser.ApiInteraction.Playback
                     }
                 }
             }
+            
+            PlaybackInfoResponse playbackInfo = null;
+            if (!isOffline)
+            {
+                playbackInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+
+                if (playbackInfo.ErrorCode.HasValue)
+                {
+                    throw new PlaybackException { ErrorCode = playbackInfo.ErrorCode.Value };
+                }
+
+                options.MediaSources = playbackInfo.MediaSources;
+            }
 
             var streamInfo = streamBuilder.BuildAudioItem(options);
             EnsureSuccess(streamInfo);
+            streamInfo.PlaybackInfo = playbackInfo;
             return streamInfo;
         }
 

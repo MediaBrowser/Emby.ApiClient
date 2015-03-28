@@ -219,6 +219,8 @@ namespace MediaBrowser.ApiInteraction.Sync
                         var path = await _localAssetManager.SaveSubtitles(response, subtitleStream.Codec, item, subtitleStream.Language, subtitleStream.IsForced).ConfigureAwait(false);
 
                         subtitleStream.Path = path;
+
+                        item.AdditionalFiles.Add(path);
                     }
 
                     hasDownloads = true;
@@ -321,14 +323,17 @@ namespace MediaBrowser.ApiInteraction.Sync
                 return;
             }
 
-            var files = await _localAssetManager.GetFiles(localItem);
-
-            foreach (var file in files)
-            {
-                await _localAssetManager.DeleteFile(file.Path).ConfigureAwait(false);
-            }
+            var additionalFiles = localItem.AdditionalFiles.ToList();
+            var localPath = localItem.LocalPath;
 
             await _localAssetManager.Delete(localItem).ConfigureAwait(false);
+
+            foreach (var file in additionalFiles)
+            {
+                await _localAssetManager.DeleteFile(file).ConfigureAwait(false);
+            }
+
+            await _localAssetManager.DeleteFile(localPath).ConfigureAwait(false);
         }
     }
 }
