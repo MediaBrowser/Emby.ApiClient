@@ -2599,12 +2599,12 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public Task StopTranscodingProcesses(string deviceId, string streamId)
+        public Task StopTranscodingProcesses(string deviceId, string playSessionId)
         {
             var queryString = new QueryStringDictionary();
 
             queryString.Add("DeviceId", DeviceId);
-            queryString.AddIfNotNullOrEmpty("StreamId", streamId);
+            queryString.AddIfNotNullOrEmpty("PlaySessionId", playSessionId);
             var url = GetApiUrl("Videos/ActiveEncodings", queryString);
 
             return SendAsync(new HttpRequest
@@ -3222,6 +3222,13 @@ namespace MediaBrowser.ApiInteraction
             {
                 return DeserializeFromStream<List<RecommendationDto>>(stream);
             }
+        }
+
+        public Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("LiveStreams/Open");
+
+            return PostAsync<LiveStreamRequest, LiveStreamResponse>(url, request, cancellationToken);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Data;
+﻿using System.Threading;
+using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
@@ -130,7 +131,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                     }
                 }
             }
-            
+
             PlaybackInfoResponse playbackInfo = null;
             if (!isOffline)
             {
@@ -147,7 +148,34 @@ namespace MediaBrowser.ApiInteraction.Playback
             var streamInfo = streamBuilder.BuildAudioItem(options);
             EnsureSuccess(streamInfo);
             streamInfo.PlaybackInfo = playbackInfo;
+
+            if (!isOffline)
+            {
+                await SetLiveStream(streamInfo, options, apiClient).ConfigureAwait(false);
+            }
+
             return streamInfo;
+        }
+
+        /// <summary>
+        /// Sets the live stream.
+        /// </summary>
+        /// <param name="streamInfo">The stream information.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="apiClient">The API client.</param>
+        /// <returns>Task.</returns>
+        private async Task SetLiveStream(StreamInfo streamInfo, AudioOptions options, IApiClient apiClient)
+        {
+            if (streamInfo.MediaSource.RequiresOpening)
+            {
+                var liveStreamResponse = await apiClient.OpenLiveStream(new LiveStreamRequest(options)
+                {
+                    OpenToken = streamInfo.MediaSource.OpenToken,
+                    UserId = apiClient.CurrentUserId
+
+                }, CancellationToken.None).ConfigureAwait(false);
+                streamInfo.MediaSource = liveStreamResponse.MediaSource;
+            }
         }
 
         /// <summary>
@@ -167,7 +195,7 @@ namespace MediaBrowser.ApiInteraction.Playback
             {
                 options.MediaSources = currentInfo.PlaybackInfo.MediaSources;
             }
-          
+
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
             streamInfo.PlaybackInfo = currentInfo.PlaybackInfo;
             return streamInfo;
@@ -200,6 +228,11 @@ namespace MediaBrowser.ApiInteraction.Playback
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
             streamInfo.PlaybackInfo = playbackInfo;
+
+            if (!isOffline)
+            {
+                await SetLiveStream(streamInfo, options, apiClient).ConfigureAwait(false);
+            }
 
             return streamInfo;
         }
@@ -268,13 +301,19 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// Reports playback progress
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="streamInfo">The stream information.</param>
         /// <param name="isOffline">if set to <c>true</c> [is offline].</param>
         /// <param name="apiClient">The current apiClient. It can be null if offline</param>
         /// <returns>Task.</returns>
-        public async Task ReportPlaybackProgress(PlaybackProgressInfo info, bool isOffline, IApiClient apiClient)
+        public async Task ReportPlaybackProgress(PlaybackProgressInfo info, StreamInfo streamInfo, bool isOffline, IApiClient apiClient)
         {
             if (!isOffline)
             {
+                if (streamInfo != null && streamInfo.MediaSource != null)
+                {
+                    info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+                }
+
                 await apiClient.ReportPlaybackProgressAsync(info).ConfigureAwait(false);
             }
         }
@@ -307,6 +346,11 @@ namespace MediaBrowser.ApiInteraction.Playback
                 return;
             }
 
+            if (streamInfo != null && streamInfo.MediaSource != null)
+            {
+                info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+            }
+
             // Put a try/catch here because we need to stop transcoding regardless
             try
             {
@@ -329,16 +373,16 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (streamInfo.PlayMethod != PlayMethod.Transcode)
             {
-                return;    
+                return;
             }
 
-            var streamId = streamInfo.PlaybackInfo == null
+            var playSessionId = streamInfo.PlaybackInfo == null
                 ? null
-                : streamInfo.PlaybackInfo.StreamId;
+                : streamInfo.PlaybackInfo.PlaySessionId;
 
             try
             {
-                await apiClient.StopTranscodingProcesses(_device.DeviceId, streamId).ConfigureAwait(false);
+                await apiClient.StopTranscodingProcesses(_device.DeviceId, playSessionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

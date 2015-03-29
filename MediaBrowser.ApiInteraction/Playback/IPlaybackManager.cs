@@ -82,10 +82,11 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// Reports playback progress
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="streamInfo">The stream information.</param>
         /// <param name="isOffline">if set to <c>true</c> [is offline].</param>
         /// <param name="apiClient">The current apiClient. It can be null if offline</param>
         /// <returns>Task.</returns>
-        Task ReportPlaybackProgress(PlaybackProgressInfo info, bool isOffline, IApiClient apiClient);
+        Task ReportPlaybackProgress(PlaybackProgressInfo info, StreamInfo streamInfo, bool isOffline, IApiClient apiClient);
 
         /// <summary>
         /// Reports playback progress
