@@ -57,7 +57,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return Task.FromResult(true);
         }
 
-        public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string originalFileName)
+        public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string syncJobItemId, string originalFileName)
         {
             throw new NotImplementedException();
         }

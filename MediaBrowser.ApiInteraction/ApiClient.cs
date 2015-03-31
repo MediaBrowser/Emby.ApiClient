@@ -2894,13 +2894,13 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<PlaybackInfoResponse> GetPlaybackInfo(string itemId, string userId)
+        public async Task<PlaybackInfoResponse> GetPlaybackInfo(PlaybackInfoRequest request)
         {
             var dict = new QueryStringDictionary { };
 
-            dict.Add("UserId", userId);
+            dict.AddIfNotNullOrEmpty("UserId", request.UserId);
 
-            var url = GetApiUrl("Items/" + itemId + "/MediaInfo", dict);
+            var url = GetApiUrl("Items/" + request.Id + "/PlaybackInfo", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {

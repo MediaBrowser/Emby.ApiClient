@@ -106,7 +106,7 @@ namespace MediaBrowser.ApiInteraction.Sync
         {
             var libraryItem = jobItem.Item;
 
-            var localItem = _localAssetManager.CreateLocalItem(libraryItem, server, jobItem.OriginalFileName);
+            var localItem = _localAssetManager.CreateLocalItem(libraryItem, server, jobItem.SyncJobItemId, jobItem.OriginalFileName);
 
             // Create db record
             await _localAssetManager.AddOrUpdate(localItem).ConfigureAwait(false);

@@ -135,7 +135,14 @@ namespace MediaBrowser.ApiInteraction.Playback
             PlaybackInfoResponse playbackInfo = null;
             if (!isOffline)
             {
-                playbackInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+                playbackInfo = await apiClient.GetPlaybackInfo(new PlaybackInfoRequest
+                {
+                    Id = options.ItemId,
+                    UserId = apiClient.CurrentUserId,
+                    MaxStreamingBitrate = options.MaxBitrate,
+                    MediaSourceId = options.MediaSourceId
+
+                }).ConfigureAwait(false);
 
                 if (playbackInfo.ErrorCode.HasValue)
                 {
@@ -215,7 +222,16 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (!isOffline)
             {
-                playbackInfo = await apiClient.GetPlaybackInfo(options.ItemId, apiClient.CurrentUserId).ConfigureAwait(false);
+                playbackInfo = await apiClient.GetPlaybackInfo(new PlaybackInfoRequest
+                {
+                    Id = options.ItemId,
+                    UserId = apiClient.CurrentUserId,
+                    MaxStreamingBitrate = options.MaxBitrate,
+                    MediaSourceId = options.MediaSourceId,
+                    AudioStreamIndex = options.AudioStreamIndex,
+                    SubtitleStreamIndex = options.SubtitleStreamIndex
+
+                }).ConfigureAwait(false);
 
                 if (playbackInfo.ErrorCode.HasValue)
                 {

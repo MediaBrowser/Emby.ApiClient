@@ -247,7 +247,7 @@ namespace MediaBrowser.ApiInteraction.Data
             return parts.Select(_fileRepository.GetValidFileName).ToList();
         }
 
-        public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string originalFileName)
+        public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string syncJobItemId, string originalFileName)
         {
             var path = GetDirectoryPath(libraryItem, server);
             path.Add(GetLocalFileName(libraryItem, originalFileName));
@@ -266,7 +266,8 @@ namespace MediaBrowser.ApiInteraction.Data
                 ItemId = libraryItem.Id,
                 ServerId = server.Id,
                 LocalPath = localPath,
-                Id = GetLocalId(server.Id, libraryItem.Id)
+                Id = GetLocalId(server.Id, libraryItem.Id),
+                SyncJobItemId = syncJobItemId
             };
         }
 

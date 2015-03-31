@@ -88,9 +88,10 @@ namespace MediaBrowser.ApiInteraction.Data
         /// </summary>
         /// <param name="libraryItem">The library item.</param>
         /// <param name="server">The server.</param>
+        /// <param name="syncJobItemId">The synchronize job item identifier.</param>
         /// <param name="originalFileName">Name of the original file.</param>
         /// <returns>LocalItem.</returns>
-        LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string originalFileName);
+        LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string syncJobItemId, string originalFileName);
         /// <summary>
         /// Gets the local item.
         /// </summary>
