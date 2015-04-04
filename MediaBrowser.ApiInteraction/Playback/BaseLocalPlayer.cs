@@ -68,24 +68,23 @@ namespace MediaBrowser.ApiInteraction.Playback
 
         private bool CanAccessUrlInternal(string url)
         {
-            return true;
-            //try
-            //{
-            //    using (var response = HttpClient.GetResponse(new HttpRequest
-            //    {
-            //        Url = url,
-            //        Method = "GET",
-            //        Timeout = 5000
+            try
+            {
+                using (var response = HttpClient.GetResponse(new HttpRequest
+                {
+                    Url = url,
+                    Method = "GET",
+                    Timeout = 5000
 
-            //    }).Result)
-            //    {
-            //        return true;
-            //    }
-            //}
-            //catch
-            //{
-            //    return false;
-            //}
+                }).Result)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected void ClearUrlTestResultCache()
