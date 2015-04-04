@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
@@ -154,7 +155,12 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             var streamInfo = streamBuilder.BuildAudioItem(options);
             EnsureSuccess(streamInfo);
-            streamInfo.PlaybackInfo = playbackInfo;
+
+            if (playbackInfo != null)
+            {
+                streamInfo.AllMediaSources = playbackInfo.MediaSources.ToList();
+                streamInfo.PlaySessionId = playbackInfo.PlaySessionId;
+            }
 
             if (!isOffline)
             {
@@ -198,13 +204,13 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             await StopStranscoding(currentInfo, apiClient).ConfigureAwait(false);
 
-            if (currentInfo.PlaybackInfo != null)
+            if (currentInfo.AllMediaSources != null)
             {
-                options.MediaSources = currentInfo.PlaybackInfo.MediaSources;
+                options.MediaSources = currentInfo.AllMediaSources;
             }
 
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
-            streamInfo.PlaybackInfo = currentInfo.PlaybackInfo;
+            streamInfo.AllMediaSources = currentInfo.AllMediaSources;
             return streamInfo;
         }
 
@@ -243,7 +249,11 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
-            streamInfo.PlaybackInfo = playbackInfo;
+            if (playbackInfo != null)
+            {
+                streamInfo.AllMediaSources = playbackInfo.MediaSources.ToList();
+                streamInfo.PlaySessionId = playbackInfo.PlaySessionId;
+            }
 
             if (!isOffline)
             {
@@ -392,9 +402,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                 return;
             }
 
-            var playSessionId = streamInfo.PlaybackInfo == null
-                ? null
-                : streamInfo.PlaybackInfo.PlaySessionId;
+            var playSessionId = streamInfo.PlaySessionId;
 
             try
             {

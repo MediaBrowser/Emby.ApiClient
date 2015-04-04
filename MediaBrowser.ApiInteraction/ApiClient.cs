@@ -1575,7 +1575,7 @@ namespace MediaBrowser.ApiInteraction
             return PostAsync<UserItemDataDto>(url, new Dictionary<string, string>(), CancellationToken.None);
         }
 
-        internal Func<IApiClient, AuthenticationResult,Task> OnAuthenticated { get; set; }
+        internal Func<IApiClient, AuthenticationResult, Task> OnAuthenticated { get; set; }
 
         /// <summary>
         /// Authenticates a user and returns the result
@@ -3229,6 +3229,17 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("LiveStreams/Open");
 
             return PostAsync<LiveStreamRequest, LiveStreamResponse>(url, request, cancellationToken);
+        }
+
+        public Task CancelSyncLibraryItems(string targetId, IEnumerable<string> itemIds)
+        {
+            var dict = new QueryStringDictionary();
+
+            dict.Add("ItemIds", itemIds);
+
+            var url = GetApiUrl("Sync/" + targetId + "/Items", dict);
+
+            return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
         }
     }
 }
