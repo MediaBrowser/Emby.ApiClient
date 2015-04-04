@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.Threading;
-using MediaBrowser.ApiInteraction.Data;
+﻿using MediaBrowser.ApiInteraction.Data;
 using MediaBrowser.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -11,6 +10,8 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.ApiInteraction.Playback
@@ -94,7 +95,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>StreamBuilder.</returns>
         private StreamBuilder GetStreamBuilder()
         {
-            return new StreamBuilder(_localPlayer);
+            return new StreamBuilder(_localPlayer, _logger);
         }
 
         /// <summary>
@@ -156,15 +157,22 @@ namespace MediaBrowser.ApiInteraction.Playback
             var streamInfo = streamBuilder.BuildAudioItem(options);
             EnsureSuccess(streamInfo);
 
+            if (!isOffline)
+            {
+                var liveMediaSource = await GetLiveStreamInfo(streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
+
+                if (liveMediaSource != null)
+                {
+                    options.MediaSources = new List<MediaSourceInfo> { liveMediaSource };
+                    streamInfo = GetStreamBuilder().BuildAudioItem(options);
+                    EnsureSuccess(streamInfo);
+                }
+            }
+
             if (playbackInfo != null)
             {
                 streamInfo.AllMediaSources = playbackInfo.MediaSources.ToList();
                 streamInfo.PlaySessionId = playbackInfo.PlaySessionId;
-            }
-
-            if (!isOffline)
-            {
-                await SetLiveStream(streamInfo, options, apiClient).ConfigureAwait(false);
             }
 
             return streamInfo;
@@ -173,22 +181,25 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <summary>
         /// Sets the live stream.
         /// </summary>
-        /// <param name="streamInfo">The stream information.</param>
+        /// <param name="mediaSource">The media source.</param>
         /// <param name="options">The options.</param>
         /// <param name="apiClient">The API client.</param>
         /// <returns>Task.</returns>
-        private async Task SetLiveStream(StreamInfo streamInfo, AudioOptions options, IApiClient apiClient)
+        private async Task<MediaSourceInfo> GetLiveStreamInfo(MediaSourceInfo mediaSource, AudioOptions options, IApiClient apiClient)
         {
-            if (streamInfo.MediaSource.RequiresOpening)
+            if (mediaSource.RequiresOpening)
             {
                 var liveStreamResponse = await apiClient.OpenLiveStream(new LiveStreamRequest(options)
                 {
-                    OpenToken = streamInfo.MediaSource.OpenToken,
+                    OpenToken = mediaSource.OpenToken,
                     UserId = apiClient.CurrentUserId
 
                 }, CancellationToken.None).ConfigureAwait(false);
-                streamInfo.MediaSource = liveStreamResponse.MediaSource;
+
+                return liveStreamResponse.MediaSource;
             }
+
+            return null;
         }
 
         /// <summary>
@@ -249,15 +260,22 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
+            if (!isOffline)
+            {
+                var liveMediaSource = await GetLiveStreamInfo(streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
+
+                if (liveMediaSource != null)
+                {
+                    options.MediaSources = new List<MediaSourceInfo> { liveMediaSource };
+                    streamInfo = GetStreamBuilder().BuildVideoItem(options);
+                    EnsureSuccess(streamInfo);
+                }
+            }
+
             if (playbackInfo != null)
             {
                 streamInfo.AllMediaSources = playbackInfo.MediaSources.ToList();
                 streamInfo.PlaySessionId = playbackInfo.PlaySessionId;
-            }
-
-            if (!isOffline)
-            {
-                await SetLiveStream(streamInfo, options, apiClient).ConfigureAwait(false);
             }
 
             return streamInfo;
