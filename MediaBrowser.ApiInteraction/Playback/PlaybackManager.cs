@@ -353,9 +353,14 @@ namespace MediaBrowser.ApiInteraction.Playback
         {
             if (!isOffline)
             {
-                if (streamInfo != null && streamInfo.MediaSource != null)
+                if (streamInfo != null)
                 {
-                    info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+                    info.PlaySessionId = streamInfo.PlaySessionId;
+
+                    if (streamInfo.MediaSource != null)
+                    {
+                        info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+                    }
                 }
 
                 await apiClient.ReportPlaybackProgressAsync(info).ConfigureAwait(false);
@@ -390,9 +395,14 @@ namespace MediaBrowser.ApiInteraction.Playback
                 return;
             }
 
-            if (streamInfo != null && streamInfo.MediaSource != null)
+            if (streamInfo != null)
             {
-                info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+                info.PlaySessionId = streamInfo.PlaySessionId;
+
+                if (streamInfo.MediaSource != null)
+                {
+                    info.LiveStreamId = streamInfo.MediaSource.LiveStreamId;
+                }
             }
 
             // Put a try/catch here because we need to stop transcoding regardless

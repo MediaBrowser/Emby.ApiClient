@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient</id>
-        <version>3.0.0.610</version>
+        <version>3.0.0.611</version>
         <title>MediaBrowser.ApiClient</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -13,12 +13,12 @@
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="MediaBrowser.Common" version="3.0.615" />
+                <dependency id="MediaBrowser.Common" version="3.0.616" />
                 <dependency id="Newtonsoft.Json" version="6.0.8" />
                 <dependency id="WebSocket4Net" version="0.12" />
             </group>
             <group targetFramework=".NETPortable0.0-net45+sl4+wp71+win8+wpa81">
-                <dependency id="MediaBrowser.Common" version="3.0.615" />
+                <dependency id="MediaBrowser.Common" version="3.0.616" />
                 <dependency id="Newtonsoft.Json" version="6.0.8" />
             </group>
         </dependencies>
