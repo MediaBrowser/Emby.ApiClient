@@ -132,7 +132,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                         {
                             _logger.Warn("LocalItem returned no compatible streams. Will dummy up a StreamInfo to force it to direct play.");
                             var mediaSource = localItem.Item.MediaSources.First();
-                            result = GetForcedDirectPlayStreamInfo(options, mediaSource);
+                            result = GetForcedDirectPlayStreamInfo(DlnaProfileType.Audio, options, mediaSource);
                         }
                         result.PlayMethod = PlayMethod.DirectPlay;
                         return result;
@@ -315,7 +315,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                         {
                             _logger.Warn("LocalItem returned no compatible streams. Will dummy up a StreamInfo to force it to direct play.");
                             var mediaSource = localItem.Item.MediaSources.First();
-                            result = GetForcedDirectPlayStreamInfo(options, mediaSource);
+                            result = GetForcedDirectPlayStreamInfo(DlnaProfileType.Video, options, mediaSource);
                         }
                         result.PlayMethod = PlayMethod.DirectPlay;
                         return result;
@@ -328,12 +328,12 @@ namespace MediaBrowser.ApiInteraction.Playback
             return streamInfo;
         }
 
-        private StreamInfo GetForcedDirectPlayStreamInfo(AudioOptions options, MediaSourceInfo mediaSource)
+        private StreamInfo GetForcedDirectPlayStreamInfo(DlnaProfileType mediaType, AudioOptions options, MediaSourceInfo mediaSource)
         {
             return new StreamInfo
             {
                 ItemId = options.ItemId,
-                MediaType = DlnaProfileType.Audio,
+                MediaType = mediaType,
                 MediaSource = mediaSource,
                 RunTimeTicks = mediaSource.RunTimeTicks,
                 Context = options.Context,
