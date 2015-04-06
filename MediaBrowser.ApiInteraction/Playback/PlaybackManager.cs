@@ -128,6 +128,12 @@ namespace MediaBrowser.ApiInteraction.Playback
                         options.MediaSources = localItem.Item.MediaSources;
 
                         var result = streamBuilder.BuildAudioItem(options);
+                        if (result == null)
+                        {
+                            _logger.Warn("LocalItem returned no compatible streams. Will dummy up a StreamInfo to force it to direct play.");
+                            var mediaSource = localItem.Item.MediaSources.First();
+                            result = GetForcedDirectPlayStreamInfo(options, mediaSource);
+                        }
                         result.PlayMethod = PlayMethod.DirectPlay;
                         return result;
                     }
@@ -221,6 +227,7 @@ namespace MediaBrowser.ApiInteraction.Playback
             }
 
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
+            streamInfo.PlaySessionId = currentInfo.PlaySessionId;
             streamInfo.AllMediaSources = currentInfo.AllMediaSources;
             return streamInfo;
         }
@@ -304,6 +311,12 @@ namespace MediaBrowser.ApiInteraction.Playback
                         options.MediaSources = localItem.Item.MediaSources;
 
                         var result = streamBuilder.BuildVideoItem(options);
+                        if (result == null)
+                        {
+                            _logger.Warn("LocalItem returned no compatible streams. Will dummy up a StreamInfo to force it to direct play.");
+                            var mediaSource = localItem.Item.MediaSources.First();
+                            result = GetForcedDirectPlayStreamInfo(options, mediaSource);
+                        }
                         result.PlayMethod = PlayMethod.DirectPlay;
                         return result;
                     }
@@ -313,6 +326,21 @@ namespace MediaBrowser.ApiInteraction.Playback
             var streamInfo = streamBuilder.BuildVideoItem(options);
             EnsureSuccess(streamInfo);
             return streamInfo;
+        }
+
+        private StreamInfo GetForcedDirectPlayStreamInfo(AudioOptions options, MediaSourceInfo mediaSource)
+        {
+            return new StreamInfo
+            {
+                ItemId = options.ItemId,
+                MediaType = DlnaProfileType.Audio,
+                MediaSource = mediaSource,
+                RunTimeTicks = mediaSource.RunTimeTicks,
+                Context = options.Context,
+                DeviceProfile = options.Profile,
+                Container = mediaSource.Container,
+                PlayMethod = PlayMethod.DirectPlay
+            };
         }
 
         private void EnsureSuccess(StreamInfo info)
