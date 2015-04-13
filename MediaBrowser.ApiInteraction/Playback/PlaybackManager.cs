@@ -141,6 +141,7 @@ namespace MediaBrowser.ApiInteraction.Playback
             }
 
             PlaybackInfoResponse playbackInfo = null;
+            string playSessionId = null;
             if (!isOffline)
             {
                 playbackInfo = await apiClient.GetPlaybackInfo(new PlaybackInfoRequest
@@ -158,6 +159,7 @@ namespace MediaBrowser.ApiInteraction.Playback
                 }
 
                 options.MediaSources = playbackInfo.MediaSources;
+                playSessionId = playbackInfo.PlaySessionId;
             }
 
             var streamInfo = streamBuilder.BuildAudioItem(options);
@@ -165,7 +167,7 @@ namespace MediaBrowser.ApiInteraction.Playback
 
             if (!isOffline)
             {
-                var liveMediaSource = await GetLiveStreamInfo(streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
+                var liveMediaSource = await GetLiveStreamInfo(playSessionId, streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
 
                 if (liveMediaSource != null)
                 {
@@ -191,14 +193,15 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <param name="options">The options.</param>
         /// <param name="apiClient">The API client.</param>
         /// <returns>Task.</returns>
-        private async Task<MediaSourceInfo> GetLiveStreamInfo(MediaSourceInfo mediaSource, AudioOptions options, IApiClient apiClient)
+        private async Task<MediaSourceInfo> GetLiveStreamInfo(string playSessionId, MediaSourceInfo mediaSource, AudioOptions options, IApiClient apiClient)
         {
             if (mediaSource.RequiresOpening)
             {
                 var liveStreamResponse = await apiClient.OpenLiveStream(new LiveStreamRequest(options)
                 {
                     OpenToken = mediaSource.OpenToken,
-                    UserId = apiClient.CurrentUserId
+                    UserId = apiClient.CurrentUserId,
+                    PlaySessionId = playSessionId
 
                 }, CancellationToken.None).ConfigureAwait(false);
 
@@ -243,6 +246,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         public async Task<StreamInfo> GetVideoStreamInfo(string serverId, VideoOptions options, bool isOffline, IApiClient apiClient)
         {
             PlaybackInfoResponse playbackInfo = null;
+            string playSessionId = null;
 
             if (!isOffline)
             {
@@ -263,13 +267,14 @@ namespace MediaBrowser.ApiInteraction.Playback
                 }
 
                 options.MediaSources = playbackInfo.MediaSources;
+                playSessionId = playbackInfo.PlaySessionId;
             }
 
             var streamInfo = await GetVideoStreamInfoInternal(serverId, options).ConfigureAwait(false);
 
             if (!isOffline)
             {
-                var liveMediaSource = await GetLiveStreamInfo(streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
+                var liveMediaSource = await GetLiveStreamInfo(playSessionId, streamInfo.MediaSource, options, apiClient).ConfigureAwait(false);
 
                 if (liveMediaSource != null)
                 {
