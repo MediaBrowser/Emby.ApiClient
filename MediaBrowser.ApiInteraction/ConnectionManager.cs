@@ -598,6 +598,10 @@ namespace MediaBrowser.ApiInteraction
                     server.AccessToken = auth.AccessToken;
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 // Already logged at a lower level
@@ -675,6 +679,10 @@ namespace MediaBrowser.ApiInteraction
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 // Already logged at a lower level
@@ -701,6 +709,10 @@ namespace MediaBrowser.ApiInteraction
                 {
                     return JsonSerializer.DeserializeFromStream<PublicSystemInfo>(stream);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
