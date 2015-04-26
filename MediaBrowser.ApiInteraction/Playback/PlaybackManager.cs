@@ -447,8 +447,6 @@ namespace MediaBrowser.ApiInteraction.Playback
             {
                 _logger.ErrorException("Error in ReportPlaybackStoppedAsync", ex);
             }
-
-            await StopStranscoding(streamInfo, apiClient).ConfigureAwait(false);
         }
 
         private async Task StopStranscoding(StreamInfo streamInfo, IApiClient apiClient)
