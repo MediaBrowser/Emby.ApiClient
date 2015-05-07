@@ -516,7 +516,7 @@ namespace MediaBrowser.ApiInteraction
 
             if (!string.IsNullOrWhiteSpace(server.AccessToken))
             {
-                await ValidateAuthentication(server, connectionMode, cancellationToken).ConfigureAwait(false);
+                await ValidateAuthentication(server, connectionMode, options, cancellationToken).ConfigureAwait(false);
             }
 
             credentials.AddOrUpdateServer(server);
@@ -639,7 +639,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        private async Task ValidateAuthentication(ServerInfo server, ConnectionMode connectionMode, CancellationToken cancellationToken)
+        private async Task ValidateAuthentication(ServerInfo server, ConnectionMode connectionMode, ConnectionOptions options, CancellationToken cancellationToken)
         {
             _logger.Debug("Validating saved authentication");
 
@@ -675,7 +675,7 @@ namespace MediaBrowser.ApiInteraction
 
                         SaveUserInfoIntoCredentials(server, localUser);
 
-                        OnLocalUserSignIn(localUser);
+                        OnLocalUserSignIn(options, localUser);
                     }
                 }
             }
@@ -853,7 +853,7 @@ namespace MediaBrowser.ApiInteraction
 
             AfterConnected(apiClient, options);
 
-            OnLocalUserSignIn(result.User);
+            OnLocalUserSignIn(options, result.User);
         }
 
         private void SaveUserInfoIntoCredentials(ServerInfo server, UserDto user)
@@ -866,11 +866,15 @@ namespace MediaBrowser.ApiInteraction
             });
         }
 
-        private void OnLocalUserSignIn(UserDto user)
+        private void OnLocalUserSignIn(ConnectionOptions options, UserDto user)
         {
-            if (LocalUserSignIn != null)
+            // TODO: Create a separate property for this
+            if (options.UpdateDateLastAccessed)
             {
-                LocalUserSignIn(this, new GenericEventArgs<UserDto>(user));
+                if (LocalUserSignIn != null)
+                {
+                    LocalUserSignIn(this, new GenericEventArgs<UserDto>(user));
+                }
             }
         }
 
