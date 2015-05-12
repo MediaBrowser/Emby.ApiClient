@@ -3,7 +3,7 @@ Emby.ApiClient
 
 This portable class library makes it very easy to harness the power of the Embyr API. This is available as a Nuget package:
 
-[Emby.ApiClient](https://www.nuget.org/packages/Emby.ApiClient/)
+[Emby.ApiClient](https://www.nuget.org/packages/MediaBrowser.ApiClient/)
 
 # Single Server Example #
 
