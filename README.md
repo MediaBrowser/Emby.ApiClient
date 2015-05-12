@@ -1,9 +1,9 @@
-MediaBrowser.ApiClient
+Emby.ApiClient
 ======================
 
-This portable class library makes it very easy to harness the power of the Media Browser API. This is available as a Nuget package:
+This portable class library makes it very easy to harness the power of the Embyr API. This is available as a Nuget package:
 
-[MediaBrowser.ApiClient](https://www.nuget.org/packages/MediaBrowser.ApiClient/)
+[Emby.ApiClient](https://www.nuget.org/packages/Emby.ApiClient/)
 
 # Single Server Example #
 
