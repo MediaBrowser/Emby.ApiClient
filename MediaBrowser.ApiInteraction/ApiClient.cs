@@ -2032,7 +2032,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<RecordingGroupDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueryResult<BaseItemDto>> GetLiveTvRecordingGroupsAsync(RecordingGroupQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2047,11 +2047,11 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<QueryResult<RecordingGroupDto>>(stream);
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
             }
         }
 
-        public async Task<QueryResult<RecordingInfoDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueryResult<BaseItemDto>> GetLiveTvRecordingsAsync(RecordingQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2073,7 +2073,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<QueryResult<RecordingInfoDto>>(stream);
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
             }
         }
 
@@ -2186,7 +2186,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<RecordingInfoDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<BaseItemDto> GetLiveTvRecordingAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2200,11 +2200,11 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<RecordingInfoDto>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
-        public async Task<RecordingGroupDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<BaseItemDto> GetLiveTvRecordingGroupAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2218,7 +2218,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<RecordingGroupDto>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -2296,7 +2296,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueryResult<BaseItemDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2336,11 +2336,11 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<QueryResult<ProgramInfoDto>>(stream);
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
             }
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueryResult<BaseItemDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
             {
@@ -2358,7 +2358,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<QueryResult<ProgramInfoDto>>(stream);
+                return DeserializeFromStream<QueryResult<BaseItemDto>>(stream);
             }
         }
 
@@ -2425,7 +2425,7 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        public async Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<BaseItemDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -2439,7 +2439,7 @@ namespace MediaBrowser.ApiInteraction
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
             {
-                return DeserializeFromStream<ProgramInfoDto>(stream);
+                return DeserializeFromStream<BaseItemDto>(stream);
             }
         }
 
@@ -3240,6 +3240,11 @@ namespace MediaBrowser.ApiInteraction
             var url = GetApiUrl("Sync/" + targetId + "/Items", dict);
 
             return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
+        }
+
+        public Task<int> GetSupportedBitrate(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
