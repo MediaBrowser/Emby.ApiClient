@@ -556,6 +556,8 @@ namespace MediaBrowser.ApiInteraction
                 dict.Add("fields", query.Fields.Select(f => f.ToString()));
             }
 
+            dict.Add("ParentId", query.ParentId);
+
             dict.AddIfNotNull("Limit", query.Limit);
 
             dict.AddIfNotNull("StartIndex", query.StartIndex);
