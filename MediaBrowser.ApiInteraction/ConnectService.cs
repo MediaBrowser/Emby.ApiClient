@@ -283,12 +283,19 @@ namespace MediaBrowser.ApiInteraction
             {
                 var response = JsonSerializer.DeserializeFromStream<RawConnectResponse>(stream);
 
-                return new ConnectSignupResponse
+                if (string.Equals(response.Status, "SUCCESS", StringComparison.OrdinalIgnoreCase))
                 {
-                    IsSuccessful = string.Equals(response.Status, "SUCCESS", StringComparison.OrdinalIgnoreCase),
-                    IsEmailInUse = string.Equals(response.Status, "USERNAME_IN_USE", StringComparison.OrdinalIgnoreCase),
-                    IsUsernameInUse = string.Equals(response.Status, "EMAIL_IN_USE", StringComparison.OrdinalIgnoreCase)
-                };
+                    return ConnectSignupResponse.Success;
+                }
+                if (string.Equals(response.Status, "USERNAME_IN_USE", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ConnectSignupResponse.UsernameInUser;
+                }
+                if (string.Equals(response.Status, "EMAIL_IN_USE", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ConnectSignupResponse.EmailInUse;
+                }
+                return ConnectSignupResponse.Failure;
             }
         }
 
