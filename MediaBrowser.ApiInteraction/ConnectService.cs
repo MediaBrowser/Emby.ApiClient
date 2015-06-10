@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.ApiInteraction.Net;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -64,7 +65,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("accessToken");
             }
-            
+
             var args = new Dictionary<string, string>
             {
             };
@@ -147,7 +148,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("accessToken");
             }
-            
+
             var dict = new QueryStringDictionary();
 
             if (!string.IsNullOrWhiteSpace(query.Id))
@@ -199,7 +200,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("accessToken");
             }
-            
+
             var dict = new QueryStringDictionary();
 
             dict.Add("userId", userId);
@@ -258,6 +259,43 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("handler");
             }
             return "https://connect.mediabrowser.tv/service/" + handler;
+        }
+
+        public async Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password)
+        {
+            var request = new HttpRequest
+            {
+                Url = GetConnectUrl("register"),
+                Method = "POST"
+            };
+
+            var dict = new QueryStringDictionary();
+
+            dict.Add("email", email);
+            dict.Add("userName", username);
+            dict.Add("password", GetConnectPasswordMd5(password, _cryptographyProvider));
+            request.SetPostData(dict);
+
+            request.RequestHeaders["X-Connect-Token"] = "CONNECT-REGISTER";
+            AddAppInfo(request, _appName, _appVersion);
+
+            using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
+            {
+                var response = JsonSerializer.DeserializeFromStream<RawConnectResponse>(stream);
+
+                return new ConnectSignupResponse
+                {
+                    IsSuccessful = string.Equals(response.Status, "SUCCESS", StringComparison.OrdinalIgnoreCase),
+                    IsEmailInUse = string.Equals(response.Status, "USERNAME_IN_USE", StringComparison.OrdinalIgnoreCase),
+                    IsUsernameInUse = string.Equals(response.Status, "EMAIL_IN_USE", StringComparison.OrdinalIgnoreCase)
+                };
+            }
+        }
+
+        private class RawConnectResponse
+        {
+            public string Status { get; set; }
+            public string Message { get; set; }
         }
     }
 }

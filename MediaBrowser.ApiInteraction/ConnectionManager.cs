@@ -1055,5 +1055,10 @@ namespace MediaBrowser.ApiInteraction
 
             return credentials.Servers.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
+
+        public Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password)
+        {
+            return _connectService.SignupForConnect(email, username, password);
+        }
     }
 }
