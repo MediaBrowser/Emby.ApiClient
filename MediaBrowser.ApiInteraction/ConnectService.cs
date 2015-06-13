@@ -279,7 +279,7 @@ namespace MediaBrowser.ApiInteraction
             request.RequestHeaders["X-Connect-Token"] = "CONNECT-REGISTER";
             AddAppInfo(request, _appName, _appVersion);
 
-            using (var response = await _httpClient.GetResponse(request).ConfigureAwait(false))
+            using (var response = await _httpClient.GetResponse(request, true).ConfigureAwait(false))
             {
                 var responseObject = JsonSerializer.DeserializeFromStream<RawConnectResponse>(response.Content);
 
