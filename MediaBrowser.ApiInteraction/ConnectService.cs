@@ -279,19 +279,19 @@ namespace MediaBrowser.ApiInteraction
             request.RequestHeaders["X-Connect-Token"] = "CONNECT-REGISTER";
             AddAppInfo(request, _appName, _appVersion);
 
-            using (var stream = await _httpClient.SendAsync(request).ConfigureAwait(false))
+            using (var response = await _httpClient.GetResponse(request).ConfigureAwait(false))
             {
-                var response = JsonSerializer.DeserializeFromStream<RawConnectResponse>(stream);
+                var responseObject = JsonSerializer.DeserializeFromStream<RawConnectResponse>(response.Content);
 
-                if (string.Equals(response.Status, "SUCCESS", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(responseObject.Status, "SUCCESS", StringComparison.OrdinalIgnoreCase))
                 {
                     return ConnectSignupResponse.Success;
                 }
-                if (string.Equals(response.Status, "USERNAME_IN_USE", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(responseObject.Status, "USERNAME_IN_USE", StringComparison.OrdinalIgnoreCase))
                 {
                     return ConnectSignupResponse.UsernameInUser;
                 }
-                if (string.Equals(response.Status, "EMAIL_IN_USE", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(responseObject.Status, "EMAIL_IN_USE", StringComparison.OrdinalIgnoreCase))
                 {
                     return ConnectSignupResponse.EmailInUse;
                 }
