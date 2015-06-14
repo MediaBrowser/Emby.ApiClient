@@ -263,6 +263,22 @@ namespace MediaBrowser.ApiInteraction
 
         public async Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentNullException("email");
+            }
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentNullException("username");
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentNullException("password");
+            }
+            if (password.Length < 8)
+            {
+                throw new ArgumentException("password must be at least 8 characters");
+            }
             var request = new HttpRequest
             {
                 Url = GetConnectUrl("register"),
@@ -273,7 +289,7 @@ namespace MediaBrowser.ApiInteraction
 
             dict.Add("email", email);
             dict.Add("userName", username);
-            dict.Add("password", GetConnectPasswordMd5(password, _cryptographyProvider));
+            dict.Add("password", password);
             request.SetPostData(dict);
 
             request.RequestHeaders["X-Connect-Token"] = "CONNECT-REGISTER";
