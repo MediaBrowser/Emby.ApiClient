@@ -73,7 +73,7 @@ namespace MediaBrowser.ApiInteraction.Net
             _requestFactory = requestFactory;
         }
 
-        public async Task<HttpResponse> GetResponse(HttpRequest options)
+        public async Task<HttpResponse> GetResponse(HttpRequest options, bool sendFailureResponse = false)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -134,6 +134,20 @@ namespace MediaBrowser.ApiInteraction.Net
             }
             catch (Exception ex)
             {
+                if (sendFailureResponse)
+                {
+                    var webException = ex as WebException ?? ex.InnerException as WebException;
+                    if (webException != null)
+                    {
+                        var response = webException.Response as HttpWebResponse;
+                        if (response != null)
+                        {
+                            var headers = ConvertHeaders(response);
+                            return GetResponse(response, headers);
+                        }
+                    }
+                }
+                
                 throw GetExceptionToThrow(ex, options, requestTime);
             }
         }

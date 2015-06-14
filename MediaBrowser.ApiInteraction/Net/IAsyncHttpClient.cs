@@ -27,7 +27,10 @@ namespace MediaBrowser.ApiInteraction.Net
         /// Gets the response.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <returns>Task&lt;HttpResponse&gt;.</returns>
-        Task<HttpResponse> GetResponse(HttpRequest options);
+        /// <param name="sendFailureResponse">if set to <c>true</c> [send failure response].</param>
+        /// <returns>
+        /// Task&lt;HttpResponse&gt;.
+        /// </returns>
+        Task<HttpResponse> GetResponse(HttpRequest options, bool sendFailureResponse = false);
     }
 }
