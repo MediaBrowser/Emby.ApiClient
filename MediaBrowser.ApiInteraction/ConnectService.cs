@@ -287,7 +287,7 @@ namespace MediaBrowser.ApiInteraction
 
             var dict = new QueryStringDictionary();
 
-            dict.Add("email", email);
+            dict.Add("email", Uri.EscapeDataString(email));
             dict.Add("userName", username);
             dict.Add("password", password);
             request.SetPostData(dict);
