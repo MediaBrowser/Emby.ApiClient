@@ -32,7 +32,8 @@ namespace MediaBrowser.ApiInteraction.Playback
                 return false;
             }
 
-            return CanAccessUrl(url);
+            return true;
+            //return CanAccessUrl(url);
         }
 
         private readonly Dictionary<string, TestResult> _results = new Dictionary<string, TestResult>(StringComparer.OrdinalIgnoreCase);
