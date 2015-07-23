@@ -248,7 +248,7 @@ namespace MediaBrowser.ApiInteraction.Net
             if (!string.IsNullOrEmpty(headers.AuthorizationScheme))
             {
                 var val = string.Format("{0} {1}", headers.AuthorizationScheme, headers.AuthorizationParameter);
-                request.Headers["Authorization"] = val;
+                request.Headers["X-Emby-Authorization"] = val;
             }
         }
 
