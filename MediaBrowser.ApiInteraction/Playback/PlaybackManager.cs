@@ -195,7 +195,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>Task.</returns>
         private async Task<MediaSourceInfo> GetLiveStreamInfo(string playSessionId, MediaSourceInfo mediaSource, AudioOptions options, IApiClient apiClient)
         {
-            if (mediaSource.RequiresOpening ?? false)
+            if (mediaSource.RequiresOpening)
             {
                 var liveStreamResponse = await apiClient.OpenLiveStream(new LiveStreamRequest(options)
                 {

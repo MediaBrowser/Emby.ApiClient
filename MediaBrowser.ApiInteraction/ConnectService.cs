@@ -258,7 +258,7 @@ namespace MediaBrowser.ApiInteraction
             {
                 throw new ArgumentNullException("handler");
             }
-            return "https://connect.mediabrowser.tv/service/" + handler;
+            return "https://connect.emby.media/service/" + handler;
         }
 
         public async Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password)

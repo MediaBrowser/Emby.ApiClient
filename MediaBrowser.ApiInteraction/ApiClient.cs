@@ -579,69 +579,6 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
-        /// <summary>
-        /// Gets the similar movies async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetSimilarItemListUrl(query, "Movies");
-
-            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the similar trailers async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetSimilarItemListUrl(query, "Trailers");
-
-            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the similar series async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetSimilarItemListUrl(query, "Shows");
-
-            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
         public async Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (query == null)
@@ -705,48 +642,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the similar games async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetSimilarItemListUrl(query, "Games");
-
-            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the similar albums async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetSimilarItemListUrl(query, "Albums");
-
-            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
         /// Gets the people async.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -768,105 +663,6 @@ namespace MediaBrowser.ApiInteraction
         }
 
         /// <summary>
-        /// Gets the instant mix from album async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetInstantMixFromAlbumAsync(SimilarItemsQuery query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetInstantMixUrl(query, "Albums");
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the instant mix from artist async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsQuery query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetInstantMixUrl(query, "Artists");
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the instant mix from music genre async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsQuery query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetInstantMixUrl(query, "MusicGenres");
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the instant mix from song async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        /// <exception cref="System.ArgumentNullException">query</exception>
-        public async Task<ItemsResult> GetInstantMixFromSongAsync(SimilarItemsQuery query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-
-            var url = GetInstantMixUrl(query, "Songs");
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the game genres async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        public async Task<ItemsResult> GetGameGenresAsync(ItemsByNameQuery query)
-        {
-            var url = GetItemByNameListUrl("GameGenres", query);
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
         /// Gets the genres async.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -874,21 +670,6 @@ namespace MediaBrowser.ApiInteraction
         public async Task<ItemsResult> GetGenresAsync(ItemsByNameQuery query)
         {
             var url = GetItemByNameListUrl("Genres", query);
-
-            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
-            {
-                return DeserializeFromStream<ItemsResult>(stream);
-            }
-        }
-
-        /// <summary>
-        /// Gets the music genres async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        public async Task<ItemsResult> GetMusicGenresAsync(ItemsByNameQuery query)
-        {
-            var url = GetItemByNameListUrl("MusicGenres", query);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
             {
@@ -2150,26 +1931,6 @@ namespace MediaBrowser.ApiInteraction
             });
         }
 
-        public Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            var dict = new QueryStringDictionary { };
-
-            var url = GetApiUrl("LiveTv/Recordings/" + id, dict);
-
-            return SendAsync(new HttpRequest
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                RequestHeaders = HttpHeaders,
-                Method = "DELETE"
-            });
-        }
-
         public async Task<ChannelInfoDto> GetLiveTvChannelAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(id))
@@ -3247,6 +3008,36 @@ namespace MediaBrowser.ApiInteraction
         public Task<int> GetSupportedBitrate(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ItemsResult> GetInstantMixFromItemAsync(SimilarItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetInstantMixUrl(query, "Items");
+
+            using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
+        }
+
+        public async Task<ItemsResult> GetSimilarItemsAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var url = GetSimilarItemListUrl(query, "Items");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<ItemsResult>(stream);
+            }
         }
     }
 }
