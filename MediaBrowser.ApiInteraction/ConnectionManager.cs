@@ -576,7 +576,7 @@ namespace MediaBrowser.ApiInteraction
 
             var url = server.GetAddress(connectionMode);
 
-            url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
+            url += "/emby/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
             var headers = new HttpHeaders();
             headers.SetAccessToken(server.ExchangeToken);
@@ -653,7 +653,7 @@ namespace MediaBrowser.ApiInteraction
                 CancellationToken = cancellationToken,
                 Method = "GET",
                 RequestHeaders = headers,
-                Url = url + "/mediabrowser/system/info?format=json"
+                Url = url + "/emby/system/info?format=json"
             };
 
             try
@@ -694,7 +694,7 @@ namespace MediaBrowser.ApiInteraction
 
         private async Task<PublicSystemInfo> TryConnect(string url, int timeout, CancellationToken cancellationToken)
         {
-            url += "/mediabrowser/system/info/public?format=json";
+            url += "/emby/system/info/public?format=json";
 
             try
             {

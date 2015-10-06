@@ -283,7 +283,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("queryString");
             }
 
-            return queryString.GetUrl(ApiUrl + "/" + handler);
+            return queryString.GetUrl(ApiUrl + "/emby/" + handler);
         }
 
         public string GetSubtitleUrl(SubtitleDownloadOptions options)
