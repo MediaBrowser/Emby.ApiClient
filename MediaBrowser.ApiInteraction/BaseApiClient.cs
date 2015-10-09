@@ -156,7 +156,7 @@ namespace MediaBrowser.ApiInteraction
         {
             get
             {
-                return ServerAddress + "/mediabrowser";
+                return ServerAddress + "/emby";
             }
         }
 
@@ -283,7 +283,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentNullException("queryString");
             }
 
-            return queryString.GetUrl(ApiUrl + "/emby/" + handler);
+            return queryString.GetUrl(ApiUrl + "/" + handler);
         }
 
         public string GetSubtitleUrl(SubtitleDownloadOptions options)
