@@ -244,9 +244,8 @@ namespace MediaBrowser.ApiInteraction
             return servers.Select(i => new ServerInfo
             {
                 Id = i.Id,
-                LocalAddress = i.Address,
-                Name = i.Name,
-                ManualAddress = ConvertEndpointAddressToManualAddress(i)
+                LocalAddress = ConvertEndpointAddressToManualAddress(i) ?? i.Address,
+                Name = i.Name
             })
             .ToList();
         }
@@ -438,7 +437,7 @@ namespace MediaBrowser.ApiInteraction
                     if (!string.IsNullOrEmpty(server.LocalAddress) && isLocalNetworkAvailable)
                     {
                         // Try to connect to the local address
-                        systemInfo = await TryConnect(server.LocalAddress, 5000, cancellationToken).ConfigureAwait(false);
+                        systemInfo = await TryConnect(server.LocalAddress, 8000, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 else if (mode == ConnectionMode.Manual)

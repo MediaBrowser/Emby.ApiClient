@@ -378,7 +378,7 @@ namespace MediaBrowser.ApiInteraction
                 throw new ArgumentException("Cannot open web socket without an access token.");
             }
 
-            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:") + "?api_key=" + AccessToken + "&deviceId=" + DeviceId;
+            return serverAddress.Replace("http:", "ws:").Replace("https:", "wss:") + "/embywebsocket?api_key=" + AccessToken + "&deviceId=" + DeviceId;
         }
 
         /// <summary>
