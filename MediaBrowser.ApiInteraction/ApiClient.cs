@@ -3005,9 +3005,19 @@ namespace MediaBrowser.ApiInteraction
             return DeleteAsync<EmptyRequestResult>(url, CancellationToken.None);
         }
 
-        public Task<int> GetSupportedBitrate(CancellationToken cancellationToken)
+        public Task<int> DetectMaxBitrate(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<EndPointInfo> GetEndPointInfo(CancellationToken cancellationToken)
+        {
+            var url = GetApiUrl("System/Endpoint");
+
+            using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
+            {
+                return DeserializeFromStream<EndPointInfo>(stream);
+            }
         }
 
         public async Task<ItemsResult> GetInstantMixFromItemAsync(SimilarItemsQuery query)

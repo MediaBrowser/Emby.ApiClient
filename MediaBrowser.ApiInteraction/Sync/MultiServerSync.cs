@@ -23,14 +23,16 @@ namespace MediaBrowser.ApiInteraction.Sync
             _fileTransferManager = fileTransferManager;
         }
 
-        public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task Sync(IProgress<double> progress, 
+            bool syncOnlyOnLocalNetwork,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var servers = await _connectionManager.GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
-            await Sync(servers, progress, cancellationToken).ConfigureAwait(false);
+            await Sync(servers, syncOnlyOnLocalNetwork, progress, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task Sync(List<ServerInfo> servers, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task Sync(List<ServerInfo> servers, bool syncOnlyOnLocalNetwork, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var numComplete = 0;
             double startingPercent = 0;
@@ -61,6 +63,28 @@ namespace MediaBrowser.ApiInteraction.Sync
                 if (serverInfo == null)
                 {
                     serverInfo = server;
+                }
+
+                if (syncOnlyOnLocalNetwork)
+                {
+                    var result = await _connectionManager.Connect(server, new ConnectionOptions
+                    {
+                        EnableWebSocket = false,
+                        ReportCapabilities = false,
+                        UpdateDateLastAccessed = false
+
+                    }, cancellationToken).ConfigureAwait(false);
+
+                    var apiClient = result.ApiClient;
+
+                    var endpointInfo = await apiClient.GetEndPointInfo(cancellationToken).ConfigureAwait(false);
+
+                    _logger.Debug("Server: {0}, Id: {1}, IsInNetwork:{2}", server.Name, server.Id, endpointInfo.IsInNetwork);
+
+                    if (!endpointInfo.IsInNetwork)
+                    {
+                        continue;
+                    }
                 }
 
                 await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager, _connectionManager.ClientCapabilities)

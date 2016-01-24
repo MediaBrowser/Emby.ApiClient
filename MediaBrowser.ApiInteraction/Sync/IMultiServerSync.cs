@@ -6,6 +6,8 @@ namespace MediaBrowser.ApiInteraction.Sync
 {
     public interface IMultiServerSync
     {
-        Task Sync(IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken));
+        Task Sync(IProgress<double> progress, 
+            bool syncOnlyOnLocalNetwork,
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }
