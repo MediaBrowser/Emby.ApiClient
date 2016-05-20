@@ -2926,7 +2926,7 @@ namespace MediaBrowser.ApiInteraction
                     dict.Add("ItemIds", list);
                 }
             }
-
+            
             var url = GetApiUrl("Sync/Options", dict);
 
             using (var stream = await GetSerializedStreamAsync(url).ConfigureAwait(false))
