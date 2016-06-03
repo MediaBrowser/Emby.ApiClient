@@ -7,6 +7,6 @@ namespace MediaBrowser.ApiInteraction.Sync
 {
     public interface IServerSync
     {
-        Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken));
+        Task Sync(ServerInfo server, bool enableCameraUpload, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

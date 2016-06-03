@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.ApiInteraction.Sync
 {
@@ -23,16 +24,17 @@ namespace MediaBrowser.ApiInteraction.Sync
             _fileTransferManager = fileTransferManager;
         }
 
-        public async Task Sync(IProgress<double> progress, 
+        public async Task Sync(IProgress<double> progress,
+            List<string> cameraUploadServers, 
             bool syncOnlyOnLocalNetwork,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var servers = await _connectionManager.GetAvailableServers(cancellationToken).ConfigureAwait(false);
 
-            await Sync(servers, syncOnlyOnLocalNetwork, progress, cancellationToken).ConfigureAwait(false);
+            await Sync(servers, cameraUploadServers, syncOnlyOnLocalNetwork, progress, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task Sync(List<ServerInfo> servers, bool syncOnlyOnLocalNetwork, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task Sync(List<ServerInfo> servers, List<string> cameraUploadServers, bool syncOnlyOnLocalNetwork, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var numComplete = 0;
             double startingPercent = 0;
@@ -87,8 +89,10 @@ namespace MediaBrowser.ApiInteraction.Sync
                     }
                 }
 
+                var enableCameraUpload = cameraUploadServers.Contains(serverInfo.Id, StringComparer.OrdinalIgnoreCase);
+
                 await new ServerSync(_connectionManager, _logger, _localAssetManager, _fileTransferManager, _connectionManager.ClientCapabilities)
-                    .Sync(serverInfo, serverProgress, cancellationToken).ConfigureAwait(false);
+                    .Sync(serverInfo, enableCameraUpload, serverProgress, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 startingPercent = numComplete;

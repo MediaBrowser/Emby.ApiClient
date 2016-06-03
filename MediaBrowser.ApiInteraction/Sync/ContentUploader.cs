@@ -24,14 +24,6 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             var deviceId = device.DeviceId;
 
-            var config = await _apiClient.GetDevicesOptions().ConfigureAwait(false);
-
-            if (!config.EnabledCameraUploadDevices.Contains(deviceId))
-            {
-                _logger.Debug("Camera upload is not enabled for this device.");
-                return;
-            }
-
             var history = await _apiClient.GetContentUploadHistory(deviceId).ConfigureAwait(false);
 
             var files = (await device.GetLocalPhotos().ConfigureAwait(false))

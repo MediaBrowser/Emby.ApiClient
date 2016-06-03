@@ -28,7 +28,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             _localAssetManager = localAssetManager;
         }
 
-        public async Task Sync(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task Sync(ServerInfo server, bool enableCameraUpload, IProgress<double> progress, CancellationToken cancellationToken = default(CancellationToken))
         {
             var semaphore = GetLock(server.Id);
 
@@ -36,7 +36,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             try
             {
-                await SyncInternal(server, progress, cancellationToken).ConfigureAwait(false);
+                await SyncInternal(server, enableCameraUpload, progress, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -59,7 +59,7 @@ namespace MediaBrowser.ApiInteraction.Sync
             return semaphore;
         }
 
-        private async Task SyncInternal(ServerInfo server, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task SyncInternal(ServerInfo server, bool enableCameraUpload, IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Debug("Beginning ServerSync with server {0}, Id {1}", server.Name, server.Id);
             
@@ -81,7 +81,7 @@ namespace MediaBrowser.ApiInteraction.Sync
 
             if (result.State == ConnectionState.SignedIn)
             {
-                await SyncInternal(server, result.ApiClient, progress, cancellationToken).ConfigureAwait(false);
+                await SyncInternal(server, result.ApiClient, enableCameraUpload, progress, cancellationToken).ConfigureAwait(false);
                 progress.Report(100);
             }
             else
@@ -91,14 +91,18 @@ namespace MediaBrowser.ApiInteraction.Sync
             }
         }
 
-        private async Task SyncInternal(ServerInfo server, IApiClient apiClient, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task SyncInternal(ServerInfo server, IApiClient apiClient, bool enableCameraUpload, IProgress<double> progress, CancellationToken cancellationToken)
         {
             const double cameraUploadTotalPercentage = .25;
 
             var uploadProgress = new DoubleProgress();
             uploadProgress.RegisterAction(p => progress.Report(p * cameraUploadTotalPercentage));
-            await new ContentUploader(apiClient, _logger)
-                .UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
+
+            if (enableCameraUpload)
+            {
+                await new ContentUploader(apiClient, _logger)
+                    .UploadImages(uploadProgress, cancellationToken).ConfigureAwait(false);
+            }
 
             if (_clientCapabilities.SupportsOfflineAccess)
             {
