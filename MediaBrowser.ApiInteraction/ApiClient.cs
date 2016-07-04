@@ -1852,6 +1852,11 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("StartIndex", query.StartIndex);
             dict.AddIfNotNull("Limit", query.Limit);
 
+            if (!query.EnableTotalRecordCount)
+            {
+                dict.Add("EnableTotalRecordCount", query.EnableTotalRecordCount);
+            }
+
             var url = GetApiUrl("LiveTv/Recordings", dict);
 
             using (var stream = await GetSerializedStreamAsync(url, cancellationToken).ConfigureAwait(false))
@@ -2089,6 +2094,11 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNullOrEmpty("UserId", query.UserId);
 
+            if (!query.EnableTotalRecordCount)
+            {
+                dict.Add("EnableTotalRecordCount", query.EnableTotalRecordCount);
+            }
+
             if (query.ChannelIds != null)
             {
                 dict.Add("ChannelIds", string.Join(",", query.ChannelIds));
@@ -2116,6 +2126,11 @@ namespace MediaBrowser.ApiInteraction
             dict.AddIfNotNull("Limit", query.Limit);
             dict.AddIfNotNull("HasAired", query.HasAired);
             dict.AddIfNotNull("IsAiring", query.IsAiring);
+
+            if (!query.EnableTotalRecordCount)
+            {
+                dict.Add("EnableTotalRecordCount", query.EnableTotalRecordCount);
+            }
 
             var url = GetApiUrl("LiveTv/Programs/Recommended", dict);
 

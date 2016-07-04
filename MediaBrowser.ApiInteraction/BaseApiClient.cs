@@ -331,6 +331,11 @@ namespace MediaBrowser.ApiInteraction
 
             dict.AddIfNotNull("SortBy", query.SortBy);
 
+            if (!query.EnableTotalRecordCount)
+            {
+                dict.Add("EnableTotalRecordCount", query.EnableTotalRecordCount);
+            }
+
             if (query.SortOrder.HasValue)
             {
                 dict["sortOrder"] = query.SortOrder.ToString();
