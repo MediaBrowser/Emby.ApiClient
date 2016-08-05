@@ -21,7 +21,6 @@ namespace MediaBrowser.ApiInteraction.Playback
         private readonly ILocalAssetManager _localAssetManager;
         private readonly ILogger _logger;
         private readonly IDevice _device;
-        private readonly ILocalPlayer _localPlayer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlaybackManager" /> class.
@@ -29,17 +28,15 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <param name="localAssetManager">The local asset manager.</param>
         /// <param name="device">The device.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="localPlayer">The local player.</param>
-        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, ILocalPlayer localPlayer)
+        public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger)
         {
             _localAssetManager = localAssetManager;
             _device = device;
             _logger = logger;
-            _localPlayer = localPlayer;
         }
 
         public PlaybackManager(ILocalAssetManager localAssetManager, IDevice device, ILogger logger, INetworkConnection network)
-            : this(localAssetManager, device, logger, new PortablePlayer(network, AsyncHttpClientFactory.Create(logger)))
+            : this(localAssetManager, device, logger)
         {
         }
 
@@ -95,7 +92,7 @@ namespace MediaBrowser.ApiInteraction.Playback
         /// <returns>StreamBuilder.</returns>
         private StreamBuilder GetStreamBuilder()
         {
-            return new StreamBuilder(_localPlayer, _logger);
+            return new StreamBuilder(_logger);
         }
 
         /// <summary>
