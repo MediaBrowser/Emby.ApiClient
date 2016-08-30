@@ -495,6 +495,11 @@ namespace MediaBrowser.ApiInteraction
             }
         }
 
+        public Task<PluginSecurityInfo> GetRegistrationInfo()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Queries for items
         /// </summary>
