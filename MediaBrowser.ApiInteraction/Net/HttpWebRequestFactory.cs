@@ -23,6 +23,11 @@ namespace MediaBrowser.ApiInteraction.Net
             request.Pipelined = true;
             request.Timeout = options.Timeout;
 
+            if (options.BypassSslCertificateValidation)
+            {
+                request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+            }
+
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
             var sp = request.ServicePoint;
             if (_httpBehaviorPropertyInfo == null)
