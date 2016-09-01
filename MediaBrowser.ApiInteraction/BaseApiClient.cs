@@ -117,7 +117,7 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The name of the device.</value>
         public string DeviceName
         {
-            get { return Device.DeviceName; }
+            get { return Device == null ? null : Device.DeviceName; }
         }
 
 
@@ -133,7 +133,7 @@ namespace MediaBrowser.ApiInteraction
         /// <value>The device id.</value>
         public string DeviceId
         {
-            get { return Device.DeviceId; }
+            get { return Device == null ? null : Device.DeviceId; }
         }
 
         /// <summary>
