@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace MediaBrowser.ApiInteraction.Cryptography
+namespace Emby.ApiInteraction.Cryptography
 {
     public class CryptographyProvider : ICryptographyProvider
     {

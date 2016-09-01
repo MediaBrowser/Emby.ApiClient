@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.ApiInteraction.Cryptography
+namespace Emby.ApiInteraction.Cryptography
 {
     public interface ICryptographyProvider
     {

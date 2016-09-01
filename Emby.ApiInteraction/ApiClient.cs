@@ -1,6 +1,6 @@
-﻿using Emby.ApiInteraction.Data;
+﻿using Emby.ApiInteraction.Cryptography;
+using Emby.ApiInteraction.Data;
 using Emby.ApiInteraction.Net;
-using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;

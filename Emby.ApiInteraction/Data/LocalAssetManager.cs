@@ -1,4 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
+﻿using Emby.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
