@@ -3,10 +3,10 @@
     <metadata>
         <id>MediaBrowser.ApiClient</id>
         <version>3.0.0.638</version>
-        <title>MediaBrowser.ApiClient</title>
+        <title>Emby.ApiClient</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
-        <projectUrl>https://github.com/MediaBrowser/MediaBrowser.ApiClient</projectUrl>
+        <projectUrl>https://github.com/MediaBrowser/Emby.ApiClient</projectUrl>
         <iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>ApiClient allows .NET clients to easily access the Emby Api.</description>
@@ -24,9 +24,9 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="dlls\MediaBrowser.ApiInteraction.dll" target="lib\net45\MediaBrowser.ApiInteraction.dll" />
-		<file src="dlls\MediaBrowser.ApiInteraction.pdb" target="lib\net45\MediaBrowser.ApiInteraction.pdb" />
-        <file src="dlls\MediaBrowser.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.ApiInteraction.Portable.dll" />
-		<file src="dlls\MediaBrowser.ApiInteraction.Portable.pdb" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.ApiInteraction.Portable.pdb" />
+        <file src="dlls\Emby.ApiInteraction.dll" target="lib\net45\Emby.ApiInteraction.dll" />
+		<file src="dlls\Emby.ApiInteraction.pdb" target="lib\net45\Emby.ApiInteraction.pdb" />
+        <file src="dlls\Emby.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Emby.Portable.dll" />
+		<file src="dlls\MediaBrowser.Emby.Portable.pdb" target="lib\portable-net45+sl4+wp71+win8+wpa81\Emby.ApiInteraction.Portable.pdb" />
     </files>
 </package>
