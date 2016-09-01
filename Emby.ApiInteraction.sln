@@ -10,11 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{98EEE2
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction", "MediaBrowser.ApiInteraction\MediaBrowser.ApiInteraction.csproj", "{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.ApiInteraction", "Emby.ApiInteraction\Emby.ApiInteraction.csproj", "{921C0F64-FDA7-4E9F-9E73-0CB0EEDB2422}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.ApiInteraction.Portable", "MediaBrowser.ApiInteraction.Portable\MediaBrowser.ApiInteraction.Portable.csproj", "{52E0C440-85C0-4A99-ACFE-07C87B2600BE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.ApiInteraction", "Emby.ApiInteraction\Emby.ApiInteraction.csproj", "{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.ApiInteraction.Portable", "Emby.ApiInteraction.Portable\Emby.ApiInteraction.Portable.csproj", "{52E0C440-85C0-4A99-ACFE-07C87B2600BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,22 +58,6 @@ Global
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x64.Build.0 = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{52E0C440-85C0-4A99-ACFE-07C87B2600BE}.Release|x86.Build.0 = Release|Any CPU
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|ARM.ActiveCfg = Debug|ARM
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|ARM.Build.0 = Debug|ARM
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|x64.ActiveCfg = Debug|x64
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|x64.Build.0 = Debug|x64
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|x86.ActiveCfg = Debug|x86
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Debug|x86.Build.0 = Debug|x86
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|ARM.ActiveCfg = Release|ARM
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|ARM.Build.0 = Release|ARM
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|x64.ActiveCfg = Release|x64
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|x64.Build.0 = Release|x64
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|x86.ActiveCfg = Release|x86
-		{F519D683-6D7A-4A21-8B83-B1BA6360ACD7}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
