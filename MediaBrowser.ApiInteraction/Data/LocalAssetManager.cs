@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Data
+namespace Emby.ApiInteraction.Data
 {
     public class LocalAssetManager : ILocalAssetManager
     {

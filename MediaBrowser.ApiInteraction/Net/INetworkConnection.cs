@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction.Net
 {
     public interface INetworkConnection
     {

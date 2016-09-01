@@ -1,6 +1,6 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
-using MediaBrowser.ApiInteraction.Data;
-using MediaBrowser.ApiInteraction.Net;
+﻿using Emby.ApiInteraction.Data;
+using Emby.ApiInteraction.Net;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
@@ -33,7 +33,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     /// <summary>
     /// Provides api methods centered around an HttpClient

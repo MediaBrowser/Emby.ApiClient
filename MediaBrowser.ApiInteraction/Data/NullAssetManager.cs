@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Data
+namespace Emby.ApiInteraction.Data
 {
     public class NullAssetManager : ILocalAssetManager
     {

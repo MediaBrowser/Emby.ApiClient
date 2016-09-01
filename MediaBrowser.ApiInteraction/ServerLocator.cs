@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     public class ServerLocator : IServerLocator
     {

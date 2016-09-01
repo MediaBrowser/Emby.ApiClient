@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     public interface IFileTransferManager
     {

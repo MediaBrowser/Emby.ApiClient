@@ -5,7 +5,7 @@ using MediaBrowser.Model.Session;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Playback
+namespace Emby.ApiInteraction.Playback
 {
     public interface IPlaybackManager
     {

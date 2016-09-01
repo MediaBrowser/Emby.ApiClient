@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
 
-namespace MediaBrowser.ApiInteraction.WebSocket
+namespace Emby.ApiInteraction.WebSocket
 {
     /// <summary>
     /// Class WebSocket4NetClientWebSocket
@@ -28,7 +28,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public Model.Net.WebSocketState State
+        public MediaBrowser.Model.Net.WebSocketState State
         {
             get
             {
@@ -36,17 +36,17 @@ namespace MediaBrowser.ApiInteraction.WebSocket
                 switch (_socket.State)
                 {
                     case WebSocketState.Closed:
-                        return Model.Net.WebSocketState.Closed;
+                        return MediaBrowser.Model.Net.WebSocketState.Closed;
                     case WebSocketState.Closing:
-                        return Model.Net.WebSocketState.Closed;
+                        return MediaBrowser.Model.Net.WebSocketState.Closed;
                     case WebSocketState.Connecting:
-                        return Model.Net.WebSocketState.Connecting;
+                        return MediaBrowser.Model.Net.WebSocketState.Connecting;
                     case WebSocketState.None:
-                        return Model.Net.WebSocketState.None;
+                        return MediaBrowser.Model.Net.WebSocketState.None;
                     case WebSocketState.Open:
-                        return Model.Net.WebSocketState.Open;
+                        return MediaBrowser.Model.Net.WebSocketState.Open;
                     default:
-                        return Model.Net.WebSocketState.None;
+                        return MediaBrowser.Model.Net.WebSocketState.None;
                 }
             }
         }
@@ -128,7 +128,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken = default(CancellationToken))
+        public Task SendAsync(byte[] bytes, MediaBrowser.Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.Run(() => _socket.Send(bytes, 0, bytes.Length), cancellationToken);
         }
@@ -142,7 +142,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
             {
                 var state = State;
 
-                if (state == Model.Net.WebSocketState.Open || state == Model.Net.WebSocketState.Connecting)
+                if (state == MediaBrowser.Model.Net.WebSocketState.Open || state == MediaBrowser.Model.Net.WebSocketState.Connecting)
                 {
                     _logger.Info("Sending web socket close message");
 

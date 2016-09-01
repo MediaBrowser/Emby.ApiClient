@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     /// <summary>
     /// Class NewtonsoftJsonSerializer

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Data
+namespace Emby.ApiInteraction.Data
 {
     /// <summary>
     /// Interface IItemRepository

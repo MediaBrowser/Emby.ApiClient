@@ -92,7 +92,7 @@
     <Compile Include="Playback\IPlaybackManager.cs" />
     <Compile Include="Playback\PlaybackManager.cs" />
     <Compile Include="Sync\ContentUploader.cs" />
-    <Compile Include="INetworkConnection.cs" />
+    <Compile Include="Net\INetworkConnection.cs" />
     <Compile Include="IServerLocator.cs" />
     <Compile Include="MyPortableTimer.cs" />
     <Compile Include="Net\NetworkConnection.cs" />

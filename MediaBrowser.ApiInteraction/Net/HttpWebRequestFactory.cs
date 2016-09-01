@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Net
+namespace Emby.ApiInteraction.Net
 {
     public class HttpWebRequestFactory : IHttpWebRequestFactory
     {

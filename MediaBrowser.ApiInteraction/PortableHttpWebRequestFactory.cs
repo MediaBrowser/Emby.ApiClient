@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Emby.ApiInteraction.Net;
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using MediaBrowser.ApiInteraction.Net;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     public class PortableHttpWebRequestFactory : IHttpWebRequestFactory
     {

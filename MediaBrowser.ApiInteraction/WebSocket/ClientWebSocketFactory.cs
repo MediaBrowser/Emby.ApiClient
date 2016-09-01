@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Logging;
 using System;
 
-namespace MediaBrowser.ApiInteraction.WebSocket
+namespace Emby.ApiInteraction.WebSocket
 {
     /// <summary>
     /// Class ClientWebSocketFactory

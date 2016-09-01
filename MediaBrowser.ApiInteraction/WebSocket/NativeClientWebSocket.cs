@@ -5,7 +5,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.WebSocket
+namespace Emby.ApiInteraction.WebSocket
 {
     /// <summary>
     /// Class NativeClientWebSocket
@@ -145,7 +145,7 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SendAsync(byte[] bytes, Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SendAsync(byte[] bytes, MediaBrowser.Model.Net.WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken = default(CancellationToken))
         {
             await _sendResource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -172,16 +172,16 @@ namespace MediaBrowser.ApiInteraction.WebSocket
         /// Gets or sets the state.
         /// </summary>
         /// <value>The state.</value>
-        public Model.Net.WebSocketState State
+        public MediaBrowser.Model.Net.WebSocketState State
         {
             get
             {
                 if (_client == null)
                 {
-                    return Model.Net.WebSocketState.None;
+                    return MediaBrowser.Model.Net.WebSocketState.None;
                 }
 
-                Model.Net.WebSocketState commonState;
+                MediaBrowser.Model.Net.WebSocketState commonState;
 
                 if (!Enum.TryParse(_client.State.ToString(), true, out commonState))
                 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     /// <summary>
     /// Class QueryStringDictionary

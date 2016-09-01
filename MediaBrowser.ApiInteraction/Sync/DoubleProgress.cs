@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     public class DoubleProgress : Progress<double>, IDisposable
     {

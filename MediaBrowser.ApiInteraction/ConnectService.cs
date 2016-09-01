@@ -1,5 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
-using MediaBrowser.ApiInteraction.Net;
+﻿using Emby.ApiInteraction.Net;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     public class ConnectService
     {

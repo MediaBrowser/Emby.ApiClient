@@ -1,6 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Net;
+﻿using Emby.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
-using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -12,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     /// <summary>
     /// Provides api methods that are usable on all platforms

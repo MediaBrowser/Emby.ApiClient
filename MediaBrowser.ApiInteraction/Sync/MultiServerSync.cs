@@ -1,13 +1,13 @@
-﻿using MediaBrowser.ApiInteraction.Data;
-using MediaBrowser.Model.ApiClient;
+﻿using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using Emby.ApiInteraction.Data;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     public class MultiServerSync : IMultiServerSync
     {

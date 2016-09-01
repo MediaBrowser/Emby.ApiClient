@@ -1,4 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.Data;
+﻿using Emby.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     class FileTransferManager : IFileTransferManager
     {

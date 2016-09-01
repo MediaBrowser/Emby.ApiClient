@@ -1,4 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.Data;
+﻿using Emby.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -10,7 +10,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     public class OfflineUserSync : IOfflineUserSync
     {

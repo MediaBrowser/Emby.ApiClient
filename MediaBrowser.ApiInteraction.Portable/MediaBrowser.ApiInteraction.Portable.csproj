@@ -80,9 +80,6 @@
     <Compile Include="..\MediaBrowser.ApiInteraction\ICredentialProvider.cs">
       <Link>ICredentialProvider.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.ApiInteraction\INetworkConnection.cs">
-      <Link>INetworkConnection.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\IServerLocator.cs">
       <Link>IServerLocator.cs</Link>
     </Compile>
@@ -100,6 +97,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\Net\IAsyncHttpClient.cs">
       <Link>Net\IAsyncHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.ApiInteraction\Net\INetworkConnection.cs">
+      <Link>Net\INetworkConnection.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.ApiInteraction\NewtonsoftJsonSerializer.cs">
       <Link>NewtonsoftJsonSerializer.cs</Link>

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.ApiClient;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     public interface ICredentialProvider
     {

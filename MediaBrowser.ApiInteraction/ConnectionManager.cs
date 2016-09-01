@@ -1,6 +1,7 @@
-﻿using MediaBrowser.ApiInteraction.Cryptography;
-using MediaBrowser.ApiInteraction.Data;
-using MediaBrowser.ApiInteraction.Net;
+﻿using Emby.ApiInteraction.Data;
+using Emby.ApiInteraction.Net;
+using MediaBrowser.ApiInteraction;
+using MediaBrowser.ApiInteraction.Cryptography;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -18,7 +19,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     public class ConnectionManager : IConnectionManager
     {

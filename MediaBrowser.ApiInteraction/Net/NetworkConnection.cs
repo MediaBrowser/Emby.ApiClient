@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Net
+namespace Emby.ApiInteraction.Net
 {
     public class NetworkConnection : INetworkConnection
     {
@@ -22,10 +22,7 @@ namespace MediaBrowser.ApiInteraction.Net
 
         private void OnNetworkChange()
         {
-            if (NetworkChanged != null)
-            {
-                NetworkChanged(this, EventArgs.Empty);
-            }
+            NetworkChanged?.Invoke(this, EventArgs.Empty);
         }
 
         void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
@@ -55,7 +52,7 @@ namespace MediaBrowser.ApiInteraction.Net
             const int payloadSize = 102;
 
             var macBytes = PhysicalAddress.Parse(macAddress).GetAddressBytes();
-            _logger.Debug(String.Format("Sending magic packet to {0}", macAddress));
+            _logger.Debug(string.Format("Sending magic packet to {0}", macAddress));
 
             // Construct magic packet
             var payload = new byte[payloadSize];

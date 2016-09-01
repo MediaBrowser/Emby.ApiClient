@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction
+namespace Emby.ApiInteraction
 {
     /// <summary>
     /// Missing from PCL, except if targeting .NET 4.5.1 + Win8.1 + WP8.1

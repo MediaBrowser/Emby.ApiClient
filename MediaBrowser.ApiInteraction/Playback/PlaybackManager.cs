@@ -1,5 +1,5 @@
-﻿using MediaBrowser.ApiInteraction.Data;
-using MediaBrowser.ApiInteraction.Net;
+﻿using Emby.ApiInteraction.Data;
+using Emby.ApiInteraction.Net;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Playback
+namespace Emby.ApiInteraction.Playback
 {
     public class PlaybackManager : IPlaybackManager
     {

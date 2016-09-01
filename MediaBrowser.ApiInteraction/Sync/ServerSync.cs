@@ -1,4 +1,4 @@
-﻿using MediaBrowser.ApiInteraction.Data;
+﻿using Emby.ApiInteraction.Data;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ApiInteraction.Sync
+namespace Emby.ApiInteraction.Sync
 {
     public class ServerSync : IServerSync
     {
