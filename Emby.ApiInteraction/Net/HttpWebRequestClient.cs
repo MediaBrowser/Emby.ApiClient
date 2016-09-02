@@ -311,7 +311,7 @@ namespace Emby.ApiInteraction.Net
     {
         public static IAsyncHttpClient Create(ILogger logger)
         {
-#if PORTABLE
+#if PORTABLE || WINDOWS_UWP
             return new HttpWebRequestClient(logger, new PortableHttpWebRequestFactory());
 #else
             return new HttpWebRequestClient(logger, new HttpWebRequestFactory());
