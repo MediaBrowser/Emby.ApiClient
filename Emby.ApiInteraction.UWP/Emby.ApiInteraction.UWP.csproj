@@ -224,6 +224,9 @@
     <Compile Include="..\emby.apiinteraction\sync\ServerSync.cs">
       <Link>Sync\ServerSync.cs</Link>
     </Compile>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Emby.ApiInteraction.UWP.rd.xml" />
   </ItemGroup>
