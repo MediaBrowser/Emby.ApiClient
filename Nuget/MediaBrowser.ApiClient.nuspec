@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.ApiClient</id>
-        <version>3.0.0.638</version>
+        <version>3.0.0.639</version>
         <title>Emby.ApiClient</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -28,10 +28,10 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="dlls\Emby.ApiInteraction.dll" target="lib\net45\Emby.ApiInteraction.dll" />
-		<file src="dlls\Emby.ApiInteraction.pdb" target="lib\net45\Emby.ApiInteraction.pdb" />
-        <file src="dlls\Emby.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Emby.Portable.dll" />
-		<file src="dlls\Emby.ApiInteraction.Portable.pdb" target="lib\portable-net45+sl4+wp71+win8+wpa81\Emby.ApiInteraction.Portable.pdb" />
+        <file src="dlls\MediaBrowser.ApiInteraction.dll" target="lib\net45\MediaBrowser.ApiInteraction.dll" />
+		<file src="dlls\MediaBrowser.ApiInteraction.pdb" target="lib\net45\MediaBrowser.ApiInteraction.pdb" />
+        <file src="dlls\MediaBrowser.ApiInteraction.Portable.dll" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.MediaBrowser.Portable.dll" />
+		<file src="dlls\MediaBrowser.ApiInteraction.Portable.pdb" target="lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.ApiInteraction.Portable.pdb" />
 	<file src="dlls\Emby.ApiInteraction.UWP.dll" target="lib\UAP\MediaBrowser.Emby.UWP.dll" />
 		<file src="dlls\Emby.ApiInteraction.UWP.pdb" target="lib\UWP\Emby.ApiInteraction.UWP.pdb" />
         
