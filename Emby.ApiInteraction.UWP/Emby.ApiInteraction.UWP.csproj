@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{ED11621D-895C-4110-B949-1665E640F184}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Emby.ApiInteraction.UWP</RootNamespace>
+    <AssemblyName>Emby.ApiInteraction.UWP</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10586.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Emby.ApiInteraction\ApiClient.cs">
+      <Link>ApiClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\ApiWebSocket.cs">
+      <Link>ApiWebSocket.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\BaseApiClient.cs">
+      <Link>BaseApiClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\ConnectionManager.cs">
+      <Link>ConnectionManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\ConnectService.cs">
+      <Link>ConnectService.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\cryptography\ICryptographyProvider.cs">
+      <Link>Cryptography\ICryptographyProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\IFileRepository.cs">
+      <Link>Data\IFileRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\IImageRepository.cs">
+      <Link>Data\IImageRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\IItemRepository.cs">
+      <Link>Data\IItemRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\ILocalAssetManager.cs">
+      <Link>Data\ILocalAssetManager.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\IUserActionRepository.cs">
+      <Link>Data\IUserActionRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\IUserRepository.cs">
+      <Link>Data\IUserRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\LocalAssetManager.cs">
+      <Link>Data\LocalAssetManager.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\data\NullAssetManager.cs">
+      <Link>Data\NullAssetManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\ICredentialProvider.cs">
+      <Link>ICredentialProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\IServerLocator.cs">
+      <Link>IServerLocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\MyPortableTimer.cs">
+      <Link>MyPortableTimer.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\net\HttpHeaders.cs">
+      <Link>Net\HttpHeaders.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\net\HttpRequest.cs">
+      <Link>Net\HttpRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\net\HttpWebRequestClient.cs">
+      <Link>Net\HttpWebRequestClient.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\net\IAsyncHttpClient.cs">
+      <Link>Net\IAsyncHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\net\INetworkConnection.cs">
+      <Link>Net\INetworkConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\NewtonsoftJsonSerializer.cs">
+      <Link>NewtonsoftJsonSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\playback\IPlaybackManager.cs">
+      <Link>Playback\IPlaybackManager.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\playback\PlaybackManager.cs">
+      <Link>Playback\PlaybackManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\PortableHttpWebRequestFactory.cs">
+      <Link>PortableHttpWebRequestFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Emby.ApiInteraction\QueryStringDictionary.cs">
+      <Link>QueryStringDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\ContentUploader.cs">
+      <Link>Sync\ContentUploader.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\DoubleProgress.cs">
+      <Link>Sync\DoubleProgress.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\FileTransferManager.cs">
+      <Link>Sync\FileTransferManager.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\IFileTransferManager.cs">
+      <Link>Sync\IFileTransferManager.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\IMediaSync.cs">
+      <Link>Sync\IMediaSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\IMultiServerSync.cs">
+      <Link>Sync\IMultiServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\IOfflineUserSync.cs">
+      <Link>Sync\IOfflineUserSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\IServerSync.cs">
+      <Link>Sync\IServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\MediaSync.cs">
+      <Link>Sync\MediaSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\MultiServerSync.cs">
+      <Link>Sync\MultiServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\OfflineUserSync.cs">
+      <Link>Sync\OfflineUserSync.cs</Link>
+    </Compile>
+    <Compile Include="..\emby.apiinteraction\sync\ServerSync.cs">
+      <Link>Sync\ServerSync.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Properties\Emby.ApiInteraction.UWP.rd.xml" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Release (
+xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
+xcopy "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
+)</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

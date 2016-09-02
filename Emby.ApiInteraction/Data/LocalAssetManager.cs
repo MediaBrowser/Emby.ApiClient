@@ -198,6 +198,14 @@ namespace Emby.ApiInteraction.Data
             return _fileRepository.SaveFile(stream, localItem.LocalPath);
         }
 
+#if WINDOWS_UWP
+        public Task SaveMedia(Windows.Storage.IStorageFile file, LocalItem localItem, ServerInfo server)
+        {
+            _logger.Debug("Saving media to " + localItem.LocalPath);
+            return _fileRepository.SaveFile(file, localItem.LocalPath);
+        }
+#endif
+
         private List<string> GetDirectoryPath(BaseItemDto item, ServerInfo server)
         {
             var parts = new List<string>

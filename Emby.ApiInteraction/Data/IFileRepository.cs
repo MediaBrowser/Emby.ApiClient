@@ -22,6 +22,16 @@ namespace Emby.ApiInteraction.Data
         /// <returns>Task.</returns>
         Task SaveFile(Stream stream, string path);
 
+#if WINDOWS_UWP
+        /// <summary>
+        /// Saves the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>Task.</returns>
+        Task SaveFile(Windows.Storage.IStorageFile file, string path);
+#endif
+
         /// <summary>
         /// Deletes the file.
         /// </summary>
@@ -35,7 +45,7 @@ namespace Emby.ApiInteraction.Data
         /// <param name="path">The path.</param>
         /// <returns>Task.</returns>
         Task DeleteFolder(string path);
-        
+
         /// <summary>
         /// Strips invalid characters from a given name
         /// </summary>
@@ -70,5 +80,13 @@ namespace Emby.ApiInteraction.Data
         /// <param name="path">The path.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
         Task<Stream> GetFileStream(string path);
+#if WINDOWS_UWP
+        /// <summary>
+        /// Gets the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Task&lt;File&gt;.</returns>
+        Task<Windows.Storage.IStorageFile> GetFile(string path);
+#endif
     }
 }

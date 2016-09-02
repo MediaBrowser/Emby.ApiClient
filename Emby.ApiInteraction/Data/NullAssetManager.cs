@@ -57,6 +57,12 @@ namespace Emby.ApiInteraction.Data
             return Task.FromResult(true);
         }
 
+#if WINDOWS_UWP
+        public Task SaveMedia(Windows.Storage.IStorageFile file, LocalItem localItem, ServerInfo server)
+        {
+            return Task.FromResult(true);
+        }
+#endif
         public LocalItem CreateLocalItem(BaseItemDto libraryItem, ServerInfo server, string syncJobItemId, string originalFileName)
         {
             throw new NotImplementedException();

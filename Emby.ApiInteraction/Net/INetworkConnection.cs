@@ -11,7 +11,7 @@ namespace Emby.ApiInteraction.Net
         /// Occurs when [network changed].
         /// </summary>
         event EventHandler<EventArgs> NetworkChanged;
-            
+
         /// <summary>
         /// Sends the wake on lan.
         /// </summary>
@@ -30,11 +30,15 @@ namespace Emby.ApiInteraction.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendWakeOnLan(string macAddress, int port, CancellationToken cancellationToken = default(CancellationToken));
-        
+
         /// <summary>
         /// Gets the network status.
         /// </summary>
         /// <returns>NetworkStatus.</returns>
         NetworkStatus GetNetworkStatus();
+
+#if WINDOWS_UWP
+        bool HasUnmeteredConnection();
+#endif
     }
 }

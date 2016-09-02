@@ -83,6 +83,16 @@ namespace Emby.ApiInteraction.Data
         /// <param name="server">The server.</param>
         /// <returns>Task.</returns>
         Task SaveMedia(Stream stream, LocalItem localItem, ServerInfo server);
+#if WINDOWS_UWP
+        /// <summary>
+        /// Saves the media.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="localItem">The local item.</param>
+        /// <param name="server">The server.</param>
+        /// <returns>Task.</returns>
+        Task SaveMedia(Windows.Storage.IStorageFile file, LocalItem localItem, ServerInfo server);
+#endif
         /// <summary>
         /// Creates the local item.
         /// </summary>
