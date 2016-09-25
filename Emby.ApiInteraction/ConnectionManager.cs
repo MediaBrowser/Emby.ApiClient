@@ -579,6 +579,7 @@ namespace Emby.ApiInteraction
 
             var headers = new HttpHeaders();
             headers.SetAccessToken(server.ExchangeToken);
+            headers["X-Emby-Authorization"] = "MediaBrowser Client=\"" + ApplicationName + "\", Device=\"" + Device.DeviceName + "\", DeviceId=\"" + Device.DeviceId + "\", Version=\"" + ApplicationVersion + "\"";
 
             try
             {

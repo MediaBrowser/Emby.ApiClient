@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     "UAP,Version=v10.0": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -1898,7 +1898,7 @@
       }
     },
     "UAP,Version=v10.0/win10-arm": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -3659,7 +3659,7 @@
       }
     },
     "UAP,Version=v10.0/win10-arm-aot": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -5377,7 +5377,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x64": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -7147,7 +7147,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x64-aot": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -8865,7 +8865,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x86": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -10635,7 +10635,7 @@
       }
     },
     "UAP,Version=v10.0/win10-x86-aot": {
-      "MediaBrowser.Common/3.0.656": {
+      "MediaBrowser.Common/3.0.658": {
         "type": "package",
         "compile": {
           "lib/portable-net4+sl4+wp71+win8+wpa81/MediaBrowser.Model.dll": {}
@@ -12354,11 +12354,11 @@
     }
   },
   "libraries": {
-    "MediaBrowser.Common/3.0.656": {
-      "sha512": "d6hAUNuvUH1s6lDHSxgynFEsd+K/NCJIr96nsOEDokif24tCz4/qt+jGRFm2dHnLN5NhP9dQVDTkYdE1caDccw==",
+    "MediaBrowser.Common/3.0.658": {
+      "sha512": "cm2JRbmz1a/WJ37jiE0vmM4Oe/MvDvIbisPGXDMQphMHubJ53o5v/nB8sXGsRJkc7hiltS5v6ospUWugq0xRpw==",
       "type": "package",
       "files": [
-        "MediaBrowser.Common.3.0.656.nupkg.sha512",
+        "MediaBrowser.Common.3.0.658.nupkg.sha512",
         "MediaBrowser.Common.nuspec",
         "lib/net35/MediaBrowser.Model.dll",
         "lib/net45/MediaBrowser.Common.dll",
@@ -15658,7 +15658,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "MediaBrowser.Common >= 3.0.656",
+      "MediaBrowser.Common >= 3.0.658",
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.1.0",
       "Newtonsoft.Json >= 9.0.1"
     ],
