@@ -1262,9 +1262,7 @@ namespace Emby.ApiClient.Model
         /// <summary>
         /// Opens the web socket.
         /// </summary>
-        /// <param name="webSocketFactory">The web socket factory.</param>
-        /// <param name="keepAliveTimerMs">The keep alive timer ms.</param>
-        void OpenWebSocket(Func<IClientWebSocket> webSocketFactory, int keepAliveTimerMs = 60000);
+        void OpenWebSocket(Func<IClientWebSocket> webSocketFactory);
 
         /// <summary>
         /// Reports the offline actions.

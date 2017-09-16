@@ -74,27 +74,17 @@ namespace Emby.ApiClient
         private IClientWebSocket _currentWebSocket;
 
         /// <summary>
-        /// The _ensure timer
-        /// </summary>
-        private IDisposable _ensureTimer;
-
-        private int _keepAliveTimerMs;
-
-        /// <summary>
         /// Creates the specified logger.
         /// </summary>
-        /// <param name="webSocketFactory">The web socket factory.</param>
-        /// <param name="keepAliveTimerMs">The keep alive timer ms.</param>
-        /// <returns>Task{ApiWebSocket}.</returns>
-        public void OpenWebSocket(Func<IClientWebSocket> webSocketFactory, int keepAliveTimerMs = 60000)
+        public void OpenWebSocket(Func<IClientWebSocket> webSocketFactory)
         {
             _webSocketFactory = webSocketFactory;
-            _keepAliveTimerMs = keepAliveTimerMs;
 
             if (!IsWebSocketOpenOrConnecting)
             {
                 CloseWebSocket();
-                Task.Factory.StartNew(() => StartEnsureConnectionTimer(_keepAliveTimerMs));
+                Task.Factory.StartNew(() => EnsureConnectionAsync(CancellationToken.None));
+
             }
         }
 
@@ -109,11 +99,6 @@ namespace Emby.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         private async Task EnsureConnectionAsync(CancellationToken cancellationToken)
-        {
-            await EnsureConnectionInternal(cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task EnsureConnectionInternal(CancellationToken cancellationToken)
         {
             if (!IsWebSocketOpenOrConnecting)
             {
@@ -249,35 +234,6 @@ namespace Emby.ApiClient
         }
 
         /// <summary>
-        /// Starts the ensure connection timer.
-        /// </summary>
-        /// <param name="intervalMs">The interval ms.</param>
-        private void StartEnsureConnectionTimer(int intervalMs)
-        {
-            StopEnsureConnectionTimer();
-
-#if PORTABLE
-            _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
-#else
-            _ensureTimer = new Timer(TimerCallback, null, 0, intervalMs);
-#endif
-        }
-
-        /// <summary>
-        /// Stops the ensure connection timer.
-        /// </summary>
-        private void StopEnsureConnectionTimer()
-        {
-            if (_ensureTimer != null)
-            {
-                Logger.Debug("Stopping web socket timer");
-
-                _ensureTimer.Dispose();
-                _ensureTimer = null;
-            }
-        }
-
-        /// <summary>
         /// Starts the receiving session updates.
         /// </summary>
         /// <param name="intervalMs">The interval ms.</param>
@@ -327,15 +283,6 @@ namespace Emby.ApiClient
             return SendWebSocketMessage("SyncJobStop", string.Empty);
         }
 
-        /// <summary>
-        /// Timers the callback.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        private async void TimerCallback(object state)
-        {
-            await EnsureConnectionAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
@@ -348,8 +295,6 @@ namespace Emby.ApiClient
         /// </summary>
         private void DisposeWebSocket()
         {
-            StopEnsureConnectionTimer();
-
             var socket = _currentWebSocket;
 
             if (socket != null)
