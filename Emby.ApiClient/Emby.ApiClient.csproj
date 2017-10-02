@@ -6,7 +6,7 @@
     <FileVersion>1.1.1.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MediaBrowser.ApiClient</PackageId>
-    <Version>3.1.0</Version>
+    <Version>3.1.1</Version>
     <Authors>Emby</Authors>
     <Company>Emby</Company>
     <Description>Api libraries for connecting to Emby Server.</Description>

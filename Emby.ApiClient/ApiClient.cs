@@ -1289,6 +1289,7 @@ namespace Emby.ApiClient
             var args = new Dictionary<string, string>();
 
             args["username"] = Uri.EscapeDataString(username);
+            args["pw"] = password;
 
             var bytes = Encoding.UTF8.GetBytes(password ?? string.Empty);
             args["password"] = BitConverter.ToString(_cryptographyProvider.CreateSha1(bytes)).Replace("-", string.Empty);
