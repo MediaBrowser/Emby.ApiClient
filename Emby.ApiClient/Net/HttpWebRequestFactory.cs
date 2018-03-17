@@ -24,12 +24,12 @@ namespace Emby.ApiClient.Net
             request.Timeout = options.Timeout;
 
             // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
-            var sp = request.ServicePoint;
+            /*var sp = request.ServicePoint;
             if (_httpBehaviorPropertyInfo == null)
             {
                 _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
             }
-            _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
+            _httpBehaviorPropertyInfo?.SetValue(sp, (byte)0, null);*/
 
             if (!string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(options.Method, "post", StringComparison.OrdinalIgnoreCase))
