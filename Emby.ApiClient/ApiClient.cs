@@ -1573,6 +1573,7 @@ namespace Emby.ApiClient
 
             queryString.AddIfNotNullOrEmpty("SearchTerm", query.SearchTerm);
             queryString.AddIfNotNullOrEmpty("UserId", query.UserId);
+            queryString.AddIfNotNullOrEmpty("ParentId", query.ParentId);
             queryString.AddIfNotNull("StartIndex", query.StartIndex);
             queryString.AddIfNotNull("Limit", query.Limit);
 
@@ -1581,6 +1582,16 @@ namespace Emby.ApiClient
             queryString.Add("IncludeMedia", query.IncludeMedia);
             queryString.Add("IncludePeople", query.IncludePeople);
             queryString.Add("IncludeStudios", query.IncludeStudios);
+
+            queryString.AddIfNotNull("ExcludeItemTypes", query.ExcludeItemTypes);
+            queryString.AddIfNotNull("IncludeItemTypes", query.IncludeItemTypes);
+
+            queryString.AddIfNotNull("IsKids", query.IsKids);
+            queryString.AddIfNotNull("IsMovie", query.IsMovie);
+            queryString.AddIfNotNull("IsNews", query.IsNews);
+            queryString.AddIfNotNull("IsSeries", query.IsSeries);
+            queryString.AddIfNotNull("IsSports", query.IsSports);
+            queryString.AddIfNotNull("MediaTypes", query.MediaTypes);
 
             var url = GetApiUrl("Search/Hints", queryString);
 
