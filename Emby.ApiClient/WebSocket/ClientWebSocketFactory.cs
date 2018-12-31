@@ -25,7 +25,7 @@ namespace Emby.ApiClient.WebSocket
             }
             catch (NotSupportedException)
             {
-                return new NativeClientWebSocket(logger);
+                return new WebSocket4NetClientWebSocket(logger);
             }
         }
 
